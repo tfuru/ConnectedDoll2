@@ -1,0 +1,29 @@
+{
+  "libraryUuid": "0819f05c4eef4c71ace90d822a990e87",
+  "parts": {
+    "C19189385": { "uuid": "9a1bf3604cf84bd9a147a4c996e79ac0", "name": "XIAO ESP32C3", "role": "メインマイコン" },
+    "C4154882":  { "uuid": "73ec49379da74d77958f2a6c85900161", "name": "WS2812B", "role": "フルカラーLED" },
+    "C16214":    { "uuid": "d01cbf380da64006bd2828655d637543", "name": "DC-005 2.0", "role": "DCプラグコネクタ" },
+    "C78988":    { "uuid": "c81db3ccb66d4690ba39af40a5e3794c", "name": "SY8089AAAC", "role": "DCDC 3.3V" },
+    "C9900016766": { "uuid": "4e3c3305d58345c2a154ff170e27d45a", "name": "CD54", "role": "インダクタ 1.5μH (代替)" },
+    "C45783":    { "uuid": "9583d53cf848486a9d523fcaf153a729", "name": "CL31A226KOCLNNC", "role": "コンデンサ 22μF" },
+    "C23058":    { "uuid": "128070c50ff4463a83ebbe1740d84202", "name": "0603WAF4532T5E", "role": "抵抗 45.3kΩ" },
+    "C25804":    { "uuid": "b0602c6e20fc41faa226d9f001a9bead", "name": "0603WAF1002T5E", "role": "抵抗 10kΩ" },
+    "C2803346":  { "uuid": "7033b352ff5b4137be0407c30282a382", "name": "BSMD1206-110-16V", "role": "リセッタブルヒューズ (代替)" },
+    "C12495":    { "uuid": "78837835569f40709059861b6ef22a29", "name": "74AHCT1G125GW", "role": "レベルシフタ" },
+    "C23138":    { "uuid": "0a9f3a313c9145cf8517fd23769490cb", "name": "0603WAF3300T5E", "role": "抵抗 330Ω" },
+    "C15127":    { "uuid": "f58385f66b144586baef3753ba84f65d", "name": "AO3401A", "role": "逆流防止 MOSFET" },
+    "C78478":    { "uuid": "d06e6707972941d6b2e16ebcbb1e9148", "name": "BZT52B5V1S", "role": "ツェナーダイオード 5.1V" },
+    "C25803":    { "uuid": "c728373c421046ff8f40bf82a79ee519", "name": "0603WAF1003T5E", "role": "抵抗 100kΩ" },
+    "C719027":   { "uuid": "1827079d297b4ca1bd76e8b231830350", "name": "DM3D-SF", "role": "TFカードコネクタ" },
+    "C107410":   { "uuid": "94a8b3c397ea498eb3e70ce0a3a39f8f", "name": "DS3231MZ+TRL", "role": "RTC" },
+    "C910544":   { "uuid": "e5f40ffea669479c9e4ca82cf40a08cc", "name": "MAX98357AETE+T", "role": "オーディオアンプ" },
+    "C470766":   { "uuid": "f95d5a7adad64263ad8220cf299a2808", "name": "RK10J11R0A0H", "role": "アナログ可変抵抗" },
+    "C22383475": { "uuid": "24ba613c825845a0935428cc222f8f33", "name": "SH-6X6X5H-STM", "role": "タクトスイッチ" },
+    "C20079":    { "uuid": "f099f1e2f1734e369e17d9c3d2363e10", "name": "XH-2A", "role": "スピーカーコネクタ" },
+    "C70381":    { "uuid": "e50687023ded48819c9ce6b3604f1feb", "name": "CR1220-2", "role": "電池ホルダー" },
+    "C14663":    { "uuid": "a299e4f29fd2469688f76621c3d59c4d", "name": "CL10B104KO8NNNC", "role": "パスコン 0.1μF" },
+    "C19702":    { "uuid": "9f83e90cf78c4f3396a8045b3e521dd5", "name": "CL21A106KOFNNNE", "role": "パスコン 10μF" },
+    "C22843":    { "uuid": "7c6df020bc8c4478aa7a7a61a4a04d18", "name": "0603WAF4701T5E", "role": "プルアップ抵抗 4.7kΩ" }
+  }
+}

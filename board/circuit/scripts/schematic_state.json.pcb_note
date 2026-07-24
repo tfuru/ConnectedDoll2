@@ -1,0 +1,8 @@
+PCB Phase2 progress:
+- PCB synced from schematic (importChanges) -> 34 components imported
+- Board outline created: 45x45mm, rounded corners R2.0mm, origin(0,0), layer BOARD_OUTLINE(11)
+- All 34 components placed inside outline (centers within 0..1771.65 mil). Initial grouped placement:
+  - Edge: U5(XIAO), CARD1(TF), B1(battery), R11(POT), DC1(DCjack), CN1(speaker), SW1(tact), LED1
+  - Center grid: U1..U4, L1, C1-C8, R1-R10, D1, F1, Q1
+- DRC: 113 Connection Errors = all UNROUTED nets (expected before routing). No overlap/clearance errors.
+- TODO next: mounting holes (M2 @40x40mm corners), design rules, routing, GND pour, silk, final DRC.

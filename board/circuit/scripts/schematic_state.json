@@ -1,0 +1,45 @@
+{
+  "project": "ConnectedDoll2",
+  "schematicPage": "c7e8731032aff6b5",
+  "libraryUuid": "0819f05c4eef4c71ace90d822a990e87",
+  "phase": "Phase1 Schematic - completed",
+  "assumptions": [
+    "C22843 (I2C pull-up) はライブラリ実部品が 1.5kΩ (0603WAF1501T5E) のため、READMEの4.7kΩではなく1.5kΩで配置",
+    "電源保護回路は標準逆接続保護として配線: Q1.S=+5V, Q1.G=GATE(100k pulldown to GND), D1(zener) cathode=+5V/anode=GATE",
+    "DCジャック J1: pin4=+5V(VIN_5V), pin2/pin3=GND (ユーザー指定により修正済み)",
+    "POT (RK09L1140) の wiper(pin2)を XIAO D1(GPIO3/ADC) に接続 (READMEでピン未指定のため割当)",
+    "POT pin1=V3V3, pin3=GND, pin4=未接続",
+    "XIAO 3V3 pin(pin12)は外部DCDC 3V3との2重レギュレータ競合を避けるため未接続",
+    "BAT(CR1220) pin1=+(VBAT_RTC), pin2=-(GND) と仮定"
+  ],
+  "blocks": {
+    "power_protection": ["J1 DC-005", "Q1 AO3401A", "D1 BZT52B5V1S", "R1 100k", "F1 fuse"],
+    "dcdc_3v3": ["U2 SY8089", "Cin 10uF", "L1 1.5uH", "Cout 22uF", "Rfb1 45.3k", "Rfb2 10k"],
+    "levelshifter_led": ["U3 74AHCT1G125", "R330", "LED1 WS2812B", "Cls 0.1u", "Cled 0.1u"],
+    "audio": ["U4 MAX98357", "C10u", "C0.1u", "Rsd 10k", "JSPK XH-2A"],
+    "rtc": ["U5 DS3231MZ", "Crtc 0.1u", "Rp1 pullup", "Rp2 pullup", "BAT CR1220"],
+    "tfcard": ["J2 DM3D-SF", "Ctf 0.1u", "Rm/Rmi/Rsc 10k pullups"],
+    "main_ui": ["U1 XIAO ESP32C3", "POT RK09L1140", "SW tact"]
+  },
+  "nets": {
+    "VIN_5V": "J1 -> Q1.S -> D1.C",
+    "GATE": "Q1.G -> D1.A -> R1(100k)",
+    "Q_DRAIN": "Q1.D -> F1",
+    "V_BATT": "F1 out -> DCDC IN/EN, LS/LED VCC, Audio VDD, XIAO 5V",
+    "LX": "SY8089 LX -> L1",
+    "FB": "SY8089 FB -> Rfb1/Rfb2 divider",
+    "V3V3": "DCDC out -> RTC/TF VDD, pull-ups, POT top",
+    "I2C_SDA/SCL": "XIAO D4/D5 <-> RTC, pull-ups to V3V3",
+    "I2S_BCLK/LRCLK/DIN": "XIAO D6/D7/D10 -> MAX98357",
+    "SD_MOSI/MISO/SCK": "XIAO D2/D9/D8 -> DM3D-SF, pull-ups to V3V3",
+    "WS_DATA_3V3": "XIAO D3 -> 74AHCT1G125 A",
+    "LS_Y/WS_DIN": "buffer Y -> 330 -> WS2812 DIN",
+    "SPK_P/SPK_N": "MAX98357 OUTP/OUTN -> XH-2A",
+    "SD_MODE": "MAX98357 SD_MODE -> 10k -> V_BATT",
+    "VBAT_RTC": "CR1220+ -> DS3231 VBAT",
+    "POT_WIPER": "POT wiper -> XIAO D1",
+    "SW_D0": "tact switch -> XIAO D0"
+  },
+  "drc": "warning x1 (未接続ピン系の軽微warning), 致命的error無し",
+  "saved": true
+}
