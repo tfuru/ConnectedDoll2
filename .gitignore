@@ -1,0 +1,30 @@
+# Miscellaneous
+.DS_Store
+.idea/
+.vscode/
+*.log
+.env
+.env.key
+
+# PlatformIO (board/firmware)
+board/firmware/.pio/
+board/firmware/.vscode/
+
+# Flutter (app)
+app/.dart_tool/
+app/build/
+app/.flutter-plugins
+app/.flutter-plugins-dependencies
+app/.metadata
+app/.packages
+app/android/local.properties
+app/android/key.properties
+app/ios/Flutter/Generated.xcconfig
+app/ios/Flutter/flutter_export_environment.sh
+app/ios/Flutter/App.framework
+app/ios/Flutter/Flutter.framework
+app/ios/Flutter/Flutter.podspec
+app/macOS/
+app/windows/
+app/linux/
+app/web/
