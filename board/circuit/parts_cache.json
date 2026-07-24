@@ -20,7 +20,7 @@
     "C910544":   { "uuid": "e5f40ffea669479c9e4ca82cf40a08cc", "name": "MAX98357AETE+T", "role": "オーディオアンプ" },
     "C470766":   { "uuid": "f95d5a7adad64263ad8220cf299a2808", "name": "RK10J11R0A0H", "role": "アナログ可変抵抗" },
     "C22383475": { "uuid": "24ba613c825845a0935428cc222f8f33", "name": "SH-6X6X5H-STM", "role": "タクトスイッチ" },
-    "C20079":    { "uuid": "f099f1e2f1734e369e17d9c3d2363e10", "name": "XH-2A", "role": "スピーカーコネクタ" },
+    "C131337":   { "uuid": "30e4e60376dc4414ba151b7f1f4fbd96", "name": "B2B-PH-K-S(LF)(SN)", "role": "スピーカーコネクタ" },
     "C70381":    { "uuid": "e50687023ded48819c9ce6b3604f1feb", "name": "CR1220-2", "role": "電池ホルダー" },
     "C14663":    { "uuid": "a299e4f29fd2469688f76621c3d59c4d", "name": "CL10B104KO8NNNC", "role": "パスコン 0.1μF" },
     "C19702":    { "uuid": "9f83e90cf78c4f3396a8045b3e521dd5", "name": "CL21A106KOFNNNE", "role": "パスコン 10μF" },
