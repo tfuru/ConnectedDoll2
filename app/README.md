@@ -120,7 +120,12 @@ GitHub Actions を利用して、クラウド上で自動的に Android デバ�
 
 #### 成果物 (APK) の取得方法
 
-ビルド完了後、GitHub の該当ワークフロー実行結果ページ下部にある **Artifacts** セクションから `app-debug-apk` (zip形式) をダウンロードできます。解凍すると Android 実機等にインストール可能な `app-debug.apk` が取得できます。
+1. **GitHub Releases ページから取得 (タグ Push 時)**
+   `debug-*` タグを push して起動した場合、GitHub リポジトリの **Releases** ページに自動作成された Release（Pre-release）の **Assets** 一覧に `app-debug.apk` が直接添付されます。
+
+2. **Actions タブの Artifacts から取得**
+   GitHub の該当ワークフロー実行結果ページ下部にある **Artifacts** セクションから `app-debug-apk` (zip形式) をダウンロードして解凍することも可能です。
+
 
 
 ---
