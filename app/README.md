@@ -102,6 +102,29 @@ flutter build ipa
 
 ---
 
+### 4. CI/CD (GitHub Actions) での自動デバッグビルド
+
+GitHub Actions を利用して、クラウド上で自動的に Android デバッグ APK をビルドして成果物を取得することができます。
+
+#### 起動トリガー
+
+1. **`debug-*` タグの Push**
+   `debug-` から始まるタグを付与してリポジトリに push すると、自動的にデバッグビルドのワークフローが開始されます。
+   ```bash
+   git tag debug-v1.0.0
+   git push origin debug-v1.0.0
+   ```
+
+2. **手動実行 (`workflow_dispatch`)**
+   GitHub リポジトリの **Actions** タブ -> **Build App Debug** ワークフローを選択し、「Run workflow」ボタンから手動で起動することも可能です。
+
+#### 成果物 (APK) の取得方法
+
+ビルド完了後、GitHub の該当ワークフロー実行結果ページ下部にある **Artifacts** セクションから `app-debug-apk` (zip形式) をダウンロードできます。解凍すると Android 実機等にインストール可能な `app-debug.apk` が取得できます。
+
+
+---
+
 ## BLE 通信仕様 (通信プロトコル)
 
 アプリがデバイスと通信する際に使用する主要なUUIDおよびコマンド仕様です。
