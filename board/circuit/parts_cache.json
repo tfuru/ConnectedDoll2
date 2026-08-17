@@ -24,7 +24,7 @@
     "C70381":    { "uuid": "e50687023ded48819c9ce6b3604f1feb", "name": "CR1220-2", "role": "電池ホルダー" },
     "C14663":    { "uuid": "a299e4f29fd2469688f76621c3d59c4d", "name": "CL10B104KO8NNNC", "role": "パスコン 0.1μF" },
     "C19702":    { "uuid": "9f83e90cf78c4f3396a8045b3e521dd5", "name": "CL21A106KOFNNNE", "role": "パスコン 10μF" },
-    "C96123":    { "uuid": "9583d53cf848486a9d523fcaf153a729", "name": "CL31A476MPHNNNE", "role": "バルクコンデンサ 47μF" },
+    "C96123":    { "uuid": "e2b83b74e6594adc95f5ed0233068d84", "name": "CL31A476MPHNNNE", "role": "バルクコンデンサ 47μF" },
     "C22843":    { "uuid": "7c6df020bc8c4478aa7a7a61a4a04d18", "name": "0603WAF4701T5E", "role": "プルアップ抵抗 4.7kΩ" }
   }
 }
