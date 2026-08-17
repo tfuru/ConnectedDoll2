@@ -13,7 +13,7 @@
     "BAT(CR1220) pin1=+(VBAT_RTC), pin2=-(GND) と仮定"
   ],
   "blocks": {
-    "power_protection": ["J1 DC-005", "Q1 AO3401A", "D1 BZT52B5V1S", "R1 100k", "F1 fuse", "C9 47uF MLCC"],
+    "power_protection": ["J1 DC-005", "CN3 B2B-PH-K-S", "Q1 AO3401A", "D1 BZT52B5V1S", "R1 100k", "F1 fuse", "C9 47uF MLCC"],
     "dcdc_3v3": ["U2 SY8089", "Cin 10uF", "L1 1.5uH", "Cout 22uF", "Rfb1 45.3k", "Rfb2 10k"],
     "levelshifter_led": ["U3 74AHCT1G125", "R330", "LED1 WS2812B", "Cls 0.1u", "Cled 0.1u", "C10 10uF MLCC", "R12 10k pulldown"],
     "audio": ["U4 MAX98357", "C10u", "C0.1u", "Rsd 10k", "CN1 B2B-PH-K-S", "CN2 BM02B-SRSS-TB(LF)(SN)"],
@@ -22,7 +22,7 @@
     "main_ui": ["U1 XIAO ESP32C3", "POT RK09L1140", "SW EVQPUC02K (C79174)"]
   },
   "nets": {
-    "VIN_5V": "J1 -> Q1.S -> D1.C",
+    "VIN_5V": "J1, CN3(PH 2pin) -> Q1.S -> D1.C",
     "GATE": "Q1.G -> D1.A -> R1(100k)",
     "Q_DRAIN": "Q1.D -> F1",
     "V_BATT": "F1 out -> C9(47uF), DCDC IN/EN, LS/LED VCC, C10(10uF), Audio VDD, XIAO 5V",
