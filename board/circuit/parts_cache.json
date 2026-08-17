@@ -13,7 +13,7 @@
     "C12495":    { "uuid": "78837835569f40709059861b6ef22a29", "name": "74AHCT1G125GW", "role": "レベルシフタ" },
     "C23138":    { "uuid": "0a9f3a313c9145cf8517fd23769490cb", "name": "0603WAF3300T5E", "role": "抵抗 330Ω" },
     "C15127":    { "uuid": "f58385f66b144586baef3753ba84f65d", "name": "AO3401A", "role": "逆流防止 MOSFET" },
-    "C78478":    { "uuid": "d06e6707972941d6b2e16ebcbb1e9148", "name": "BZT52B5V1S", "role": "ツェナーダイオード 5.1V" },
+    "C2118":     { "uuid": "9d848fff4bde4d108a54913c639a862d", "name": "BZT52C5V1S", "role": "ツェナーダイオード 5.1V (代替)" },
     "C25803":    { "uuid": "c728373c421046ff8f40bf82a79ee519", "name": "0603WAF1003T5E", "role": "抵抗 100kΩ" },
     "C719027":   { "uuid": "1827079d297b4ca1bd76e8b231830350", "name": "DM3D-SF", "role": "TFカードコネクタ" },
     "C107410":   { "uuid": "94a8b3c397ea498eb3e70ce0a3a39f8f", "name": "DS3231MZ+TRL", "role": "RTC" },
