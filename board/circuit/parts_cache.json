@@ -19,7 +19,7 @@
     "C107410":   { "uuid": "94a8b3c397ea498eb3e70ce0a3a39f8f", "name": "DS3231MZ+TRL", "role": "RTC" },
     "C910544":   { "uuid": "e5f40ffea669479c9e4ca82cf40a08cc", "name": "MAX98357AETE+T", "role": "オーディオアンプ" },
     "C470766":   { "uuid": "f95d5a7adad64263ad8220cf299a2808", "name": "RK10J11R0A0H", "role": "アナログ可変抵抗" },
-    "C22383475": { "uuid": "24ba613c825845a0935428cc222f8f33", "name": "SH-6X6X5H-STM", "role": "タクトスイッチ" },
+    "C79174":    { "uuid": "5d9bb2e524e049cb9f8752d9ab99a0af", "name": "EVQPUC02K", "role": "タクトスイッチ (横向きSMD)" },
     "C131337":   { "uuid": "30e4e60376dc4414ba151b7f1f4fbd96", "name": "B2B-PH-K-S(LF)(SN)", "role": "スピーカーコネクタ" },
     "C70381":    { "uuid": "e50687023ded48819c9ce6b3604f1feb", "name": "CR1220-2", "role": "電池ホルダー" },
     "C14663":    { "uuid": "a299e4f29fd2469688f76621c3d59c4d", "name": "CL10B104KO8NNNC", "role": "パスコン 0.1μF" },

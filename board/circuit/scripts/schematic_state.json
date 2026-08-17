@@ -19,7 +19,7 @@
     "audio": ["U4 MAX98357", "C10u", "C0.1u", "Rsd 10k", "JSPK XH-2A"],
     "rtc": ["U5 DS3231MZ", "Crtc 0.1u", "Rp1 pullup", "Rp2 pullup", "BAT CR1220"],
     "tfcard": ["J2 DM3D-SF", "Ctf 0.1u", "Rm/Rmi/Rsc 10k pullups"],
-    "main_ui": ["U1 XIAO ESP32C3", "POT RK09L1140", "SW tact"]
+    "main_ui": ["U1 XIAO ESP32C3", "POT RK09L1140", "SW EVQPUC02K (C79174)"]
   },
   "nets": {
     "VIN_5V": "J1 -> Q1.S -> D1.C",
