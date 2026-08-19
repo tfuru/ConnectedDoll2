@@ -6,11 +6,14 @@ bool HAL_SD::init() {
     // 標準のグローバル SPI オブジェクトを指定ピンで初期化 (CS=-1で競合回避)
     SPI.begin(PIN_SD_SCK, PIN_SD_MISO, PIN_SD_MOSI, -1);
     
-    // SDライブラリの開始。標準の SPI オブジェクトを渡し、4MHzに設定して信号のなまりを防ぐ
-    if (!SD.begin(PIN_SD_CS, SPI, 4000000)) { 
-        Serial.println("SD Card Mount Failed");
-        mounted = false;
-        return false;
+    // SDライブラリの開始。標準の SPI オブジェクトを渡し、16MHzに設定して高速書き込みを実現
+    if (!SD.begin(PIN_SD_CS, SPI, 16000000)) { 
+        Serial.println("SD Card Mount Failed (16MHz), retrying at 8MHz...");
+        if (!SD.begin(PIN_SD_CS, SPI, 8000000)) {
+            Serial.println("SD Card Mount Failed");
+            mounted = false;
+            return false;
+        }
     }
     
     Serial.println("SD Card Mounted Successfully");

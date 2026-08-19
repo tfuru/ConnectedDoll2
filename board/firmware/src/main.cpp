@@ -47,8 +47,7 @@ void setup() {
   Serial.printf("[Power] Wakeup reason: %d\n", wakeup_reason);
 
   if (wakeup_reason == ESP_SLEEP_WAKEUP_GPIO) {
-    Serial.println("[Power] Woken up by Tact Switch (GPIO2)!");
-    triggerButtonPlayback();
+    Serial.println("[Power] Woken up by Tact Switch (GPIO2) - Audio playback skipped on wakeup.");
   } else if (wakeup_reason == ESP_SLEEP_WAKEUP_TIMER) {
     Serial.println("[Power] Woken up by RTC Timer Alarm!");
     DateTime now = HAL_RTC::getCurrentTime();
@@ -70,6 +69,7 @@ void loop() {
   // 状態更新ポーリング
   HAL_IO::update();
   AudioPlayer::update();
+  BLEManager::processTransferBuffer();
 
   // 音声再生中・BLE接続中・ファイル転送中はアイドルタイマーを常時リセット（スリープ抑止）
   if (AudioPlayer::isPlaying() || BLEManager::isConnected() || BLEManager::isTransferringFile()) {
@@ -154,20 +154,26 @@ void loop() {
   }
 
   // --- アイドル状態監視とDeep Sleep移行判定 ---
-  if (HAL_Power::isIdleTimeout(IDLE_SLEEP_TIMEOUT_MS)) {
-    Serial.println("[Power] Idle timeout reached without active connection or playback.");
-    DateTime now = HAL_RTC::getCurrentTime();
-    int64_t secondsToNext = AlarmManager::getSecondsToNextAlarm(now);
-    
-    uint64_t sleepDurationUs = 0;
-    if (secondsToNext > 0) {
-      Serial.printf("[Power] Next alarm in %lld seconds (%s)\n",
-                    secondsToNext, HAL_RTC::getCurrentTimeStr().c_str());
-      sleepDurationUs = (uint64_t)secondsToNext * 1000000ULL;
-    } else {
-      Serial.println("[Power] No active alarms scheduled.");
+  // BLE接続中・ファイル転送中・音声再生中は絶対にスリープに入らない
+  if (!BLEManager::isConnected() && !BLEManager::isTransferringFile() && !AudioPlayer::isPlaying()) {
+    if (HAL_Power::isIdleTimeout(IDLE_SLEEP_TIMEOUT_MS)) {
+      Serial.println("[Power] Idle timeout reached without active connection or playback.");
+      DateTime now = HAL_RTC::getCurrentTime();
+      int64_t secondsToNext = AlarmManager::getSecondsToNextAlarm(now);
+      
+      uint64_t sleepDurationUs = 0;
+      if (secondsToNext > 0) {
+        Serial.printf("[Power] Next alarm in %lld seconds (%s)\n",
+                      secondsToNext, HAL_RTC::getCurrentTimeStr().c_str());
+        sleepDurationUs = (uint64_t)secondsToNext * 1000000ULL;
+      } else {
+        Serial.println("[Power] No active alarms scheduled.");
+      }
+      
+      HAL_Power::enterDeepSleep(sleepDurationUs);
     }
-    
-    HAL_Power::enterDeepSleep(sleepDurationUs);
+  } else {
+    // 接続・アクティビティ中は常にアイドルタイマーを最新化
+    HAL_Power::resetIdleTimer();
   }
 }

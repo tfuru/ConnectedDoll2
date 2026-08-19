@@ -3,18 +3,28 @@
 #include "../hal/hal_io.h"
 #include "../hal/hal_power.h"
 #include "../audio/alarm_manager.h"
+#include <freertos/FreeRTOS.h>
+#include <freertos/ringbuf.h>
 
-bool BLEManager::connected = false;
-bool BLEManager::fileTransferActive = false;
+BLEServer* BLEManager::pServer = nullptr;
+volatile bool BLEManager::connected = false;
+volatile bool BLEManager::fileTransferActive = false;
+volatile bool BLEManager::pendingStartRequested = false;
+volatile bool BLEManager::transferEndRequested = false;
 String BLEManager::targetFileName = "";
+String BLEManager::pendingFileName = "";
 File BLEManager::activeFile;
+
+// 転送データ用リングバッファ (24KBに拡張して高速転送バーストを受け止める)
+static RingbufHandle_t s_transferRingBuf = NULL;
+static const size_t RING_BUF_SIZE = 24576;
 
 void BLEManager::init(const char* deviceName) {
     BLEDevice::init(deviceName);
     // MTUサイズを拡張して1パケットあたりの転送量を増やす（最大517）
     BLEDevice::setMTU(517); 
     
-    BLEServer* pServer = BLEDevice::createServer();
+    pServer = BLEDevice::createServer();
     pServer->setCallbacks(new ServerCallbacks());
     
     BLEService* pService = pServer->createService(SERVICE_UUID);
@@ -68,6 +78,9 @@ void BLEManager::startAdvertising() {
 }
 
 bool BLEManager::isConnected() {
+    if (pServer != nullptr && pServer->getConnectedCount() > 0) {
+        return true;
+    }
     return connected;
 }
 
@@ -85,6 +98,19 @@ void BLEManager::ServerCallbacks::onConnect(BLEServer* pServer) {
     Serial.println("BLE Client Connected");
 }
 
+void BLEManager::ServerCallbacks::onConnect(BLEServer* pServer, esp_ble_gatts_cb_param_t *param) {
+    connected = true;
+    HAL_Power::resetIdleTimer();
+    Serial.println("BLE Client Connected (with params)");
+
+    // 接続パラメータの安定化 (Connection Interval: 15-30ms, Supervision Timeout: 5000ms)
+    // ファイル転送中のパケット集中によるGATT切断(status=8)を防止
+    if (param != nullptr) {
+        pServer->updateConnParams(param->connect.remote_bda, 12, 24, 0, 500); // 12*1.25ms=15ms, 24*1.25ms=30ms, 500*10ms=5000ms
+        Serial.println("[BLE] Requested connection parameters update (Timeout: 5000ms)");
+    }
+}
+
 void BLEManager::ServerCallbacks::onDisconnect(BLEServer* pServer) {
     connected = false;
     HAL_Power::resetIdleTimer();
@@ -97,6 +123,11 @@ void BLEManager::ServerCallbacks::onDisconnect(BLEServer* pServer) {
             Serial.println("File closed prematurely due to disconnect");
         }
         fileTransferActive = false;
+        transferEndRequested = false;
+        if (s_transferRingBuf != NULL) {
+            vRingbufferDelete(s_transferRingBuf);
+            s_transferRingBuf = NULL;
+        }
     }
     // アドバタイズを再開して再接続を待つ
     BLEDevice::startAdvertising();
@@ -153,43 +184,104 @@ void BLEManager::FileCtrlCallbacks::onWrite(BLECharacteristic* pCharacteristic) 
         if (commaIdx != -1) {
             rawName = rawName.substring(0, commaIdx);
         }
-        targetFileName = "/" + rawName;
+        pendingFileName = "/" + rawName;
+        pendingStartRequested = true;
+        fileTransferActive = true;
+        transferEndRequested = false;
         
-        // 既存ファイルをクリアして新しく書き込みオープン
-        if (SD.exists(targetFileName)) {
-            SD.remove(targetFileName);
+        // 既存リングバッファの再生成
+        if (s_transferRingBuf != NULL) {
+            vRingbufferDelete(s_transferRingBuf);
+            s_transferRingBuf = NULL;
         }
-        
-        activeFile = SD.open(targetFileName, FILE_WRITE);
-        if (activeFile) {
-            fileTransferActive = true;
-            Serial.printf("File transfer started: %s\n", targetFileName.c_str());
-        } else {
-            Serial.printf("Failed to open file for writing: %s\n", targetFileName.c_str());
-        }
+        s_transferRingBuf = xRingbufferCreate(RING_BUF_SIZE, RINGBUF_TYPE_BYTEBUF);
+        Serial.printf("[BLE] START received for %s (Non-blocking queue init)\n", pendingFileName.c_str());
     } else if (cmd == "END") {
-        if (fileTransferActive && activeFile) {
-            activeFile.close();
-            fileTransferActive = false;
-            
-            // 受信完了ログと最終ファイルサイズの確認
-            File f = SD.open(targetFileName);
-            size_t size = f.size();
-            f.close();
-            Serial.printf("File transfer completed: %s (Size: %d bytes)\n", targetFileName.c_str(), size);
+        if (fileTransferActive) {
+            transferEndRequested = true;
+            Serial.println("[BLE] END received. Flushing remaining buffer...");
         }
     }
 }
 
 void BLEManager::FileDataCallbacks::onWrite(BLECharacteristic* pCharacteristic) {
     HAL_Power::resetIdleTimer();
-    if (!fileTransferActive || !activeFile) {
+    if (!fileTransferActive || s_transferRingBuf == NULL) {
         return;
     }
     
     std::string value = pCharacteristic->getValue();
     if (value.length() > 0) {
-        activeFile.write((const uint8_t*)value.data(), value.length());
+        // SDへの直接書き込みを行わず、リングバッファへ即時格納 (最大10ms待機)
+        BaseType_t res = xRingbufferSend(s_transferRingBuf, value.data(), value.length(), pdMS_TO_TICKS(10));
+        if (res != pdTRUE) {
+            Serial.println("[BLE] Warning: RingBuffer overflow, dropping packet!");
+        }
+    }
+}
+
+void BLEManager::processTransferBuffer() {
+    // 1. ファイルオープンの保留要求があればメインループ上で安全にSDを初期化
+    if (pendingStartRequested) {
+        pendingStartRequested = false;
+        targetFileName = pendingFileName;
+        
+        if (activeFile) {
+            activeFile.close();
+        }
+        if (SD.exists(targetFileName)) {
+            SD.remove(targetFileName);
+        }
+        
+        activeFile = SD.open(targetFileName, FILE_WRITE);
+        if (activeFile) {
+            Serial.printf("[SD] File opened for writing: %s\n", targetFileName.c_str());
+        } else {
+            Serial.printf("[SD] Failed to open file for writing: %s\n", targetFileName.c_str());
+            fileTransferActive = false;
+        }
+    }
+
+    if (!fileTransferActive || !activeFile) {
+        return;
+    }
+    
+    HAL_Power::resetIdleTimer();
+
+    // 2. リングバッファからデータを取得してSDへ書き込む (マルチセクタ単位: 4096バイト)
+    if (s_transferRingBuf != NULL) {
+        size_t itemSize = 0;
+        uint8_t* item = (uint8_t*)xRingbufferReceiveUpTo(s_transferRingBuf, &itemSize, 0, 4096);
+        if (item != NULL && itemSize > 0) {
+            activeFile.write(item, itemSize);
+            vRingbufferReturnItem(s_transferRingBuf, (void*)item);
+        }
+    }
+
+    // 3. ENDが要求され、かつリングバッファが完全に空になったらファイルをクローズ
+    if (transferEndRequested) {
+        size_t remainingSize = 0;
+        uint8_t* checkItem = (uint8_t*)xRingbufferReceiveUpTo(s_transferRingBuf, &remainingSize, 0, 1);
+        if (checkItem != NULL) {
+            // まだデータが残っているので戻して次回以降に処理
+            vRingbufferReturnItem(s_transferRingBuf, (void*)checkItem);
+        } else {
+            // 全データ書き込み完了
+            activeFile.flush();
+            activeFile.close();
+            fileTransferActive = false;
+            transferEndRequested = false;
+
+            if (s_transferRingBuf != NULL) {
+                vRingbufferDelete(s_transferRingBuf);
+                s_transferRingBuf = NULL;
+            }
+
+            File f = SD.open(targetFileName);
+            size_t size = f ? f.size() : 0;
+            if (f) f.close();
+            Serial.printf("[SD] File transfer completed: %s (Size: %d bytes)\n", targetFileName.c_str(), size);
+        }
     }
 }
 

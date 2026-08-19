@@ -21,15 +21,21 @@ public:
     static bool isConnected();
     static bool isTransferringFile();
     static String getTransferringFileName();
+    static void processTransferBuffer();
     
 private:
-    static bool connected;
-    static bool fileTransferActive;
+    static BLEServer* pServer;
+    static volatile bool connected;
+    static volatile bool fileTransferActive;
+    static volatile bool pendingStartRequested;
+    static volatile bool transferEndRequested;
     static String targetFileName;
+    static String pendingFileName;
     static File activeFile;
 
     class ServerCallbacks : public BLEServerCallbacks {
         void onConnect(BLEServer* pServer) override;
+        void onConnect(BLEServer* pServer, esp_ble_gatts_cb_param_t *param) override;
         void onDisconnect(BLEServer* pServer) override;
     };
 
