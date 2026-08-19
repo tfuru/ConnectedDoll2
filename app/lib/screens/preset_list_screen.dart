@@ -92,20 +92,32 @@ class _PresetListScreenState extends State<PresetListScreen> {
                     ],
                   ),
                 )
-              : ListView.builder(
+              : ReorderableListView.builder(
+                  buildDefaultDragHandles: false,
                   padding: const EdgeInsets.all(16),
                   itemCount: _presets.length,
+                  onReorder: (int oldIndex, int newIndex) async {
+                    setState(() {
+                      if (oldIndex < newIndex) {
+                        newIndex -= 1;
+                      }
+                      final item = _presets.removeAt(oldIndex);
+                      _presets.insert(newIndex, item);
+                    });
+                    await PresetDbService.instance.updatePresetOrders(_presets);
+                  },
                   itemBuilder: (context, index) {
                     final preset = _presets[index];
                     final color = Color(preset.color);
                     final voiceCount = preset.audioFiles.length;
 
                     return Card(
+                      key: ValueKey(preset.id ?? index),
                       color: const Color(0xFF1E293B),
                       margin: const EdgeInsets.only(bottom: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
-                        side: BorderSide(color: color.withOpacity(0.4), width: 1.5),
+                        side: BorderSide(color: color.withValues(alpha: 0.4), width: 1.5),
                       ),
                       child: InkWell(
                         borderRadius: BorderRadius.circular(16),
@@ -120,7 +132,7 @@ class _PresetListScreenState extends State<PresetListScreen> {
                                 height: 56,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: color.withOpacity(0.15),
+                                  color: color.withValues(alpha: 0.15),
                                   border: Border.all(color: color, width: 2),
                                   image: preset.iconPath != null
                                       ? DecorationImage(
@@ -168,7 +180,14 @@ class _PresetListScreenState extends State<PresetListScreen> {
                                   ],
                                 ),
                               ),
-                              const Icon(Icons.chevron_right, color: Colors.white38),
+                              // ドラッグ並べ替えハンドル
+                              ReorderableDragStartListener(
+                                index: index,
+                                child: const Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 6.0, vertical: 10.0),
+                                  child: Icon(Icons.drag_handle_rounded, color: Colors.white38, size: 24),
+                                ),
+                              ),
                             ],
                           ),
                         ),

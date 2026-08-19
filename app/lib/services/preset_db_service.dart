@@ -22,7 +22,7 @@ class PresetDbService {
 
     return await openDatabase(
       dbPath,
-      version: 1,
+      version: 2,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE voice_presets (
@@ -31,10 +31,18 @@ class PresetDbService {
             color INTEGER NOT NULL,
             icon_path TEXT,
             audio_files_json TEXT,
+            sort_order INTEGER NOT NULL DEFAULT 0,
             created_at TEXT NOT NULL,
             updated_at TEXT NOT NULL
           )
         ''');
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          try {
+            await db.execute('ALTER TABLE voice_presets ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0;');
+          } catch (_) {}
+        }
       },
     );
   }
@@ -69,18 +77,38 @@ class PresetDbService {
     return targetPath;
   }
 
-  // 全プリセットの取得
+  // 全プリセットの取得（sort_order昇順、同順位はid昇順）
   Future<List<VoicePreset>> getAllPresets() async {
     final db = await database;
-    final maps = await db.query('voice_presets', orderBy: 'created_at DESC');
+    final maps = await db.query('voice_presets', orderBy: 'sort_order ASC, id ASC');
     return maps.map((m) => VoicePreset.fromMap(m)).toList();
   }
 
   // プリセットの作成
   Future<VoicePreset> createPreset(VoicePreset preset) async {
     final db = await database;
-    final id = await db.insert('voice_presets', preset.toMap());
-    return preset.copyWith(id: id);
+    final countResult = await db.rawQuery('SELECT MAX(sort_order) as max_order FROM voice_presets');
+    final maxOrder = countResult.isNotEmpty && countResult.first['max_order'] != null
+        ? (countResult.first['max_order'] as int) + 1
+        : 0;
+    final presetWithOrder = preset.copyWith(sortOrder: maxOrder);
+    final id = await db.insert('voice_presets', presetWithOrder.toMap());
+    return presetWithOrder.copyWith(id: id);
+  }
+
+  // プリセットの並び順を一括更新
+  Future<void> updatePresetOrders(List<VoicePreset> orderedPresets) async {
+    final db = await database;
+    final batch = db.batch();
+    for (int i = 0; i < orderedPresets.length; i++) {
+      batch.update(
+        'voice_presets',
+        {'sort_order': i},
+        where: 'id = ?',
+        whereArgs: [orderedPresets[i].id],
+      );
+    }
+    await batch.commit(noResult: true);
   }
 
   // プリセットの更新

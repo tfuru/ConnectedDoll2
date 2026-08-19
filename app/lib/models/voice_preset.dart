@@ -7,6 +7,7 @@ class VoicePreset {
   final String? iconPath;
   // Map of slot index (e.g. -1 for trigger, 0..4 for alarms) to local audio file path
   final Map<int, String> audioFiles;
+  final int sortOrder;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -16,6 +17,7 @@ class VoicePreset {
     required this.color,
     this.iconPath,
     required this.audioFiles,
+    this.sortOrder = 0,
     DateTime? createdAt,
     DateTime? updatedAt,
   })  : createdAt = createdAt ?? DateTime.now(),
@@ -27,6 +29,7 @@ class VoicePreset {
     int? color,
     String? iconPath,
     Map<int, String>? audioFiles,
+    int? sortOrder,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -36,6 +39,7 @@ class VoicePreset {
       color: color ?? this.color,
       iconPath: iconPath ?? this.iconPath,
       audioFiles: audioFiles ?? Map.from(this.audioFiles),
+      sortOrder: sortOrder ?? this.sortOrder,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -50,6 +54,7 @@ class VoicePreset {
       'audio_files_json': jsonEncode(
         audioFiles.map((k, v) => MapEntry(k.toString(), v)),
       ),
+      'sort_order': sortOrder,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -70,6 +75,7 @@ class VoicePreset {
       color: map['color'] as int? ?? 0xFF4F46E5,
       iconPath: map['icon_path'] as String?,
       audioFiles: audios,
+      sortOrder: map['sort_order'] as int? ?? 0,
       createdAt: map['created_at'] != null ? DateTime.parse(map['created_at'] as String) : DateTime.now(),
       updatedAt: map['updated_at'] != null ? DateTime.parse(map['updated_at'] as String) : DateTime.now(),
     );
