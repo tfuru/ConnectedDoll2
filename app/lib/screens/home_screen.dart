@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'preset_list_screen.dart';
 import 'alarm_screen.dart';
+import 'firmware_update_screen.dart';
 
 
 class HomeScreen extends StatelessWidget {
@@ -11,19 +12,19 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 30),
+              const SizedBox(height: 12),
               // タイトル & ロゴエリア
               Center(
                 child: Column(
                   children: [
                     Container(
-                      width: 90,
-                      height: 90,
+                      width: 80,
+                      height: 80,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         boxShadow: [
@@ -43,28 +44,28 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 14),
                     const Text(
                       '推し活スピーカー',
                       style: TextStyle(
-                        fontSize: 28,
+                        fontSize: 26,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                         letterSpacing: 1.1,
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 4),
                     const Text(
                       'ボイス & アラーム コントローラー',
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 13,
                         color: Colors.white60,
                       ),
                     ),
                   ],
                 ),
               ),
-              const Spacer(),
+              const SizedBox(height: 24),
 
               // 音声プリセット一覧 遷移ボタン
               _buildMenuCard(
@@ -85,7 +86,7 @@ class HomeScreen extends StatelessWidget {
                   );
                 },
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
 
               // デバイス設定・転送 ボタン
               _buildMenuCard(
@@ -106,8 +107,29 @@ class HomeScreen extends StatelessWidget {
                   );
                 },
               ),
+              const SizedBox(height: 16),
 
-              const Spacer(),
+              // ファームウェア更新 ボタン
+              _buildMenuCard(
+                context: context,
+                title: 'ファームウェア更新',
+                subtitle: 'GitHubから最新FWを取得・OTA更新',
+                icon: Icons.system_update_alt_rounded,
+                accentColor: const Color(0xFF06B6D4),
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF0E7490), Color(0xFF1E293B)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const FirmwareUpdateScreen()),
+                  );
+                },
+              ),
+
+              const SizedBox(height: 32),
 
               const Center(
                 child: Text(
@@ -115,7 +137,7 @@ class HomeScreen extends StatelessWidget {
                   style: TextStyle(fontSize: 12, color: Colors.white24),
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
             ],
           ),
         ),
