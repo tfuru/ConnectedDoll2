@@ -47,7 +47,7 @@ class HomeScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 20),
                     const Text(
-                      'ConnectedDoll2',
+                      '推し活スピーカー',
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
@@ -113,7 +113,7 @@ class HomeScreen extends StatelessWidget {
 
               const Center(
                 child: Text(
-                  'ConnectedDoll2 v1.0',
+                  '推し活スピーカー v1.0',
                   style: TextStyle(fontSize: 12, color: Colors.white24),
                 ),
               ),
