@@ -18,6 +18,7 @@ class BleService {
 
   BleDevice? connectedDevice;
   bool isConnected = false;
+  int _negotiatedMtu = 247; // デフォルト安全値
 
   final StreamController<BleDevice> scanResultController = StreamController<BleDevice>.broadcast();
   final StreamController<String> alarmStateController = StreamController<String>.broadcast();
@@ -76,8 +77,10 @@ class BleService {
     try {
       final mtu = await UniversalBle.requestMtu(device.deviceId, 517); // ボード側設定の517に合わせる
       print('MTU updated to: $mtu');
+      _negotiatedMtu = mtu;
     } catch (e) {
       print('Failed to update MTU: $e');
+      _negotiatedMtu = 247;
     }
 
     // サービスと特性の検索
@@ -241,10 +244,12 @@ class BleService {
       await Future.delayed(const Duration(milliseconds: 500));
 
       // 2. バイナリデータをパケット分割して順次送信 (File Data 特性へ)
-      // ボードのMTU 517に合わせた最適な送信サイズ（ヘッダー等のオーバーヘッドを引き限界値500とする）
-      const int packetSize = 500;
+      // ネゴシエーションされたMTUからヘッダー分(3バイト)を引き、安全な範囲(64〜496バイト)で送信
+      final int packetSize = (_negotiatedMtu - 3).clamp(64, 496);
       final int totalBytes = fileData.length;
       int bytesSent = 0;
+      int packetCount = 0;
+      print('Starting file transfer: totalBytes=$totalBytes, packetSize=$packetSize, MTU=$_negotiatedMtu');
 
       transferStatusController.add("Sending data...");
 
@@ -253,21 +258,45 @@ class BleService {
         if (end > totalBytes) end = totalBytes;
 
         final packet = fileData.sublist(bytesSent, end);
-        await UniversalBle.write(
-          deviceId,
-          serviceUuid,
-          charFileDataUuid,
-          packet,
-          withoutResponse: true, // WriteWithoutResponseによる高速化を有効化
-        );
+        
+        // operationInProgress (Android GATT busy) 対策: 書き込みが完了するまでリトライ
+        bool sent = false;
+        for (int retry = 0; retry < 5; retry++) {
+          try {
+            await UniversalBle.write(
+              deviceId,
+              serviceUuid,
+              charFileDataUuid,
+              packet,
+              withoutResponse: true,
+            );
+            sent = true;
+            break;
+          } catch (e) {
+            // 前の書き込みがまだGATTキューに残っている場合は少し待って再試行
+            await Future.delayed(const Duration(milliseconds: 10));
+          }
+        }
+        if (!sent) {
+          throw Exception("Failed to write packet after 5 retries (GATT busy)");
+        }
 
         bytesSent = end;
+        packetCount++;
         final progress = bytesSent / totalBytes;
         transferProgressController.add(progress);
 
-        // ボード側の受信バッファオーバーフロー防止のためのウェイト（高速転送に微調整）
-        await Future.delayed(const Duration(milliseconds: 3));
+        // ボード側の24KBリングバッファと16MHz SD書き込みに合わせた最適化ディレイ
+        await Future.delayed(const Duration(milliseconds: 7));
+
+        // 32パケット(約16KB)ごとにSD書き込みフラッシュのための短い同期待機を設ける
+        if (packetCount % 32 == 0) {
+          await Future.delayed(const Duration(milliseconds: 25));
+        }
       }
+
+      // 送信完了後、ボードがリングバッファからSDへのフラッシュを完了できるように少し待機
+      await Future.delayed(const Duration(milliseconds: 300));
 
       // 3. 終了メッセージ送信 (File Control 特性へ)
       print('Sending End to FILE_CTRL');
