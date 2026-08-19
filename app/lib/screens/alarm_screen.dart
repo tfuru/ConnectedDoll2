@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import '../services/ble_service.dart';
 import '../services/audio_service.dart';
 import '../services/preset_db_service.dart';
+import '../services/audio_player_service.dart';
 import '../models/voice_preset.dart';
 import '../widgets/device_selection_bottom_sheet.dart';
 
@@ -152,6 +153,7 @@ class _AlarmScreenState extends State<AlarmScreen> {
 
   @override
   void dispose() {
+    AudioPlayerService.instance.stop();
     _alarmSubscription?.cancel();
     _progressSubscription?.cancel();
     _statusSubscription?.cancel();
@@ -830,7 +832,28 @@ class _AlarmScreenState extends State<AlarmScreen> {
                                     spacing: 8,
                                     runSpacing: 8,
                                     children: [
-                                      if (_selectedPreset != null && _selectedPreset!.audioFiles.containsKey(-1))
+                                      if (_selectedPreset != null && _selectedPreset!.audioFiles.containsKey(-1)) ...[
+                                        ValueListenableBuilder<String?>(
+                                          valueListenable: AudioPlayerService.instance.playingTagNotifier,
+                                          builder: (context, playingTag, _) {
+                                            final tag = "alarm_screen_slot_-1";
+                                            final isPlaying = playingTag == tag;
+                                            return ElevatedButton.icon(
+                                              onPressed: () {
+                                                final path = _selectedPreset!.audioFiles[-1]!;
+                                                AudioPlayerService.instance.togglePlay(path, tag: tag);
+                                              },
+                                              icon: Icon(isPlaying ? Icons.stop_rounded : Icons.play_arrow_rounded, size: 15, color: Colors.orangeAccent),
+                                              label: Text(isPlaying ? "停止" : "試聴", style: const TextStyle(fontSize: 11, color: Colors.orangeAccent)),
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: const Color(0xFF1E293B),
+                                                side: const BorderSide(color: Colors.orangeAccent, width: 0.8),
+                                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                              ),
+                                            );
+                                          },
+                                        ),
                                         ElevatedButton.icon(
                                           onPressed: _isUploading.values.any((u) => u)
                                               ? null
@@ -843,6 +866,7 @@ class _AlarmScreenState extends State<AlarmScreen> {
                                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                           ),
                                         ),
+                                      ],
                                       ElevatedButton.icon(
                                         onPressed: _isUploading.values.any((u) => u) ? null : () => _uploadAudioForSlot(-1),
                                         icon: const Icon(Icons.folder_open, size: 14, color: Colors.white70),
@@ -987,7 +1011,28 @@ class _AlarmScreenState extends State<AlarmScreen> {
                                     spacing: 8,
                                     runSpacing: 8,
                                     children: [
-                                      if (_selectedPreset != null && _selectedPreset!.audioFiles.containsKey(index))
+                                      if (_selectedPreset != null && _selectedPreset!.audioFiles.containsKey(index)) ...[
+                                        ValueListenableBuilder<String?>(
+                                          valueListenable: AudioPlayerService.instance.playingTagNotifier,
+                                          builder: (context, playingTag, _) {
+                                            final tag = "alarm_screen_slot_$index";
+                                            final isPlaying = playingTag == tag;
+                                            return ElevatedButton.icon(
+                                              onPressed: () {
+                                                final path = _selectedPreset!.audioFiles[index]!;
+                                                AudioPlayerService.instance.togglePlay(path, tag: tag);
+                                              },
+                                              icon: Icon(isPlaying ? Icons.stop_rounded : Icons.play_arrow_rounded, size: 15, color: Colors.indigoAccent),
+                                              label: Text(isPlaying ? "停止" : "試聴", style: const TextStyle(fontSize: 11, color: Colors.indigoAccent)),
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: const Color(0xFF1E293B),
+                                                side: const BorderSide(color: Colors.indigoAccent, width: 0.8),
+                                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                              ),
+                                            );
+                                          },
+                                        ),
                                         ElevatedButton.icon(
                                           onPressed: _isUploading.values.any((u) => u)
                                               ? null
@@ -1000,6 +1045,7 @@ class _AlarmScreenState extends State<AlarmScreen> {
                                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                           ),
                                         ),
+                                      ],
                                       ElevatedButton.icon(
                                         onPressed: _isUploading.values.any((u) => u) ? null : () => _uploadAudioForSlot(index),
                                         icon: const Icon(Icons.folder_open, size: 14, color: Colors.white70),

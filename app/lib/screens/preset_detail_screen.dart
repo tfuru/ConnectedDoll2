@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import '../models/voice_preset.dart';
 import '../services/preset_db_service.dart';
+import '../services/audio_player_service.dart';
 
 class PresetDetailScreen extends StatefulWidget {
   final VoicePreset? preset;
@@ -69,6 +70,7 @@ class _PresetDetailScreenState extends State<PresetDetailScreen> {
 
   @override
   void dispose() {
+    AudioPlayerService.instance.stop();
     _nameController.dispose();
     _hexColorController.dispose();
     super.dispose();
@@ -423,7 +425,7 @@ class _PresetDetailScreenState extends State<PresetDetailScreen> {
                           color: const Color(0xFF1E293B),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: hasFile ? Color(_selectedColor).withOpacity(0.6) : Colors.white10,
+                            color: hasFile ? Color(_selectedColor).withValues(alpha: 0.6) : Colors.white10,
                           ),
                         ),
                         child: Row(
@@ -453,15 +455,38 @@ class _PresetDetailScreenState extends State<PresetDetailScreen> {
                                 ],
                               ),
                             ),
-                            if (hasFile)
+                            if (hasFile) ...[
+                              ValueListenableBuilder<String?>(
+                                valueListenable: AudioPlayerService.instance.playingTagNotifier,
+                                builder: (context, playingTag, _) {
+                                  final tag = 'preset_slot_$slot';
+                                  final isPlaying = playingTag == tag;
+                                  return IconButton(
+                                    icon: Icon(
+                                      isPlaying ? Icons.stop_circle_rounded : Icons.play_circle_fill_rounded,
+                                      size: 26,
+                                      color: isPlaying ? Colors.amberAccent : Color(_selectedColor),
+                                    ),
+                                    tooltip: isPlaying ? '停止' : '試聴',
+                                    onPressed: () {
+                                      AudioPlayerService.instance.togglePlay(filePath!, tag: tag);
+                                    },
+                                  );
+                                },
+                              ),
                               IconButton(
                                 icon: const Icon(Icons.close, size: 18, color: Colors.white38),
+                                tooltip: '解除',
                                 onPressed: () {
+                                  if (AudioPlayerService.instance.playingTagNotifier.value == 'preset_slot_$slot') {
+                                    AudioPlayerService.instance.stop();
+                                  }
                                   setState(() {
                                     _audioFiles.remove(slot);
                                   });
                                 },
                               ),
+                            ],
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF334155),
