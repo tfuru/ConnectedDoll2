@@ -22,27 +22,25 @@ class HomeScreen extends StatelessWidget {
                 child: Column(
                   children: [
                     Container(
-                      width: 80,
-                      height: 80,
+                      width: 90,
+                      height: 90,
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF6366F1), Color(0xFFA855F7)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF6366F1).withValues(alpha: 0.4),
-                            blurRadius: 20,
+                            color: const Color(0xFFEC4899).withValues(alpha: 0.35),
+                            blurRadius: 24,
                             offset: const Offset(0, 8),
                           ),
                         ],
-                      ),
-                      child: const Icon(
-                        Icons.smart_toy_outlined,
-                        size: 44,
-                        color: Colors.white,
+                        border: Border.all(
+                          color: const Color(0xFFF472B6).withValues(alpha: 0.5),
+                          width: 2.5,
+                        ),
+                        image: const DecorationImage(
+                          image: AssetImage('assets/icon/app_icon.png'),
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 20),
