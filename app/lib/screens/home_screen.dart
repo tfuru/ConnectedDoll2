@@ -33,7 +33,7 @@ class HomeScreen extends StatelessWidget {
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF6366F1).withOpacity(0.4),
+                            color: const Color(0xFF6366F1).withValues(alpha: 0.4),
                             blurRadius: 20,
                             offset: const Offset(0, 8),
                           ),
@@ -57,7 +57,7 @@ class HomeScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     const Text(
-                      'ドールボイス & アラーム コントローラー',
+                      'ボイス & アラーム コントローラー',
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.white60,
@@ -138,10 +138,10 @@ class HomeScreen extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: gradient,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: accentColor.withOpacity(0.4), width: 1.5),
+        border: Border.all(color: accentColor.withValues(alpha: 0.4), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: accentColor.withOpacity(0.15),
+            color: accentColor.withValues(alpha: 0.15),
             blurRadius: 16,
             offset: const Offset(0, 6),
           ),
@@ -159,7 +159,7 @@ class HomeScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: accentColor.withOpacity(0.2),
+                    color: accentColor.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                     border: Border.all(color: accentColor, width: 1.5),
                   ),
