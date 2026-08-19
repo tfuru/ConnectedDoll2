@@ -5,6 +5,7 @@
 #include "hal/hal_power.h"
 #include "hal/hal_rtc.h"
 #include "hal/hal_sd.h"
+#include "hal/hal_ota.h"
 #include <Arduino.h>
 
 // アイドルタイムアウト設定（無操作時にDeep Sleepへ移行するまでの時間: 60秒）
@@ -38,6 +39,16 @@ void setup() {
   HAL_Power::init();
   HAL_IO::init();
   HAL_SD::init();
+
+  // 起動時の保留中ファームウェア更新チェック
+  if (HAL_OTA::hasPendingUpdate("/update.bin")) {
+    Serial.println("[Boot] Detected /update.bin on SD card. Processing OTA update...");
+    HAL_OTA::performUpdateFromSD("/update.bin");
+  } else if (HAL_OTA::hasPendingUpdate("/firmware.bin")) {
+    Serial.println("[Boot] Detected /firmware.bin on SD card. Processing OTA update...");
+    HAL_OTA::performUpdateFromSD("/firmware.bin");
+  }
+
   HAL_RTC::init();
   AudioPlayer::init();
   AlarmManager::init();

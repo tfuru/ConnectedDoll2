@@ -2,6 +2,7 @@
 #include "../hal/hal_rtc.h"
 #include "../hal/hal_io.h"
 #include "../hal/hal_power.h"
+#include "../hal/hal_ota.h"
 #include "../audio/alarm_manager.h"
 #include <freertos/FreeRTOS.h>
 #include <freertos/ringbuf.h>
@@ -208,6 +209,15 @@ void BLEManager::FileCtrlCallbacks::onWrite(BLECharacteristic* pCharacteristic) 
             transferEndRequested = true;
             Serial.println("[BLE] END received. Flushing remaining buffer...");
         }
+    } else if (cmd.startsWith("UPDATE") || cmd.startsWith("OTA")) {
+        Serial.println("[BLE] UPDATE/OTA command received.");
+        if (HAL_OTA::hasPendingUpdate("/update.bin")) {
+            HAL_OTA::performUpdateFromSD("/update.bin");
+        } else if (HAL_OTA::hasPendingUpdate("/firmware.bin")) {
+            HAL_OTA::performUpdateFromSD("/firmware.bin");
+        } else {
+            Serial.println("[BLE] No update file found on SD card.");
+        }
     }
 }
 
@@ -288,6 +298,12 @@ void BLEManager::processTransferBuffer() {
             size_t size = f ? f.size() : 0;
             if (f) f.close();
             Serial.printf("[SD] File transfer completed: %s (Size: %d bytes)\n", targetFileName.c_str(), size);
+
+            // ファームウェア更新ファイルの場合は即時OTA実行
+            if (targetFileName == "/update.bin" || targetFileName == "/firmware.bin") {
+                Serial.printf("[OTA] Detected firmware file (%s). Initiating OTA update...\n", targetFileName.c_str());
+                HAL_OTA::performUpdateFromSD(targetFileName.c_str());
+            }
         }
     }
 }

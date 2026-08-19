@@ -362,6 +362,23 @@ class BleService {
     }
   }
 
+  // ファームウェアOTA更新コマンド送信
+  Future<void> triggerFirmwareOta() async {
+    if (connectedDevice == null) return;
+    try {
+      print('Sending OTA command to FILE_CTRL');
+      await UniversalBle.write(
+        connectedDevice!.deviceId,
+        serviceUuid,
+        charFileCtrlUuid,
+        Uint8List.fromList(utf8.encode('OTA')),
+        withoutResponse: false,
+      );
+    } catch (e) {
+      print('Error triggering OTA: $e');
+    }
+  }
+
   void dispose() {
     _scanSubscription?.cancel();
     _connectionSubscription?.cancel();

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'preset_list_screen.dart';
 import 'alarm_screen.dart';
+import 'firmware_update_screen.dart';
 
 
 class HomeScreen extends StatelessWidget {
@@ -11,19 +12,43 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 30),
+              // トップ右上の設定/歯車アイコンバー
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.06),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.settings_outlined, color: Colors.white70, size: 22),
+                      tooltip: 'ファームウェア更新・設定',
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const FirmwareUpdateScreen()),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+
               // タイトル & ロゴエリア
               Center(
                 child: Column(
                   children: [
                     Container(
-                      width: 90,
-                      height: 90,
+                      width: 86,
+                      height: 86,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         boxShadow: [
@@ -43,7 +68,7 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 16),
                     const Text(
                       '推し活スピーカー',
                       style: TextStyle(
@@ -53,18 +78,18 @@ class HomeScreen extends StatelessWidget {
                         letterSpacing: 1.1,
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 4),
                     const Text(
                       'ボイス & アラーム コントローラー',
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 13,
                         color: Colors.white60,
                       ),
                     ),
                   ],
                 ),
               ),
-              const Spacer(),
+              const SizedBox(height: 32),
 
               // 音声プリセット一覧 遷移ボタン
               _buildMenuCard(
@@ -107,7 +132,7 @@ class HomeScreen extends StatelessWidget {
                 },
               ),
 
-              const Spacer(),
+              const SizedBox(height: 40),
 
               const Center(
                 child: Text(
@@ -115,7 +140,7 @@ class HomeScreen extends StatelessWidget {
                   style: TextStyle(fontSize: 12, color: Colors.white24),
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
             ],
           ),
         ),
