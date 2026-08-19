@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../models/github_release.dart';
 import '../services/ble_service.dart';
 import '../services/github_release_service.dart';
-import 'scan_screen.dart';
+import '../widgets/device_selection_bottom_sheet.dart';
 
 enum UpdateStep {
   idle,
@@ -83,6 +83,20 @@ class _FirmwareUpdateScreenState extends State<FirmwareUpdateScreen> {
     _transferProgressSub?.cancel();
     _transferStatusSub?.cancel();
     super.dispose();
+  }
+
+  // デバイス未接続時にボトムシート（トースト形式一覧）を表示して接続を促す
+  Future<bool> _ensureConnected() async {
+    if (_bleService.connectedDevice != null && _bleService.isConnected) {
+      return true;
+    }
+
+    final connected = await DeviceSelectionBottomSheet.show(context);
+    if (connected && mounted) {
+      setState(() {});
+      return true;
+    }
+    return false;
   }
 
   Future<void> _fetchReleases() async {
@@ -180,7 +194,18 @@ class _FirmwareUpdateScreenState extends State<FirmwareUpdateScreen> {
 
     final asset = _selectedRelease!.firmwareAsset!;
 
-    // 1. ダウンロード処理
+    // 1. BLE接続の確認・必要時自動接続 (デバイス設定画面と同様)
+    if (!await _ensureConnected()) {
+      if (mounted) {
+        setState(() {
+          _currentStep = UpdateStep.failed;
+          _statusMessage = 'BLE接続がキャンセルされました。更新を行うにはデバイスへ接続してください。';
+        });
+      }
+      return;
+    }
+
+    // 2. ダウンロード処理
     setState(() {
       _currentStep = UpdateStep.downloading;
       _downloadProgress = 0.0;
@@ -205,57 +230,6 @@ class _FirmwareUpdateScreenState extends State<FirmwareUpdateScreen> {
         _currentStep = UpdateStep.downloaded;
         _statusMessage = 'ダウンロード完了 (${asset.formattedSize})';
       });
-
-      // 2. BLE接続の確認
-      if (!_bleService.isConnected) {
-        setState(() {
-          _statusMessage = 'デバイスが未接続です。先にBLE接続を行ってください。';
-        });
-        if (mounted) {
-          final connectNow = await showDialog<bool>(
-            context: context,
-            builder: (ctx) => AlertDialog(
-              backgroundColor: const Color(0xFF1E293B),
-              title: const Text('デバイス未接続', style: TextStyle(color: Colors.white)),
-              content: const Text(
-                'ファームウェアを転送するにはConnectedDoll2デバイスとのBLE接続が必要です。\n今すぐ接続画面を開きますか？',
-                style: TextStyle(color: Colors.white70),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(ctx, false),
-                  child: const Text('キャンセル', style: TextStyle(color: Colors.white60)),
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6366F1)),
-                  onPressed: () => Navigator.pop(ctx, true),
-                  child: const Text('接続画面へ', style: TextStyle(color: Colors.white)),
-                ),
-              ],
-            ),
-          );
-
-          if (connectNow == true && mounted) {
-            await Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const ScanScreen()),
-            );
-            if (!_bleService.isConnected) {
-              setState(() {
-                _currentStep = UpdateStep.failed;
-                _statusMessage = 'BLE接続がキャンセルされました。';
-              });
-              return;
-            }
-          } else {
-            setState(() {
-              _currentStep = UpdateStep.failed;
-              _statusMessage = 'BLE接続が必要です。';
-            });
-            return;
-          }
-        }
-      }
 
       // 3. SDカードへ転送 (/update.bin)
       setState(() {
@@ -300,7 +274,7 @@ class _FirmwareUpdateScreenState extends State<FirmwareUpdateScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // デバイス接続状態バナー
+            // デバイス接続状態カード (デバイス設定転送画面と統一)
             _buildConnectionBanner(),
 
             Expanded(
@@ -343,54 +317,67 @@ class _FirmwareUpdateScreenState extends State<FirmwareUpdateScreen> {
   }
 
   Widget _buildConnectionBanner() {
-    final isConnected = _bleService.isConnected;
-    final deviceName = _bleService.connectedDevice?.name ?? 'ConnectedDoll2';
+    final connectedDevice = _bleService.connectedDevice;
+    final isConnected = connectedDevice != null && _bleService.isConnected;
 
     return Container(
+      margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: isConnected
-            ? const Color(0xFF064E3B).withValues(alpha: 0.8)
-            : const Color(0xFF7F1D1D).withValues(alpha: 0.8),
-        border: Border(
-          bottom: BorderSide(
-            color: isConnected ? const Color(0xFF10B981) : const Color(0xFFEF4444),
-            width: 1,
-          ),
+            ? const Color(0xFF10B981).withValues(alpha: 0.1)
+            : Colors.white.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isConnected
+              ? const Color(0xFF10B981).withValues(alpha: 0.4)
+              : Colors.white.withValues(alpha: 0.08),
         ),
       ),
       child: Row(
         children: [
-          Icon(
-            isConnected ? Icons.bluetooth_connected_rounded : Icons.bluetooth_disabled_rounded,
-            color: isConnected ? const Color(0xFF34D399) : const Color(0xFFF87171),
-            size: 22,
+          Container(
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: isConnected ? const Color(0xFF10B981) : Colors.orangeAccent,
+            ),
           ),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(
-              isConnected ? '接続中: $deviceName' : 'デバイス未接続 (BLE)',
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  isConnected ? '接続済み: ${connectedDevice.name ?? "ConnectedDoll2"}' : '未接続 (操作時に自動接続)',
+                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 13),
+                ),
+                if (isConnected)
+                  Text(
+                    connectedDevice.deviceId,
+                    style: const TextStyle(color: Colors.white38, fontSize: 10),
+                  ),
+              ],
             ),
           ),
-          if (!isConnected)
+          if (isConnected)
+            TextButton(
+              onPressed: () async {
+                await _bleService.disconnect();
+                if (mounted) setState(() {});
+              },
+              child: const Text('切断', style: TextStyle(color: Colors.redAccent, fontSize: 12)),
+            )
+          else
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFEF4444),
-                foregroundColor: Colors.white,
+                backgroundColor: const Color(0xFF4F46E5),
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                minimumSize: Size.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               ),
-              onPressed: () async {
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const ScanScreen()),
-                );
-                setState(() {});
-              },
-              child: const Text('接続する', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+              onPressed: () => _ensureConnected(),
+              child: const Text('接続する', style: TextStyle(color: Colors.white, fontSize: 12)),
             ),
         ],
       ),
