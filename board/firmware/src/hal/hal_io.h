@@ -20,6 +20,7 @@ public:
   static void setLEDColor(uint8_t r, uint8_t g, uint8_t b);
   static void setLEDBrightness(uint8_t brightness);
   static uint8_t getLEDBrightness();
+  static void turnOffLED();
   static void update();
 
 private:

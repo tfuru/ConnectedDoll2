@@ -168,3 +168,47 @@ void AlarmManager::update(const DateTime& now) {
         }
     }
 }
+
+bool AlarmManager::hasActiveAlarms() {
+    for (uint8_t i = 0; i < MAX_ALARMS; i++) {
+        if (schedules[i].enabled) return true;
+    }
+    return false;
+}
+
+int64_t AlarmManager::getSecondsToNextAlarm(const DateTime& now) {
+    int64_t minDiff = -1;
+    uint32_t nowUnix = now.unixtime();
+
+    for (uint8_t i = 0; i < MAX_ALARMS; i++) {
+        if (!schedules[i].enabled) continue;
+
+        uint32_t targetUnix = 0;
+        if (schedules[i].isDaily) {
+            DateTime targetToday(now.year(), now.month(), now.day(),
+                                 schedules[i].hour, schedules[i].minute, 0);
+            targetUnix = targetToday.unixtime();
+            // 今日のアラーム時刻を過ぎている場合は明日に設定
+            if (targetUnix <= nowUnix) {
+                targetUnix += 86400UL; // +24時間
+            }
+        } else {
+            DateTime targetDate(schedules[i].year, schedules[i].month, schedules[i].day,
+                                schedules[i].hour, schedules[i].minute, 0);
+            targetUnix = targetDate.unixtime();
+            // 過去の1回限りアラームはスキップ
+            if (targetUnix <= nowUnix) {
+                continue;
+            }
+        }
+
+        int64_t diff = (int64_t)targetUnix - (int64_t)nowUnix;
+        if (diff > 0) {
+            if (minDiff < 0 || diff < minDiff) {
+                minDiff = diff;
+            }
+        }
+    }
+    return minDiff;
+}
+

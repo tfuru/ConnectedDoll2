@@ -1,6 +1,7 @@
 #include "ble_manager.h"
 #include "../hal/hal_rtc.h"
 #include "../hal/hal_io.h"
+#include "../hal/hal_power.h"
 #include "../audio/alarm_manager.h"
 
 bool BLEManager::connected = false;
@@ -80,11 +81,13 @@ String BLEManager::getTransferringFileName() {
 
 void BLEManager::ServerCallbacks::onConnect(BLEServer* pServer) {
     connected = true;
+    HAL_Power::resetIdleTimer();
     Serial.println("BLE Client Connected");
 }
 
 void BLEManager::ServerCallbacks::onDisconnect(BLEServer* pServer) {
     connected = false;
+    HAL_Power::resetIdleTimer();
     Serial.println("BLE Client Disconnected");
     
     // 転送中に切断された場合はファイルを安全に閉じる
@@ -100,6 +103,7 @@ void BLEManager::ServerCallbacks::onDisconnect(BLEServer* pServer) {
 }
 
 void BLEManager::TimeCallbacks::onWrite(BLECharacteristic* pCharacteristic) {
+    HAL_Power::resetIdleTimer();
     std::string value = pCharacteristic->getValue();
     
     // 文字列形式 "YYYY-MM-DD HH:MM:SS" (長さ19) を優先的に判別
@@ -132,12 +136,14 @@ void BLEManager::TimeCallbacks::onWrite(BLECharacteristic* pCharacteristic) {
 }
 
 void BLEManager::TimeCallbacks::onRead(BLECharacteristic* pCharacteristic) {
+    HAL_Power::resetIdleTimer();
     String timeStr = HAL_RTC::getCurrentTimeStr();
     pCharacteristic->setValue(timeStr.c_str());
     Serial.printf("BLE RTC Time READ requested. Value: %s\n", timeStr.c_str());
 }
 
 void BLEManager::FileCtrlCallbacks::onWrite(BLECharacteristic* pCharacteristic) {
+    HAL_Power::resetIdleTimer();
     std::string value = pCharacteristic->getValue();
     String cmd = String(value.c_str());
     
@@ -176,6 +182,7 @@ void BLEManager::FileCtrlCallbacks::onWrite(BLECharacteristic* pCharacteristic) 
 }
 
 void BLEManager::FileDataCallbacks::onWrite(BLECharacteristic* pCharacteristic) {
+    HAL_Power::resetIdleTimer();
     if (!fileTransferActive || !activeFile) {
         return;
     }
@@ -187,6 +194,7 @@ void BLEManager::FileDataCallbacks::onWrite(BLECharacteristic* pCharacteristic) 
 }
 
 void BLEManager::AlarmCallbacks::onWrite(BLECharacteristic* pCharacteristic) {
+    HAL_Power::resetIdleTimer();
     std::string value = pCharacteristic->getValue();
     String cmd = String(value.c_str());
     
@@ -236,12 +244,14 @@ void BLEManager::AlarmCallbacks::onWrite(BLECharacteristic* pCharacteristic) {
 }
 
 void BLEManager::AlarmCallbacks::onRead(BLECharacteristic* pCharacteristic) {
+    HAL_Power::resetIdleTimer();
     String state = AlarmManager::getSchedulesStr();
     pCharacteristic->setValue(state.c_str());
     Serial.printf("BLE Alarm READ requested. Value: %s\n", state.c_str());
 }
 
 void BLEManager::LEDBrightnessCallbacks::onWrite(BLECharacteristic* pCharacteristic) {
+    HAL_Power::resetIdleTimer();
     std::string value = pCharacteristic->getValue();
     if (value.length() > 0) {
         int brightness = 0;
@@ -258,6 +268,7 @@ void BLEManager::LEDBrightnessCallbacks::onWrite(BLECharacteristic* pCharacteris
 }
 
 void BLEManager::LEDBrightnessCallbacks::onRead(BLECharacteristic* pCharacteristic) {
+    HAL_Power::resetIdleTimer();
     uint8_t brightness = HAL_IO::getLEDBrightness();
     char buf[8];
     itoa(brightness, buf, 10);

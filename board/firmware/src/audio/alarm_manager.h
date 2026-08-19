@@ -24,6 +24,8 @@ public:
     static bool deleteAlarm(uint8_t index);
     static String getSchedulesStr();
     static void update(const DateTime& now);
+    static int64_t getSecondsToNextAlarm(const DateTime& now);
+    static bool hasActiveAlarms();
 
 private:
     static AlarmSchedule schedules[MAX_ALARMS];

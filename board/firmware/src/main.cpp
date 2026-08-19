@@ -2,34 +2,67 @@
 #include "audio/audio_player.h"
 #include "ble/ble_manager.h"
 #include "hal/hal_io.h"
+#include "hal/hal_power.h"
 #include "hal/hal_rtc.h"
 #include "hal/hal_sd.h"
 #include <Arduino.h>
 
-// アラーム設定は AlarmManager 内で Preferences とともに管理されます
+// アイドルタイムアウト設定（無操作時にDeep Sleepへ移行するまでの時間: 60秒）
+const unsigned long IDLE_SLEEP_TIMEOUT_MS = 60000;
 
 // 音量の前回比率
 float lastVolumeRatio = -1.0f;
 
+void triggerButtonPlayback() {
+  Serial.println("Triggering button playback (/trigger.wav or /trigger.mp3)...");
+  if (HAL_SD::fileExists("/trigger.wav")) {
+    AudioPlayer::playMP3("/trigger.wav");
+  } else if (HAL_SD::fileExists("/trigger.mp3")) {
+    AudioPlayer::playMP3("/trigger.mp3");
+  } else {
+    Serial.println("Error: trigger file (/trigger.wav or /trigger.mp3) not found on SD card.");
+    // エラー表示としてLEDを一時的に赤く点灯
+    HAL_IO::setLEDColor(100, 0, 0);
+    delay(300);
+  }
+}
+
 void setup() {
   Serial.begin(115200);
-  delay(1000);
+  delay(500);
   Serial.println("=========================================");
   Serial.println("Starting ConnectedDoll2 Audio Stand Board");
   Serial.println("=========================================");
 
   // 各ハードウェアモジュールの初期化
+  HAL_Power::init();
   HAL_IO::init();
   HAL_SD::init();
   HAL_RTC::init();
   AudioPlayer::init();
   AlarmManager::init();
 
+  // スリープ復帰理由の確認
+  esp_sleep_wakeup_cause_t wakeup_reason = HAL_Power::getWakeupCause();
+  Serial.printf("[Power] Wakeup reason: %d\n", wakeup_reason);
+
+  if (wakeup_reason == ESP_SLEEP_WAKEUP_GPIO) {
+    Serial.println("[Power] Woken up by Tact Switch (GPIO2)!");
+    triggerButtonPlayback();
+  } else if (wakeup_reason == ESP_SLEEP_WAKEUP_TIMER) {
+    Serial.println("[Power] Woken up by RTC Timer Alarm!");
+    DateTime now = HAL_RTC::getCurrentTime();
+    AlarmManager::update(now);
+  } else {
+    Serial.println("[Power] Normal boot / Power-on reset.");
+  }
+
   // BLEサーバー起動
   BLEManager::init("ConnectedDoll2");
   BLEManager::startAdvertising();
 
   HAL_IO::setLEDColor(0, 50, 0); // 薄い緑: 起動完了
+  HAL_Power::resetIdleTimer();
   Serial.println("System Initialization Complete.");
 }
 
@@ -37,6 +70,11 @@ void loop() {
   // 状態更新ポーリング
   HAL_IO::update();
   AudioPlayer::update();
+
+  // 音声再生中・BLE接続中・ファイル転送中はアイドルタイマーを常時リセット（スリープ抑止）
+  if (AudioPlayer::isPlaying() || BLEManager::isConnected() || BLEManager::isTransferringFile()) {
+    HAL_Power::resetIdleTimer();
+  }
 
   // --- 状態に合わせたLEDイルミネーション制御 ---
   if (BLEManager::isTransferringFile()) {
@@ -80,6 +118,7 @@ void loop() {
     // 誤検出を防ぐため 5% 以上の変化があった場合のみ更新
     if (abs(volRatio - lastVolumeRatio) > 0.05f) {
       lastVolumeRatio = volRatio;
+      HAL_Power::resetIdleTimer();
       // ESP32-audioI2S の音量範囲は 0 ~ 21
       uint8_t targetVol = (uint8_t)(volRatio * 21.0f);
       AudioPlayer::setVolume(targetVol);
@@ -91,17 +130,8 @@ void loop() {
   // --- タクトスイッチによる特定ファイル再生 (WAV優先、次点でMP3) ---
   if (HAL_IO::isKeyPressed()) {
     Serial.println("Button Pressed! Triggering playback...");
-    if (HAL_SD::fileExists("/trigger.wav")) {
-      AudioPlayer::playMP3("/trigger.wav");
-    } else if (HAL_SD::fileExists("/trigger.mp3")) {
-      AudioPlayer::playMP3("/trigger.mp3");
-    } else {
-      Serial.println("Error: trigger file (/trigger.wav or /trigger.mp3) not "
-                     "found on SD card.");
-      // エラー表示としてLEDを一時的に赤く高速点灯
-      HAL_IO::setLEDColor(100, 0, 0);
-      delay(300);
-    }
+    HAL_Power::resetIdleTimer();
+    triggerButtonPlayback();
   }
 
   // --- RTCによる複数日時スケジュール再生 (WAV優先、次点でMP3) ---
@@ -121,5 +151,23 @@ void loop() {
                     HAL_RTC::getCurrentTimeStr().c_str(),
                     AlarmManager::getSchedulesStr().c_str());
     }
+  }
+
+  // --- アイドル状態監視とDeep Sleep移行判定 ---
+  if (HAL_Power::isIdleTimeout(IDLE_SLEEP_TIMEOUT_MS)) {
+    Serial.println("[Power] Idle timeout reached without active connection or playback.");
+    DateTime now = HAL_RTC::getCurrentTime();
+    int64_t secondsToNext = AlarmManager::getSecondsToNextAlarm(now);
+    
+    uint64_t sleepDurationUs = 0;
+    if (secondsToNext > 0) {
+      Serial.printf("[Power] Next alarm in %lld seconds (%s)\n",
+                    secondsToNext, HAL_RTC::getCurrentTimeStr().c_str());
+      sleepDurationUs = (uint64_t)secondsToNext * 1000000ULL;
+    } else {
+      Serial.println("[Power] No active alarms scheduled.");
+    }
+    
+    HAL_Power::enterDeepSleep(sleepDurationUs);
   }
 }

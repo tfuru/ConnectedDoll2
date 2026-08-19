@@ -93,3 +93,8 @@ void HAL_IO::setLEDBrightness(uint8_t brightness) {
 uint8_t HAL_IO::getLEDBrightness() {
   return currentBrightness;
 }
+
+void HAL_IO::turnOffLED() {
+  pixels.clear();
+  pixels.show();
+}
