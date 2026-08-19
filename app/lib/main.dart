@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/scan_screen.dart';
+import 'screens/home_screen.dart';
 import 'services/ble_service.dart';
 
 void main() {
@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
           elevation: 0,
         ),
       ),
-      home: const ScanScreen(),
+      home: const HomeScreen(),
     );
   }
 }
