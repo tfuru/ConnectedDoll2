@@ -133,17 +133,14 @@ class _AlarmScreenState extends State<AlarmScreen> {
     });
 
     _statusSubscription = _bleService.transferStatusController.stream.listen((status) {
-      setState(() {
-        _uploadStatusMessage = status;
-      });
-      if (status.contains("completed") || status.contains("failed") || status.contains("Error")) {
+      if (mounted) {
         setState(() {
-          _isUploading.clear();
+          _uploadStatusMessage = status;
         });
-      }
-      if (status == "Disconnected") {
-        if (mounted) {
-          Navigator.pop(context);
+        if (status.contains("completed") || status.contains("failed") || status.contains("Error")) {
+          setState(() {
+            _isUploading.clear();
+          });
         }
       }
     });
@@ -442,14 +439,7 @@ class _AlarmScreenState extends State<AlarmScreen> {
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
-            onPressed: () async {
-              if (_bleService.connectedDevice != null) {
-                await _bleService.disconnect();
-              }
-              if (mounted) {
-                Navigator.pop(context);
-              }
-            },
+            onPressed: () => Navigator.pop(context),
           ),
           actions: [
             IconButton(
