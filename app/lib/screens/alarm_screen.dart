@@ -599,6 +599,115 @@ class _AlarmScreenState extends State<AlarmScreen> {
                       ),
                     ),
 
+                    // --- ボイスプリセット選択 & 一括転送カード ---
+                    Card(
+                      color: _selectedPreset != null
+                          ? Color(_selectedPreset!.color).withValues(alpha: 0.12)
+                          : Colors.white.withValues(alpha: 0.04),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                        side: BorderSide(
+                          color: _selectedPreset != null
+                              ? Color(_selectedPreset!.color).withValues(alpha: 0.5)
+                              : Colors.white.withValues(alpha: 0.1),
+                          width: 1.2,
+                        ),
+                      ),
+                      margin: const EdgeInsets.only(bottom: 16),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Wrap(
+                              alignment: WrapAlignment.spaceBetween,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: [
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.library_music_rounded,
+                                      color: _selectedPreset != null
+                                          ? Color(_selectedPreset!.color)
+                                          : Colors.indigoAccent,
+                                      size: 22,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    const Text(
+                                      'ボイスプリセット',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                if (_presets.isNotEmpty)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF1E293B),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: Colors.white12),
+                                    ),
+                                    child: DropdownButtonHideUnderline(
+                                      child: DropdownButton<VoicePreset>(
+                                        value: _selectedPreset,
+                                        isDense: true,
+                                        dropdownColor: const Color(0xFF1E293B),
+                                        style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                                        items: _presets.map((preset) {
+                                          return DropdownMenuItem<VoicePreset>(
+                                            value: preset,
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Container(
+                                                  width: 10,
+                                                  height: 10,
+                                                  decoration: BoxDecoration(
+                                                    color: Color(preset.color),
+                                                    shape: BoxShape.circle,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Text(preset.name),
+                                              ],
+                                            ),
+                                          );
+                                        }).toList(),
+                                        onChanged: _isUploading.values.any((u) => u)
+                                            ? null
+                                            : (val) {
+                                                setState(() {
+                                                  _selectedPreset = val;
+                                                });
+                                              },
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            if (_presets.isEmpty)
+                              const Text(
+                                '登録されたプリセットがありません。「音声プリセット一覧」画面から作成してください。',
+                                style: TextStyle(color: Colors.white54, fontSize: 12),
+                              )
+                            else
+                              Text(
+                                '選択中: ${_selectedPreset?.name ?? ""} (${_selectedPreset?.audioFiles.length ?? 0}件の音声が登録済み)\n各スロットの「プリセットから転送」ボタンで個別に転送できます。',
+                                style: const TextStyle(color: Colors.white70, fontSize: 12, height: 1.4),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+
                     // --- LED 設定カード (明るさ & 推しカラー) ---
                     Card(
                       color: _ledColor.withValues(alpha: 0.08),
@@ -609,7 +718,7 @@ class _AlarmScreenState extends State<AlarmScreen> {
                           width: 1.2,
                         ),
                       ),
-                      margin: const EdgeInsets.only(bottom: 16),
+                      margin: const EdgeInsets.only(bottom: 20),
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Column(
@@ -760,115 +869,6 @@ class _AlarmScreenState extends State<AlarmScreen> {
                                 );
                               }).toList(),
                             ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    // --- ボイスプリセット選択 & 一括転送カード ---
-                    Card(
-                      color: _selectedPreset != null
-                          ? Color(_selectedPreset!.color).withValues(alpha: 0.12)
-                          : Colors.white.withValues(alpha: 0.04),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(18),
-                        side: BorderSide(
-                          color: _selectedPreset != null
-                              ? Color(_selectedPreset!.color).withValues(alpha: 0.5)
-                              : Colors.white.withValues(alpha: 0.1),
-                          width: 1.2,
-                        ),
-                      ),
-                      margin: const EdgeInsets.only(bottom: 20),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Wrap(
-                              alignment: WrapAlignment.spaceBetween,
-                              crossAxisAlignment: WrapCrossAlignment.center,
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: [
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.library_music_rounded,
-                                      color: _selectedPreset != null
-                                          ? Color(_selectedPreset!.color)
-                                          : Colors.indigoAccent,
-                                      size: 22,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    const Text(
-                                      'ボイスプリセット',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                if (_presets.isNotEmpty)
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFF1E293B),
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(color: Colors.white12),
-                                    ),
-                                    child: DropdownButtonHideUnderline(
-                                      child: DropdownButton<VoicePreset>(
-                                        value: _selectedPreset,
-                                        isDense: true,
-                                        dropdownColor: const Color(0xFF1E293B),
-                                        style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
-                                        items: _presets.map((preset) {
-                                          return DropdownMenuItem<VoicePreset>(
-                                            value: preset,
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Container(
-                                                  width: 10,
-                                                  height: 10,
-                                                  decoration: BoxDecoration(
-                                                    color: Color(preset.color),
-                                                    shape: BoxShape.circle,
-                                                  ),
-                                                ),
-                                                const SizedBox(width: 8),
-                                                Text(preset.name),
-                                              ],
-                                            ),
-                                          );
-                                        }).toList(),
-                                        onChanged: _isUploading.values.any((u) => u)
-                                            ? null
-                                            : (val) {
-                                                setState(() {
-                                                  _selectedPreset = val;
-                                                });
-                                              },
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            if (_presets.isEmpty)
-                              const Text(
-                                '登録されたプリセットがありません。「音声プリセット一覧」画面から作成してください。',
-                                style: TextStyle(color: Colors.white54, fontSize: 12),
-                              )
-                            else
-                              Text(
-                                '選択中: ${_selectedPreset?.name ?? ""} (${_selectedPreset?.audioFiles.length ?? 0}件の音声が登録済み)\n各スロットの「プリセットから転送」ボタンで個別に転送できます。',
-                                style: const TextStyle(color: Colors.white70, fontSize: 12, height: 1.4),
-                              ),
                           ],
                         ),
                       ),
