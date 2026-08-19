@@ -10,6 +10,6 @@ void main() {
     expect(find.text('推し活スピーカー'), findsWidgets);
     expect(find.text('音声プリセット一覧'), findsOneWidget);
     expect(find.text('デバイス設定・転送'), findsOneWidget);
-    expect(find.text('ファームウェア更新'), findsOneWidget);
+    expect(find.byTooltip('ファームウェア更新・設定'), findsOneWidget);
   });
 }

@@ -13,18 +13,42 @@ class HomeScreen extends StatelessWidget {
       backgroundColor: const Color(0xFF0F172A),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 12),
+              // トップ右上の設定/歯車アイコンバー
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.06),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.settings_outlined, color: Colors.white70, size: 22),
+                      tooltip: 'ファームウェア更新・設定',
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const FirmwareUpdateScreen()),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+
               // タイトル & ロゴエリア
               Center(
                 child: Column(
                   children: [
                     Container(
-                      width: 80,
-                      height: 80,
+                      width: 86,
+                      height: 86,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         boxShadow: [
@@ -44,11 +68,11 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 16),
                     const Text(
                       '推し活スピーカー',
                       style: TextStyle(
-                        fontSize: 26,
+                        fontSize: 28,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                         letterSpacing: 1.1,
@@ -65,7 +89,7 @@ class HomeScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
 
               // 音声プリセット一覧 遷移ボタン
               _buildMenuCard(
@@ -86,7 +110,7 @@ class HomeScreen extends StatelessWidget {
                   );
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
 
               // デバイス設定・転送 ボタン
               _buildMenuCard(
@@ -107,29 +131,8 @@ class HomeScreen extends StatelessWidget {
                   );
                 },
               ),
-              const SizedBox(height: 16),
 
-              // ファームウェア更新 ボタン
-              _buildMenuCard(
-                context: context,
-                title: 'ファームウェア更新',
-                subtitle: 'GitHubから最新FWを取得・OTA更新',
-                icon: Icons.system_update_alt_rounded,
-                accentColor: const Color(0xFF06B6D4),
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF0E7490), Color(0xFF1E293B)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const FirmwareUpdateScreen()),
-                  );
-                },
-              ),
-
-              const SizedBox(height: 32),
+              const SizedBox(height: 40),
 
               const Center(
                 child: Text(
