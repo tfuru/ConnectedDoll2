@@ -29,6 +29,7 @@ class _AlarmScreenState extends State<AlarmScreen> {
   StreamSubscription<double>? _progressSubscription;
   String _deviceTime = 'Not Synced';
   double _ledBrightness = 128.0;
+  Color _ledColor = const Color(0xFF4F46E5);
 
   List<VoicePreset> _presets = [];
   VoicePreset? _selectedPreset;
@@ -46,6 +47,7 @@ class _AlarmScreenState extends State<AlarmScreen> {
       // 接続成功後に本体状態を同期
       await _fetchDeviceTime();
       await _fetchLedBrightness();
+      await _fetchLedColor();
       await _bleService.readAlarmState();
       return true;
     }
@@ -86,12 +88,30 @@ class _AlarmScreenState extends State<AlarmScreen> {
     }
   }
 
+  Future<void> _fetchLedColor() async {
+    if (_bleService.connectedDevice == null) return;
+    final color = await _bleService.readLedColor();
+    if (color != null && mounted) {
+      setState(() {
+        _ledColor = color;
+      });
+    }
+  }
+
   Future<void> _updateLedBrightness(double value) async {
     setState(() {
       _ledBrightness = value;
     });
     if (!await _ensureConnected()) return;
     await _bleService.writeLedBrightness(value.round());
+  }
+
+  Future<void> _updateLedColor(Color color) async {
+    setState(() {
+      _ledColor = color;
+    });
+    if (!await _ensureConnected()) return;
+    await _bleService.writeLedColor(color);
   }
 
 
@@ -132,6 +152,7 @@ class _AlarmScreenState extends State<AlarmScreen> {
     _bleService.readAlarmState();
     _fetchDeviceTime();
     _fetchLedBrightness();
+    _fetchLedColor();
     _loadPresets();
   }
 
@@ -578,14 +599,14 @@ class _AlarmScreenState extends State<AlarmScreen> {
                       ),
                     ),
 
-                    // --- LED明るさ調整カード ---
+                    // --- LED 設定カード (明るさ & 推しカラー) ---
                     Card(
-                      color: Colors.white.withValues(alpha: 0.04),
+                      color: _ledColor.withValues(alpha: 0.08),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(18),
                         side: BorderSide(
-                          color: Colors.white.withValues(alpha: 0.08),
-                          width: 1.0,
+                          color: _ledColor.withValues(alpha: 0.35),
+                          width: 1.2,
                         ),
                       ),
                       margin: const EdgeInsets.only(bottom: 16),
@@ -599,13 +620,13 @@ class _AlarmScreenState extends State<AlarmScreen> {
                               children: [
                                 Row(
                                   children: [
-                                    const Icon(Icons.lightbulb, color: Colors.yellowAccent, size: 20),
+                                    Icon(Icons.lightbulb_rounded, color: _ledColor, size: 20),
                                     const SizedBox(width: 8),
                                     const Text(
-                                      'LED Brightness',
+                                      'LED Settings',
                                       style: TextStyle(
                                         color: Colors.white,
-                                        fontSize: 14,
+                                        fontSize: 15,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
@@ -626,7 +647,7 @@ class _AlarmScreenState extends State<AlarmScreen> {
                               value: _ledBrightness,
                               min: 0.0,
                               max: 255.0,
-                              activeColor: Colors.indigoAccent,
+                              activeColor: _ledColor,
                               inactiveColor: Colors.white10,
                               onChanged: (value) {
                                 setState(() {
@@ -636,6 +657,108 @@ class _AlarmScreenState extends State<AlarmScreen> {
                               onChangeEnd: (value) {
                                 _updateLedBrightness(value);
                               },
+                            ),
+                            const SizedBox(height: 8),
+                            const Divider(color: Colors.white10),
+                            const SizedBox(height: 8),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      width: 16,
+                                      height: 16,
+                                      decoration: BoxDecoration(
+                                        color: _ledColor,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(color: Colors.white, width: 1.5),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: _ledColor.withValues(alpha: 0.6),
+                                            blurRadius: 6,
+                                            spreadRadius: 1,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    const Text(
+                                      '推しカラー (LED色)',
+                                      style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                                if (_selectedPreset != null)
+                                  ElevatedButton.icon(
+                                    onPressed: () {
+                                      _updateLedColor(Color(_selectedPreset!.color));
+                                    },
+                                    icon: Container(
+                                      width: 10,
+                                      height: 10,
+                                      decoration: BoxDecoration(
+                                        color: Color(_selectedPreset!.color),
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                    label: const Text('プリセット色を適用', style: TextStyle(fontSize: 11)),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF1E293B),
+                                      side: BorderSide(color: Color(_selectedPreset!.color), width: 0.8),
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            // クイックカラー選択パレット
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: const [
+                                Color(0xFF4F46E5), // Indigo
+                                Color(0xFFEC4899), // Pink
+                                Color(0xFFEF4444), // Red
+                                Color(0xFFF97316), // Orange
+                                Color(0xFFEAB308), // Yellow
+                                Color(0xFF10B981), // Emerald
+                                Color(0xFF06B6D4), // Cyan
+                                Color(0xFF3B82F6), // Blue
+                                Color(0xFF8B5CF6), // Purple
+                              ].map((c) {
+                                final isSelected = (_ledColor.r * 255).round() == (c.r * 255).round() &&
+                                    (_ledColor.g * 255).round() == (c.g * 255).round() &&
+                                    (_ledColor.b * 255).round() == (c.b * 255).round();
+                                return GestureDetector(
+                                  onTap: () => _updateLedColor(c),
+                                  child: Container(
+                                    width: 28,
+                                    height: 28,
+                                    decoration: BoxDecoration(
+                                      color: c,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: isSelected ? Colors.white : Colors.transparent,
+                                        width: isSelected ? 2.5 : 0,
+                                      ),
+                                      boxShadow: isSelected
+                                          ? [
+                                              BoxShadow(
+                                                color: c.withValues(alpha: 0.8),
+                                                blurRadius: 8,
+                                                spreadRadius: 2,
+                                              ),
+                                            ]
+                                          : null,
+                                    ),
+                                    child: isSelected
+                                        ? const Icon(Icons.check, size: 16, color: Colors.white)
+                                        : null,
+                                  ),
+                                );
+                              }).toList(),
                             ),
                           ],
                         ),

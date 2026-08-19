@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:flutter/material.dart';
 import 'package:universal_ble/universal_ble.dart';
 
 class BleService {
@@ -15,6 +16,7 @@ class BleService {
   static const String charFileDataUuid = '7b01d784-fb3b-4ce1-897b-cfd1264c7847';
   static const String charAlarmConfigUuid = 'e82d0001-fbc6-4b95-a22a-28d88b409600';
   static const String charLedBrightnessUuid = 'e82d0002-fbc6-4b95-a22a-28d88b409600';
+  static const String charLedColorUuid = 'e82d0004-fbc6-4b95-a22a-28d88b409600';
 
   BleDevice? connectedDevice;
   bool isConnected = false;
@@ -184,6 +186,51 @@ class BleService {
       );
     } catch (e) {
       print('Failed to write LED brightness: $e');
+    }
+  }
+
+  // LEDの推しカラーを取得 (Read)
+  Future<Color?> readLedColor() async {
+    if (connectedDevice == null) return null;
+    try {
+      final val = await UniversalBle.read(
+        connectedDevice!.deviceId,
+        serviceUuid,
+        charLedColorUuid,
+      );
+      final hexStr = utf8.decode(val).trim();
+      print('Read LED Color: $hexStr');
+      if (hexStr.startsWith('#') && hexStr.length == 7) {
+        final rgb = int.tryParse(hexStr.substring(1), radix: 16);
+        if (rgb != null) {
+          return Color(0xFF000000 | rgb);
+        }
+      }
+      return null;
+    } catch (e) {
+      print('Error reading LED color: $e');
+      return null;
+    }
+  }
+
+  // LEDの推しカラーを設定 (Write)
+  Future<void> writeLedColor(Color color) async {
+    if (connectedDevice == null) return;
+    try {
+      final r = (color.r * 255.0).round().clamp(0, 255);
+      final g = (color.g * 255.0).round().clamp(0, 255);
+      final b = (color.b * 255.0).round().clamp(0, 255);
+      final hex = '#${r.toRadixString(16).padLeft(2, '0')}${g.toRadixString(16).padLeft(2, '0')}${b.toRadixString(16).padLeft(2, '0')}'.toUpperCase();
+      print('Setting LED color to: $hex');
+      await UniversalBle.write(
+        connectedDevice!.deviceId,
+        serviceUuid,
+        charLedColorUuid,
+        Uint8List.fromList(utf8.encode(hex)),
+        withoutResponse: false,
+      );
+    } catch (e) {
+      print('Failed to write LED color: $e');
     }
   }
 

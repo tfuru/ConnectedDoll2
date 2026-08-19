@@ -13,6 +13,7 @@
 #define CHAR_UUID_FILE_DATA    "7b01d784-fb3b-4ce1-897b-cfd1264c7847"
 #define CHAR_UUID_ALARM_CONFIG "e82d0001-fbc6-4b95-a22a-28d88b409600"
 #define CHAR_UUID_LED_BRIGHTNESS "e82d0002-fbc6-4b95-a22a-28d88b409600"
+#define CHAR_UUID_LED_COLOR "e82d0004-fbc6-4b95-a22a-28d88b409600"
 
 class BLEManager {
 public:
@@ -58,6 +59,11 @@ private:
     };
 
     class LEDBrightnessCallbacks : public BLECharacteristicCallbacks {
+        void onWrite(BLECharacteristic* pCharacteristic) override;
+        void onRead(BLECharacteristic* pCharacteristic) override;
+    };
+
+    class LEDColorCallbacks : public BLECharacteristicCallbacks {
         void onWrite(BLECharacteristic* pCharacteristic) override;
         void onRead(BLECharacteristic* pCharacteristic) override;
     };

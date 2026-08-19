@@ -6,6 +6,9 @@ Adafruit_NeoPixel HAL_IO::pixels =
 volatile bool HAL_IO::keyPressedFlag = false;
 volatile unsigned long HAL_IO::lastDebounceTime = 0;
 uint8_t HAL_IO::currentBrightness = 128;
+uint8_t HAL_IO::themeR = 79;   // デフォルト: インディゴ (Indigo: #4F46E5)
+uint8_t HAL_IO::themeG = 70;
+uint8_t HAL_IO::themeB = 229;
 
 void HAL_IO::init() {
   pinMode(PIN_TACT_SW, INPUT_PULLUP);
@@ -22,10 +25,13 @@ void HAL_IO::init() {
 
   pixels.begin();
   
-  // フラッシュからLED明るさを読み出して適用
+  // フラッシュからLED明るさとテーマカラーを読み出して適用
   Preferences prefs;
   prefs.begin("system", true);
   currentBrightness = prefs.getUChar("led_bright", 128);
+  themeR = prefs.getUChar("theme_r", 79);
+  themeG = prefs.getUChar("theme_g", 70);
+  themeB = prefs.getUChar("theme_b", 229);
   prefs.end();
   pixels.setBrightness(currentBrightness);
   if (currentBrightness == 0) {
@@ -92,6 +98,27 @@ void HAL_IO::setLEDBrightness(uint8_t brightness) {
 
 uint8_t HAL_IO::getLEDBrightness() {
   return currentBrightness;
+}
+
+void HAL_IO::setThemeColor(uint8_t r, uint8_t g, uint8_t b) {
+  themeR = r;
+  themeG = g;
+  themeB = b;
+
+  Preferences prefs;
+  prefs.begin("system", false);
+  prefs.putUChar("theme_r", r);
+  prefs.putUChar("theme_g", g);
+  prefs.putUChar("theme_b", b);
+  prefs.end();
+
+  setLEDColor(r, g, b);
+}
+
+void HAL_IO::getThemeColor(uint8_t &r, uint8_t &g, uint8_t &b) {
+  r = themeR;
+  g = themeG;
+  b = themeB;
 }
 
 void HAL_IO::turnOffLED() {

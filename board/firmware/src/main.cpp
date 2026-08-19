@@ -60,7 +60,9 @@ void setup() {
   BLEManager::init("ConnectedDoll2");
   BLEManager::startAdvertising();
 
-  HAL_IO::setLEDColor(0, 50, 0); // 薄い緑: 起動完了
+  uint8_t tr, tg, tb;
+  HAL_IO::getThemeColor(tr, tg, tb);
+  HAL_IO::setLEDColor(tr, tg, tb); // 起動完了: 推しカラー点灯
   HAL_Power::resetIdleTimer();
   Serial.println("System Initialization Complete.");
 }
@@ -90,22 +92,29 @@ void loop() {
       lastLedFlash = millis();
     }
   } else if (AudioPlayer::isPlaying()) {
-    // 音楽再生中: 黄色点灯
-    HAL_IO::setLEDColor(50, 50, 0);
+    // 音声再生中: 推しカラーで点灯
+    uint8_t tr, tg, tb;
+    HAL_IO::getThemeColor(tr, tg, tb);
+    HAL_IO::setLEDColor(tr, tg, tb);
   } else if (BLEManager::isConnected()) {
     // BLE接続中: 青色点灯
     HAL_IO::setLEDColor(0, 0, 50);
   } else {
-    // 待機状態: ゆっくり緑色でブレス明滅
+    // 待機状態: 推しカラーでゆっくりブレス明滅
     static unsigned long lastLedBreath = 0;
     static int breathVal = 5;
     static int breathDir = 1;
     if (millis() - lastLedBreath > 20) {
       breathVal += breathDir;
-      if (breathVal >= 45 || breathVal <= 5) {
+      if (breathVal >= 50 || breathVal <= 5) {
         breathDir = -breathDir;
       }
-      HAL_IO::setLEDColor(0, breathVal, 0);
+      uint8_t tr, tg, tb;
+      HAL_IO::getThemeColor(tr, tg, tb);
+      uint8_t r = (uint16_t)tr * breathVal / 50;
+      uint8_t g = (uint16_t)tg * breathVal / 50;
+      uint8_t b = (uint16_t)tb * breathVal / 50;
+      HAL_IO::setLEDColor(r, g, b);
       lastLedBreath = millis();
     }
   }

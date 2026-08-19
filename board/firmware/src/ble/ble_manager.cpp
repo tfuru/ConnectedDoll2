@@ -63,6 +63,13 @@ void BLEManager::init(const char* deviceName) {
         BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_READ
     );
     pLEDBrightChar->setCallbacks(new LEDBrightnessCallbacks());
+
+    // 6. LED推しカラー設定用 (Read/Write)
+    BLECharacteristic* pLEDColorChar = pService->createCharacteristic(
+        CHAR_UUID_LED_COLOR,
+        BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_READ
+    );
+    pLEDColorChar->setCallbacks(new LEDColorCallbacks());
     
     pService->start();
 }
@@ -367,3 +374,44 @@ void BLEManager::LEDBrightnessCallbacks::onRead(BLECharacteristic* pCharacterist
     pCharacteristic->setValue(buf);
     Serial.printf("BLE LED Brightness READ requested. Value: %d\n", brightness);
 }
+
+void BLEManager::LEDColorCallbacks::onWrite(BLECharacteristic* pCharacteristic) {
+    HAL_Power::resetIdleTimer();
+    std::string value = pCharacteristic->getValue();
+    if (value.length() >= 3) {
+        uint8_t r = 0, g = 0, b = 0;
+        if (value[0] == '#' && value.length() == 7) {
+            // Hex文字列形式: #RRGGBB
+            long rgb = strtol(value.substr(1).c_str(), NULL, 16);
+            r = (rgb >> 16) & 0xFF;
+            g = (rgb >> 8) & 0xFF;
+            b = rgb & 0xFF;
+        } else if (value.length() == 3) {
+            // バイナリ形式: 3バイトRGB
+            r = (uint8_t)value[0];
+            g = (uint8_t)value[1];
+            b = (uint8_t)value[2];
+        } else {
+            // カンマ区切り形式: "R,G,B"
+            int ir = 0, ig = 0, ib = 0;
+            if (sscanf(value.c_str(), "%d,%d,%d", &ir, &ig, &ib) == 3) {
+                r = (uint8_t)ir;
+                g = (uint8_t)ig;
+                b = (uint8_t)ib;
+            }
+        }
+        HAL_IO::setThemeColor(r, g, b);
+        Serial.printf("LED Theme Color updated via BLE: R=%d, G=%d, B=%d\n", r, g, b);
+    }
+}
+
+void BLEManager::LEDColorCallbacks::onRead(BLECharacteristic* pCharacteristic) {
+    HAL_Power::resetIdleTimer();
+    uint8_t r, g, b;
+    HAL_IO::getThemeColor(r, g, b);
+    char buf[10];
+    snprintf(buf, sizeof(buf), "#%02X%02X%02X", r, g, b);
+    pCharacteristic->setValue(buf);
+    Serial.printf("BLE LED Theme Color READ requested. Value: %s\n", buf);
+}
+

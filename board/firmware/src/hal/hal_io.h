@@ -20,12 +20,17 @@ public:
   static void setLEDColor(uint8_t r, uint8_t g, uint8_t b);
   static void setLEDBrightness(uint8_t brightness);
   static uint8_t getLEDBrightness();
+  static void setThemeColor(uint8_t r, uint8_t g, uint8_t b);
+  static void getThemeColor(uint8_t &r, uint8_t &g, uint8_t &b);
   static void turnOffLED();
   static void update();
 
 private:
   static Adafruit_NeoPixel pixels;
   static uint8_t currentBrightness;
+  static uint8_t themeR;
+  static uint8_t themeG;
+  static uint8_t themeB;
   static void IRAM_ATTR handleButtonInterrupt();
   static volatile bool keyPressedFlag;
   static volatile unsigned long lastDebounceTime;
