@@ -1,8 +1,12 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import '../services/ble_service.dart';
 import '../services/audio_service.dart';
+import '../services/preset_db_service.dart';
+import '../models/voice_preset.dart';
+import '../widgets/device_selection_bottom_sheet.dart';
 
 class AlarmScreen extends StatefulWidget {
   const AlarmScreen({super.key});
@@ -22,10 +26,33 @@ class _AlarmScreenState extends State<AlarmScreen> {
   StreamSubscription<String>? _statusSubscription;
   StreamSubscription<String>? _alarmSubscription;
   StreamSubscription<double>? _progressSubscription;
-  String _deviceTime = 'Loading...';
+  String _deviceTime = 'Not Synced';
   double _ledBrightness = 128.0;
 
+  List<VoicePreset> _presets = [];
+  VoicePreset? _selectedPreset;
+
+
+  // デバイス未接続時に下部トースト（ボトムシート）を表示して接続を促す共通処理
+  Future<bool> _ensureConnected() async {
+    if (_bleService.connectedDevice != null) {
+      return true;
+    }
+
+    final connected = await DeviceSelectionBottomSheet.show(context);
+    if (connected && mounted) {
+      setState(() {});
+      // 接続成功後に本体状態を同期
+      await _fetchDeviceTime();
+      await _fetchLedBrightness();
+      await _bleService.readAlarmState();
+      return true;
+    }
+    return false;
+  }
+
   Future<void> _fetchDeviceTime() async {
+    if (_bleService.connectedDevice == null) return;
     if (!mounted) return;
     setState(() {
       _deviceTime = 'Loading...';
@@ -39,6 +66,7 @@ class _AlarmScreenState extends State<AlarmScreen> {
   }
 
   Future<void> _syncDeviceTime() async {
+    if (!await _ensureConnected()) return;
     if (!mounted) return;
     setState(() {
       _deviceTime = 'Syncing...';
@@ -48,6 +76,7 @@ class _AlarmScreenState extends State<AlarmScreen> {
   }
 
   Future<void> _fetchLedBrightness() async {
+    if (_bleService.connectedDevice == null) return;
     final bright = await _bleService.readLedBrightness();
     if (bright != null && mounted) {
       setState(() {
@@ -60,8 +89,10 @@ class _AlarmScreenState extends State<AlarmScreen> {
     setState(() {
       _ledBrightness = value;
     });
+    if (!await _ensureConnected()) return;
     await _bleService.writeLedBrightness(value.round());
   }
+
 
   @override
   void initState() {
@@ -100,6 +131,23 @@ class _AlarmScreenState extends State<AlarmScreen> {
     _bleService.readAlarmState();
     _fetchDeviceTime();
     _fetchLedBrightness();
+    _loadPresets();
+  }
+
+  Future<void> _loadPresets() async {
+    final list = await PresetDbService.instance.getAllPresets();
+    if (mounted) {
+      setState(() {
+        _presets = list;
+        if (_presets.isNotEmpty && _selectedPreset == null) {
+          _selectedPreset = _presets.first;
+        } else if (_selectedPreset != null) {
+          // 更新後のオブジェクトに同期
+          final match = _presets.where((p) => p.id == _selectedPreset!.id);
+          _selectedPreset = match.isNotEmpty ? match.first : (_presets.isNotEmpty ? _presets.first : null);
+        }
+      });
+    }
   }
 
   @override
@@ -107,8 +155,13 @@ class _AlarmScreenState extends State<AlarmScreen> {
     _alarmSubscription?.cancel();
     _progressSubscription?.cancel();
     _statusSubscription?.cancel();
+    // 画面破棄時にBLE切断を実行
+    if (_bleService.connectedDevice != null) {
+      _bleService.disconnect();
+    }
     super.dispose();
   }
+
 
   int? _getActiveUploadingSlot() {
     for (var entry in _isUploading.entries) {
@@ -148,6 +201,8 @@ class _AlarmScreenState extends State<AlarmScreen> {
 
   // アラーム設定ダイアログの表示
   Future<void> _selectDateTime(int index) async {
+    if (!await _ensureConnected()) return;
+
     // 1. アラームタイプ（毎日 vs 1回限り）の選択ダイアログ
     final String? alarmType = await showDialog<String>(
       context: context,
@@ -243,6 +298,8 @@ class _AlarmScreenState extends State<AlarmScreen> {
 
   // アラーム削除
   Future<void> _deleteAlarm(int index) async {
+    if (!await _ensureConnected()) return;
+
     final cmd = 'DEL:$index';
     await _bleService.sendAlarmCommand(cmd);
     if (!mounted) return;
@@ -253,6 +310,80 @@ class _AlarmScreenState extends State<AlarmScreen> {
     await _bleService.readAlarmState();
   }
 
+  // 指定パスの音声ファイルをトランスコードしてBLE転送する共通処理
+  Future<bool> _uploadAudioFromPath(int slotIndex, String inputPath) async {
+    if (!await _ensureConnected()) return false;
+
+    final inputFile = File(inputPath);
+    if (!await inputFile.exists()) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('登録された音声ファイルが見つかりません。')),
+        );
+      }
+      return false;
+    }
+
+
+    setState(() {
+      _isUploading[slotIndex] = true;
+      _uploadProgress[slotIndex] = 0.0;
+      _uploadStatusMessage = 'Converting to 16kHz WAV...';
+    });
+
+    final convertedFile = await AudioService.convertToRecommendedWav(inputPath);
+    if (convertedFile != null) {
+      setState(() {
+        _uploadStatusMessage = 'Uploading...';
+      });
+
+      try {
+        final bytes = await convertedFile.readAsBytes();
+        final targetFilename = slotIndex == -1 ? 'trigger.wav' : 'alarm$slotIndex.wav';
+        await _bleService.transferFile(targetFilename, bytes);
+
+        try {
+          await convertedFile.delete();
+        } catch (_) {}
+        return true;
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Upload failed: $e')),
+          );
+        }
+        setState(() {
+          _isUploading[slotIndex] = false;
+        });
+        return false;
+      }
+    } else {
+      setState(() {
+        _isUploading[slotIndex] = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to convert audio file.')),
+        );
+      }
+      return false;
+    }
+  }
+
+  // 選択中プリセットの特定スロット音声を転送
+  Future<void> _uploadPresetAudioForSlot(int slotIndex) async {
+    if (_selectedPreset == null) return;
+    final filePath = _selectedPreset!.audioFiles[slotIndex];
+    if (filePath == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('このスロットにはプリセット音声が設定されていません。')),
+      );
+      return;
+    }
+
+    await _uploadAudioFromPath(slotIndex, filePath);
+  }
+
   // 特定スロット（または -1 = trigger）への音声の選択、自動変換とアップロード
   Future<void> _uploadAudioForSlot(int index) async {
     final result = await FilePicker.platform.pickFiles(
@@ -261,88 +392,58 @@ class _AlarmScreenState extends State<AlarmScreen> {
     );
 
     if (result != null && result.files.single.path != null) {
-      final inputPath = result.files.single.path!;
-      
-      setState(() {
-        _isUploading[index] = true;
-        _uploadProgress[index] = 0.0;
-        _uploadStatusMessage = 'Converting to 16kHz WAV...';
-      });
-
-      // 推奨WAVフォーマットへの自動トランスコードを実行
-      final convertedFile = await AudioService.convertToRecommendedWav(inputPath);
-
-      if (convertedFile != null) {
-        setState(() {
-          _uploadStatusMessage = 'Uploading...';
-        });
-
-        try {
-          final bytes = await convertedFile.readAsBytes();
-          // 対象のファイル名を設定（indexが-1なら trigger.wav、それ以外は alarm$index.wav）
-          final targetFilename = index == -1 ? 'trigger.wav' : 'alarm$index.wav';
-          await _bleService.transferFile(targetFilename, bytes);
-          
-          // 一時ファイルを削除
-          try {
-            await convertedFile.delete();
-          } catch (_) {}
-        } catch (e) {
-          if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Upload failed: $e')),
-          );
-          setState(() {
-            _isUploading[index] = false;
-          });
-        }
-      } else {
-        setState(() {
-          _isUploading[index] = false;
-        });
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to convert audio file to recommended format.')),
-        );
-      }
+      await _uploadAudioFromPath(index, result.files.single.path!);
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
     final isTriggerUploading = _isUploading[-1] ?? false;
     final triggerProgress = _uploadProgress[-1] ?? 0.0;
+    final connectedDevice = _bleService.connectedDevice;
+    final isConnected = connectedDevice != null;
 
     return PopScope(
-      canPop: false,
-      onPopInvoked: (didPop) async {
-        if (didPop) return;
-        await _bleService.disconnect();
+      canPop: true,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (_bleService.connectedDevice != null) {
+          await _bleService.disconnect();
+        }
       },
       child: Scaffold(
         backgroundColor: const Color(0xFF0F172A),
         appBar: AppBar(
-          title: const Text('Alarm & Sound Manager', style: TextStyle(fontWeight: FontWeight.bold)),
+          title: const Text('デバイス設定・転送', style: TextStyle(fontWeight: FontWeight.bold)),
           backgroundColor: const Color(0xFF1E293B),
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () async {
-              await _bleService.disconnect();
+              if (_bleService.connectedDevice != null) {
+                await _bleService.disconnect();
+              }
+              if (mounted) {
+                Navigator.pop(context);
+              }
             },
           ),
           actions: [
             IconButton(
               icon: const Icon(Icons.refresh, color: Colors.indigoAccent),
-              onPressed: () {
-                _bleService.readAlarmState();
-                _fetchDeviceTime();
-                _fetchLedBrightness();
-              },
+              tooltip: '本体状態を再読み込み',
+              onPressed: isConnected
+                  ? () {
+                      _bleService.readAlarmState();
+                      _fetchDeviceTime();
+                      _fetchLedBrightness();
+                    }
+                  : () => _ensureConnected(),
             ),
           ],
         ),
-        body: Container(
+
+      body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -350,18 +451,76 @@ class _AlarmScreenState extends State<AlarmScreen> {
             colors: [Color(0xFF0F172A), Color(0xFF1E1E38)],
           ),
         ),
-        child: _bleService.connectedDevice == null
-            ? const Center(
-                child: Text(
-                  'Please connect to ConnectedDoll2 board\nin the Scan Screen first.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white60, fontSize: 16),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: ListView(
+            children: [
+              // --- 接続状態カード ---
+              Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: isConnected
+                      ? const Color(0xFF10B981).withValues(alpha: 0.1)
+                      : Colors.white.withValues(alpha: 0.04),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isConnected
+                        ? const Color(0xFF10B981).withValues(alpha: 0.4)
+                        : Colors.white.withValues(alpha: 0.08),
+                  ),
                 ),
-              )
-            : Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: ListView(
+                child: Row(
                   children: [
+                    Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: isConnected ? const Color(0xFF10B981) : Colors.orangeAccent,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            isConnected ? '接続済み: ${connectedDevice.name ?? "CD2"}' : '未接続 (操作時に自動接続)',
+                            style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 13),
+                          ),
+                          if (isConnected)
+                            Text(
+                              connectedDevice.deviceId,
+                              style: const TextStyle(color: Colors.white38, fontSize: 10),
+                            ),
+                        ],
+                      ),
+                    ),
+                    if (isConnected)
+                      TextButton(
+                        onPressed: () async {
+                          await _bleService.disconnect();
+                          setState(() {
+                            _deviceTime = 'Not Synced';
+                          });
+                        },
+                        child: const Text('切断', style: TextStyle(color: Colors.redAccent, fontSize: 12)),
+                      )
+                    else
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF4F46E5),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        onPressed: () => _ensureConnected(),
+                        child: const Text('接続する', style: TextStyle(color: Colors.white, fontSize: 12)),
+                      ),
+                  ],
+                ),
+              ),
+
                     // --- デバイス現在時刻表示カード ---
                     Card(
                       color: Colors.white.withValues(alpha: 0.04),
@@ -481,6 +640,117 @@ class _AlarmScreenState extends State<AlarmScreen> {
                       ),
                     ),
 
+                    // --- ボイスプリセット選択 & 一括転送カード ---
+                    Card(
+                      color: _selectedPreset != null
+                          ? Color(_selectedPreset!.color).withValues(alpha: 0.12)
+                          : Colors.white.withValues(alpha: 0.04),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                        side: BorderSide(
+                          color: _selectedPreset != null
+                              ? Color(_selectedPreset!.color).withValues(alpha: 0.5)
+                              : Colors.white.withValues(alpha: 0.1),
+                          width: 1.2,
+                        ),
+                      ),
+                      margin: const EdgeInsets.only(bottom: 20),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Wrap(
+                              alignment: WrapAlignment.spaceBetween,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: [
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.library_music_rounded,
+                                      color: _selectedPreset != null
+                                          ? Color(_selectedPreset!.color)
+                                          : Colors.indigoAccent,
+                                      size: 22,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    const Text(
+                                      'ボイスプリセット',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                if (_presets.isNotEmpty)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF1E293B),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: Colors.white12),
+                                    ),
+                                    child: DropdownButtonHideUnderline(
+                                      child: DropdownButton<VoicePreset>(
+                                        value: _selectedPreset,
+                                        isDense: true,
+                                        dropdownColor: const Color(0xFF1E293B),
+                                        style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                                        items: _presets.map((preset) {
+                                          return DropdownMenuItem<VoicePreset>(
+                                            value: preset,
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Container(
+                                                  width: 10,
+                                                  height: 10,
+                                                  decoration: BoxDecoration(
+                                                    color: Color(preset.color),
+                                                    shape: BoxShape.circle,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Text(preset.name),
+                                              ],
+                                            ),
+                                          );
+                                        }).toList(),
+                                        onChanged: _isUploading.values.any((u) => u)
+                                            ? null
+                                            : (val) {
+                                                setState(() {
+                                                  _selectedPreset = val;
+                                                });
+                                              },
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            if (_presets.isEmpty)
+                              const Text(
+                                '登録されたプリセットがありません。「音声プリセット一覧」画面から作成してください。',
+                                style: TextStyle(color: Colors.white54, fontSize: 12),
+                              )
+                            else
+                              Text(
+                                '選択中: ${_selectedPreset?.name ?? ""} (${_selectedPreset?.audioFiles.length ?? 0}件の音声が登録済み)\n各スロットの「プリセットから転送」ボタンで個別に転送できます。',
+                                style: const TextStyle(color: Colors.white70, fontSize: 12, height: 1.4),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+
+
                     // --- タクトスイッチ再生音 (trigger.wav) 設定カード ---
                     Card(
                       color: Colors.indigo.withValues(alpha: 0.1),
@@ -542,28 +812,53 @@ class _AlarmScreenState extends State<AlarmScreen> {
                                 ],
                               )
                             else
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Expanded(
-                                    child: Text(
-                                      'Linked Audio: trigger.wav',
-                                      style: TextStyle(color: Colors.orangeAccent, fontSize: 14, fontWeight: FontWeight.bold),
-                                    ),
+                                  const Row(
+                                    children: [
+                                      Icon(Icons.audiotrack, size: 16, color: Colors.orangeAccent),
+                                      SizedBox(width: 6),
+                                      Text(
+                                        'Linked Audio: trigger.wav',
+                                        style: TextStyle(color: Colors.orangeAccent, fontSize: 13, fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
                                   ),
-                                  ElevatedButton.icon(
-                                    onPressed: _isUploading.values.any((u) => u) ? null : () => _uploadAudioForSlot(-1),
-                                    icon: const Icon(Icons.cloud_upload, size: 16, color: Colors.white),
-                                    label: const Text('Upload Sound', style: TextStyle(fontSize: 12)),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF1E293B),
-                                      side: const BorderSide(color: Colors.orangeAccent, width: 0.8),
-                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                    ),
+                                  const SizedBox(height: 10),
+                                  Wrap(
+                                    spacing: 8,
+                                    runSpacing: 8,
+                                    children: [
+                                      if (_selectedPreset != null && _selectedPreset!.audioFiles.containsKey(-1))
+                                        ElevatedButton.icon(
+                                          onPressed: _isUploading.values.any((u) => u)
+                                              ? null
+                                              : () => _uploadPresetAudioForSlot(-1),
+                                          icon: const Icon(Icons.send_rounded, size: 14, color: Colors.white),
+                                          label: const Text('プリセットから転送', style: TextStyle(fontSize: 11)),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Color(_selectedPreset!.color),
+                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                          ),
+                                        ),
+                                      ElevatedButton.icon(
+                                        onPressed: _isUploading.values.any((u) => u) ? null : () => _uploadAudioForSlot(-1),
+                                        icon: const Icon(Icons.folder_open, size: 14, color: Colors.white70),
+                                        label: const Text('ファイル選択', style: TextStyle(fontSize: 11)),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: const Color(0xFF1E293B),
+                                          side: const BorderSide(color: Colors.orangeAccent, width: 0.8),
+                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
+
                           ],
                         ),
                       ),
@@ -674,28 +969,53 @@ class _AlarmScreenState extends State<AlarmScreen> {
                                   ],
                                 )
                               else
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Expanded(
-                                      child: Text(
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.audiotrack, size: 16, color: Colors.indigoAccent),
+                                      const SizedBox(width: 6),
+                                      Text(
                                         'Linked Audio: alarm$index.wav',
-                                        style: const TextStyle(color: Colors.indigoAccent, fontSize: 13),
+                                        style: const TextStyle(color: Colors.indigoAccent, fontSize: 13, fontWeight: FontWeight.bold),
                                       ),
-                                    ),
-                                    ElevatedButton.icon(
-                                      onPressed: _isUploading.values.any((u) => u) ? null : () => _uploadAudioForSlot(index),
-                                      icon: const Icon(Icons.cloud_upload, size: 16, color: Colors.white),
-                                      label: const Text('Upload Sound', style: TextStyle(fontSize: 12)),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color(0xFF1E293B),
-                                        side: const BorderSide(color: Colors.indigoAccent, width: 0.8),
-                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Wrap(
+                                    spacing: 8,
+                                    runSpacing: 8,
+                                    children: [
+                                      if (_selectedPreset != null && _selectedPreset!.audioFiles.containsKey(index))
+                                        ElevatedButton.icon(
+                                          onPressed: _isUploading.values.any((u) => u)
+                                              ? null
+                                              : () => _uploadPresetAudioForSlot(index),
+                                          icon: const Icon(Icons.send_rounded, size: 14, color: Colors.white),
+                                          label: const Text('プリセットから転送', style: TextStyle(fontSize: 11)),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Color(_selectedPreset!.color),
+                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                          ),
+                                        ),
+                                      ElevatedButton.icon(
+                                        onPressed: _isUploading.values.any((u) => u) ? null : () => _uploadAudioForSlot(index),
+                                        icon: const Icon(Icons.folder_open, size: 14, color: Colors.white70),
+                                        label: const Text('ファイル選択', style: TextStyle(fontSize: 11)),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: const Color(0xFF1E293B),
+                                          side: const BorderSide(color: Colors.indigoAccent, width: 0.8),
+                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+
                             ],
                           ),
                         ),
@@ -705,10 +1025,12 @@ class _AlarmScreenState extends State<AlarmScreen> {
                 ),
               ),
       ),
-    ),
+      ),
     );
   }
 }
+
+
 
 class AlarmSlot {
   final int index;
