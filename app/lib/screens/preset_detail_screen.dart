@@ -21,6 +21,7 @@ class _PresetDetailScreenState extends State<PresetDetailScreen> {
   late int _selectedColor;
   String? _iconPath;
   late Map<int, String> _audioFiles;
+  late Map<int, String> _audioFileNames;
   bool _isSaving = false;
 
   // 定義済みカラーパレット（推しカラー用）
@@ -66,6 +67,7 @@ class _PresetDetailScreenState extends State<PresetDetailScreen> {
     _hexColorController = TextEditingController(text: _toHexCode(_selectedColor));
     _iconPath = p?.iconPath;
     _audioFiles = p != null ? Map<int, String>.from(p.audioFiles) : {};
+    _audioFileNames = p != null ? Map<int, String>.from(p.audioFileNames) : {};
   }
 
   @override
@@ -100,6 +102,7 @@ class _PresetDetailScreenState extends State<PresetDetailScreen> {
     if (result != null && result.files.single.path != null) {
       setState(() {
         _audioFiles[slotIndex] = result.files.single.path!;
+        _audioFileNames[slotIndex] = result.files.single.name;
       });
     }
   }
@@ -125,13 +128,16 @@ class _PresetDetailScreenState extends State<PresetDetailScreen> {
 
       // 音声ファイル群のストレージ保存
       final Map<int, String> savedAudioFiles = {};
+      final Map<int, String> savedAudioNames = {};
       for (final entry in _audioFiles.entries) {
         final slot = entry.key;
         final srcPath = entry.value;
+        final origName = _audioFileNames[slot] ?? widget.preset?.getAudioFileName(slot) ?? srcPath.split(Platform.pathSeparator).last;
+        savedAudioNames[slot] = origName;
         if (widget.preset != null && widget.preset!.audioFiles[slot] == srcPath) {
           savedAudioFiles[slot] = srcPath;
         } else {
-          savedAudioFiles[slot] = await dbService.savePresetAudio(srcPath, slot);
+          savedAudioFiles[slot] = await dbService.savePresetAudio(srcPath, slot, origName);
         }
       }
 
@@ -142,6 +148,7 @@ class _PresetDetailScreenState extends State<PresetDetailScreen> {
           color: _selectedColor,
           iconPath: savedIconPath,
           audioFiles: savedAudioFiles,
+          audioFileNames: savedAudioNames,
         );
         await dbService.createPreset(newPreset);
       } else {
@@ -151,6 +158,7 @@ class _PresetDetailScreenState extends State<PresetDetailScreen> {
           color: _selectedColor,
           iconPath: savedIconPath,
           audioFiles: savedAudioFiles,
+          audioFileNames: savedAudioNames,
           updatedAt: DateTime.now(),
         );
         await dbService.updatePreset(updated);
@@ -216,6 +224,13 @@ class _PresetDetailScreenState extends State<PresetDetailScreen> {
   String _getSlotLabel(int slot) {
     if (slot == -1) return 'トリガー音声 (trigger.wav)';
     return 'アラーム $slot (alarm$slot.wav)';
+  }
+
+  String _getDisplayFileName(String? path) {
+    if (path == null) return '未登録';
+    final base = path.split(Platform.pathSeparator).last;
+    final match = RegExp(r'^audio_\d+_slot-?\d+_(.+)$').firstMatch(base);
+    return match != null ? match.group(1)! : base;
   }
 
   @override
@@ -416,7 +431,9 @@ class _PresetDetailScreenState extends State<PresetDetailScreen> {
                     ...[-1, 0, 1, 2, 3, 4].map((slot) {
                       final hasFile = _audioFiles.containsKey(slot);
                       final filePath = _audioFiles[slot];
-                      final fileName = filePath != null ? filePath.split(Platform.pathSeparator).last : '未登録';
+                      final fileName = hasFile
+                          ? (_audioFileNames[slot] ?? _getDisplayFileName(filePath))
+                          : '未登録';
 
                       return Container(
                         margin: const EdgeInsets.only(bottom: 10),
@@ -483,6 +500,7 @@ class _PresetDetailScreenState extends State<PresetDetailScreen> {
                                   }
                                   setState(() {
                                     _audioFiles.remove(slot);
+                                    _audioFileNames.remove(slot);
                                   });
                                 },
                               ),

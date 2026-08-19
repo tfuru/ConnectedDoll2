@@ -22,7 +22,7 @@ class PresetDbService {
 
     return await openDatabase(
       dbPath,
-      version: 2,
+      version: 3,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE voice_presets (
@@ -31,6 +31,7 @@ class PresetDbService {
             color INTEGER NOT NULL,
             icon_path TEXT,
             audio_files_json TEXT,
+            audio_file_names_json TEXT,
             sort_order INTEGER NOT NULL DEFAULT 0,
             created_at TEXT NOT NULL,
             updated_at TEXT NOT NULL
@@ -41,6 +42,11 @@ class PresetDbService {
         if (oldVersion < 2) {
           try {
             await db.execute('ALTER TABLE voice_presets ADD COLUMN sort_order INTEGER NOT NULL DEFAULT 0;');
+          } catch (_) {}
+        }
+        if (oldVersion < 3) {
+          try {
+            await db.execute('ALTER TABLE voice_presets ADD COLUMN audio_file_names_json TEXT;');
           } catch (_) {}
         }
       },
@@ -67,11 +73,13 @@ class PresetDbService {
     return targetPath;
   }
 
-  // 音声ファイルの保存
-  Future<String> savePresetAudio(String sourcePath, int slotIndex) async {
+  // 音声ファイルの保存 (元のファイル名を含めて保存)
+  Future<String> savePresetAudio(String sourcePath, int slotIndex, [String? originalName]) async {
     final storageDir = await getPresetsStorageDir();
-    final ext = p.extension(sourcePath).isNotEmpty ? p.extension(sourcePath) : '.wav';
-    final targetPath = p.join(storageDir.path, 'audio_${DateTime.now().millisecondsSinceEpoch}_slot$slotIndex$ext');
+    final origBase = originalName ?? p.basename(sourcePath);
+    // ファイル名として安全な文字列にサニタイズ
+    final safeName = origBase.replaceAll(RegExp(r'[^\w\.\-\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]'), '_');
+    final targetPath = p.join(storageDir.path, 'audio_${DateTime.now().millisecondsSinceEpoch}_slot${slotIndex}_$safeName');
     final sourceFile = File(sourcePath);
     await sourceFile.copy(targetPath);
     return targetPath;

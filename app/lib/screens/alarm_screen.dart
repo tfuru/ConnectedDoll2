@@ -950,6 +950,15 @@ class _AlarmScreenState extends State<AlarmScreen> {
                                       ),
                                     ],
                                   ),
+                                  if (_selectedPreset != null && _selectedPreset!.audioFiles.containsKey(-1))
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 4, bottom: 2),
+                                      child: Text(
+                                        'プリセット音声: ${_selectedPreset!.getAudioFileName(-1)}',
+                                        style: const TextStyle(color: Colors.white70, fontSize: 12),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
                                   const SizedBox(height: 10),
                                   Wrap(
                                     spacing: 8,
@@ -1129,6 +1138,15 @@ class _AlarmScreenState extends State<AlarmScreen> {
                                       ),
                                     ],
                                   ),
+                                  if (_selectedPreset != null && _selectedPreset!.audioFiles.containsKey(index))
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 4, bottom: 2),
+                                      child: Text(
+                                        'プリセット音声: ${_selectedPreset!.getAudioFileName(index)}',
+                                        style: const TextStyle(color: Colors.white70, fontSize: 12),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
                                   const SizedBox(height: 10),
                                   Wrap(
                                     spacing: 8,
