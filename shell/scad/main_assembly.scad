@@ -123,15 +123,13 @@ module main_assembly() {
                 rotate([90, 0, 0])
                     acrylic_panel_3d();
 
-        // 四隅のネオジム磁石 (金/ニッケルメッキ色: 磁石穴内に配置)
+        // 左右2箇所のネオジム磁石 (金/ニッケルメッキ色: 磁石穴内に配置)
         color([0.85, 0.75, 0.4, 1.0])
             translate([center_x, acrylic_y_pos, btn_z_pos]) {
-                for (dx = [-btn_screw_pitch_w/2, btn_screw_pitch_w/2]) {
-                    for (dz = [-btn_screw_pitch_h/2, btn_screw_pitch_h/2]) {
-                        translate([dx, 0, dz])
-                            rotate([90, 0, 0])
-                                cylinder(h=btn_magnet_t, d=btn_magnet_d);
-                    }
+                for (dx = [-btn_magnet_pitch_w/2, btn_magnet_pitch_w/2]) {
+                    translate([dx, 0, 0])
+                        rotate([90, 0, 0])
+                            cylinder(h=btn_magnet_t, d=btn_magnet_d);
                 }
             }
     }

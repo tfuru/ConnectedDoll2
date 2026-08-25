@@ -26,12 +26,10 @@ module acrylic_panel_2d() {
             translate([-panel_w/2 + panel_r, panel_h/2 - panel_r])  circle(r=panel_r);
         }
 
-        // 四隅の φ6mm 磁石埋め込み穴
-        for (dx = [-btn_screw_pitch_w/2, btn_screw_pitch_w/2]) {
-            for (dy = [-btn_screw_pitch_h/2, btn_screw_pitch_h/2]) {
-                translate([dx, dy])
-                    circle(d=magnet_hole_d);
-            }
+        // 左右 2 箇所の φ6mm 磁石埋め込み穴（高さ中央）
+        for (dx = [-btn_magnet_pitch_w/2, btn_magnet_pitch_w/2]) {
+            translate([dx, 0])
+                circle(d=magnet_hole_d);
         }
     }
 }

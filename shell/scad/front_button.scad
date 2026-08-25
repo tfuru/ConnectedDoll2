@@ -51,12 +51,10 @@ module front_button() {
                 cube([btn_plunger_w, btn_plunger_h, btn_plunger_l]);
         }
 
-        // 4. 操作面 四隅の M2 六角ナット接着ポケット（M2ネジ穴・ザグリは全廃）
-        for (dx = [-btn_screw_pitch_w / 2, btn_screw_pitch_w / 2]) {
-            for (dy = [-btn_screw_pitch_h / 2, btn_screw_pitch_h / 2]) {
-                translate([dx, dy, 0])
-                    nut_pocket();
-            }
+        // 4. 操作面 左右2箇所の M2 六角ナット接着ポケット（高さ中央）
+        for (dx = [-btn_magnet_pitch_w / 2, btn_magnet_pitch_w / 2]) {
+            translate([dx, 0, 0])
+                nut_pocket();
         }
     }
 }

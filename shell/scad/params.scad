@@ -35,8 +35,7 @@ btn_cap_depth         = 2.5;        // ボタンキャップ厚み（ズレ・�
 btn_flange_t          = 1.2;        // 脱落防止フランジ厚み
 btn_magnet_d          = 6.0;        // ネオジム磁石直径 (0.6cm)
 btn_magnet_t          = 3.0;        // ネオジム磁石厚み (0.3cm)
-btn_screw_pitch_w     = 34.0;       // 四隅ナット位置ピッチ（幅方向：φ6mm磁石対応）
-btn_screw_pitch_h     = 5.5;        // 四隅ナット位置ピッチ（高さ方向：φ6mm磁石対応）
+btn_magnet_pitch_w    = 34.0;       // 左右ナット・磁石位置ピッチ (2個配置)
 btn_nut_width         = 4.4;        // M2 六角ナット二面幅 (対辺)
 btn_nut_depth         = 1.6;        // M2 六角ナット接着ポケット深さ
 
