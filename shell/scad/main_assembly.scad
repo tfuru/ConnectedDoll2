@@ -57,10 +57,16 @@ module pcb_mockup() {
         }
     }
 
-    // 基板端の横向きタクトスイッチ (EVQPUC02K)
+    // 基板手前側のタクトスイッチ (EVQPUC02K)
     color([0.8, 0.8, 0.8, 1.0]) {
         translate([-2.5, -pcb_height/2 - 1.5, 0])
             cube([5.0, 3.0, 3.5]);
+    }
+
+    // 基板手前側のフルカラーLED (WS2812B: 前面ボタン中央導光窓へ向けて発光)
+    color([1.0, 0.2, 0.2, 0.95]) {
+        translate([-ws2812b_size/2, -pcb_height/2 + 2.0, pcb_thickness])
+            cube([ws2812b_size, ws2812b_size, ws2812b_thickness]);
     }
 
     // 基板右端のボリュームダイヤル (RK10J11R0A0H モックアップ)

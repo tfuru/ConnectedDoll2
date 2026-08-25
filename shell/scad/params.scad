@@ -39,6 +39,13 @@ btn_magnet_pitch_w    = 34.0;       // 左右ナット・磁石位置ピッチ (
 btn_nut_width         = 4.4;        // M2 六角ナット二面幅 (対辺)
 btn_nut_depth         = 1.6;        // M2 六角ナット接着ポケット深さ
 
+// --- WS2812B LED & 前面ボタン導光スリット ---
+ws2812b_size          = 5.0;        // WS2812B 5050 パッケージ寸法 (5.0x5.0mm)
+ws2812b_thickness     = 1.6;        // パッケージ厚み
+btn_light_slit_w      = 10.0;       // 導光スリット幅 (アクリル中央へ均一導光)
+btn_light_slit_h      = 4.5;        // 導光スリット高さ
+btn_light_slit_r      = 2.0;        // 導光スリット角丸
+
 // --- 前面アクリル化粧パネル埋め込み用リセス（段差ポケット） ---
 front_recess_depth    = btn_magnet_t; // 3.0mm (アクリル厚みに完全一致)
 front_recess_margin   = 0.6;          // リセスクリアランス (周囲0.6mm)

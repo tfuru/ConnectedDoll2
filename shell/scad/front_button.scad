@@ -34,6 +34,20 @@ module nut_pocket() {
             cylinder(h=btn_nut_depth + 0.1, r=nut_radius, $fn=6);
 }
 
+// ボタン中央の LED 導光スリット（貫通窓）
+module light_guide_slit() {
+    hull() {
+        translate([-btn_light_slit_w/2 + btn_light_slit_r, -btn_light_slit_h/2 + btn_light_slit_r, -btn_plunger_l - 0.1])
+            cylinder(h=btn_flange_t + btn_cap_depth + btn_plunger_l + 1.0, r=btn_light_slit_r);
+        translate([btn_light_slit_w/2 - btn_light_slit_r, -btn_light_slit_h/2 + btn_light_slit_r, -btn_plunger_l - 0.1])
+            cylinder(h=btn_flange_t + btn_cap_depth + btn_plunger_l + 1.0, r=btn_light_slit_r);
+        translate([btn_light_slit_w/2 - btn_light_slit_r, btn_light_slit_h/2 - btn_light_slit_r, -btn_plunger_l - 0.1])
+            cylinder(h=btn_flange_t + btn_cap_depth + btn_plunger_l + 1.0, r=btn_light_slit_r);
+        translate([-btn_light_slit_w/2 + btn_light_slit_r, btn_light_slit_h/2 - btn_light_slit_r, -btn_plunger_l - 0.1])
+            cylinder(h=btn_flange_t + btn_cap_depth + btn_plunger_l + 1.0, r=btn_light_slit_r);
+    }
+}
+
 module front_button() {
     difference() {
         // 3Dプリントしやすいように操作面を上（+Z方向）に向けて配置
@@ -46,9 +60,10 @@ module front_button() {
             translate([0, 0, btn_flange_t])
                 button_face(btn_cap_w, btn_cap_h, btn_cap_depth, btn_cap_r);
 
-            // 3. スイッチ押下プランジャー（フランジ裏面：-Z方向中央）
-            translate([-btn_plunger_w / 2, -btn_plunger_h / 2, -btn_plunger_l])
-                cube([btn_plunger_w, btn_plunger_h, btn_plunger_l]);
+            // 3. スイッチ押下プランジャー（フランジ裏面：タクトスイッチEVQPUC02Kを押下）
+            // 導光穴の左右または下側にプランジャー突起を配置
+            translate([-btn_plunger_w / 2, -btn_cap_h / 2 + 1.0, -btn_plunger_l])
+                cube([btn_plunger_w, 2.5, btn_plunger_l]);
         }
 
         // 4. 操作面 左右2箇所の M2 六角ナット接着ポケット（高さ中央）
@@ -56,6 +71,10 @@ module front_button() {
             translate([dx, 0, 0])
                 nut_pocket();
         }
+
+        // 5. 中央の LED 導光スリット窓（基板上の WS2812B 光をアクリル裏面へ誘導）
+        translate([0, 0, 0])
+            light_guide_slit();
     }
 }
 
