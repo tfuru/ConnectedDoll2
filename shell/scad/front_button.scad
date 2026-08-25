@@ -1,0 +1,65 @@
+// ==========================================
+// ConnectedDoll2 Front Button (front_button.scad)
+// ==========================================
+
+include <params.scad>;
+
+// ボタン詳細パラメータ
+btn_cap_w      = btn_side_width - clearance * 2;   // 43.2mm
+btn_cap_h      = btn_side_height - clearance * 2;  // 13.2mm
+btn_cap_r      = btn_side_radius - clearance / 2;  // 角丸 R=2.8mm
+
+btn_flange_w   = btn_side_width + 3.0;             // 47.0mm (抜け止めツバ幅)
+btn_flange_h   = btn_side_height + 3.0;            // 17.0mm (抜け止めツバ高)
+
+btn_plunger_w  = 4.0;                              // タクトスイッチ押し込み突起
+btn_plunger_h  = 4.0;
+btn_plunger_l  = 5.0;                              // プランジャー長さ (5.0mm)
+
+module button_face(w, h, d, r) {
+    hull() {
+        translate([-w/2 + r, -h/2 + r, 0]) cylinder(h=d, r=r);
+        translate([w/2 - r, -h/2 + r, 0])  cylinder(h=d, r=r);
+        translate([w/2 - r, h/2 - r, 0])   cylinder(h=d, r=r);
+        translate([-w/2 + r, h/2 - r, 0])  cylinder(h=d, r=r);
+    }
+}
+
+// 表面の M2 六角ナット接着用ポケット (深さ 1.6mm, 二面幅 4.4mm)
+module nut_pocket() {
+    // $fn=6 の外接半径 = (二面幅 / 2) / cos(30°)
+    nut_radius = (btn_nut_width / 2) / cos(30);
+    translate([0, 0, btn_flange_t + btn_cap_depth - btn_nut_depth])
+        rotate([0, 0, 30])
+            cylinder(h=btn_nut_depth + 0.1, r=nut_radius, $fn=6);
+}
+
+module front_button() {
+    difference() {
+        // 3Dプリントしやすいように操作面を上（+Z方向）に向けて配置
+        union() {
+            // 1. 脱落防止フランジ（最底面: 厚み 1.2mm）
+            translate([0, 0, 0])
+                button_face(btn_flange_w, btn_flange_h, btn_flange_t, btn_side_radius + 0.5);
+
+            // 2. ボタンキャップ（ズレ・傾き防止ガイド部: 厚み 2.5mm）
+            translate([0, 0, btn_flange_t])
+                button_face(btn_cap_w, btn_cap_h, btn_cap_depth, btn_cap_r);
+
+            // 3. スイッチ押下プランジャー（フランジ裏面：-Z方向中央）
+            translate([-btn_plunger_w / 2, -btn_plunger_h / 2, -btn_plunger_l])
+                cube([btn_plunger_w, btn_plunger_h, btn_plunger_l]);
+        }
+
+        // 4. 操作面 四隅の M2 六角ナット接着ポケット（M2ネジ穴・ザグリは全廃）
+        for (dx = [-btn_screw_pitch_w / 2, btn_screw_pitch_w / 2]) {
+            for (dy = [-btn_screw_pitch_h / 2, btn_screw_pitch_h / 2]) {
+                translate([dx, dy, 0])
+                    nut_pocket();
+            }
+        }
+    }
+}
+
+// 描画
+front_button();
