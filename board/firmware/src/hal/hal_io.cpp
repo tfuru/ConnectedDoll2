@@ -124,4 +124,8 @@ void HAL_IO::getThemeColor(uint8_t &r, uint8_t &g, uint8_t &b) {
 void HAL_IO::turnOffLED() {
   pixels.clear();
   pixels.show();
+  // 自動電源遮断回路の放電を確実に促すため、ピンをLOWに固定
+  pinMode(PIN_WS2812B, OUTPUT);
+  digitalWrite(PIN_WS2812B, LOW);
 }
+
