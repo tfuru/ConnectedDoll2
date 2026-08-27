@@ -65,7 +65,15 @@ if [ -f "$SCAD_DIR/acrylic_panel.scad" ]; then
     echo "✓ acrylic_panel (STL, DXF, SVG, PNG) generated."
 fi
 
-# 5. 全体アセンブリプレビュー画像の出力
+# 5. 一括3Dプリントプレートの出力 (All-in-One: Top, Bottom, Button)
+if [ -f "$SCAD_DIR/print_plate.scad" ]; then
+    echo "Rendering print_plate_all.stl and preview..."
+    "$OPENSCAD_BIN" -o "$OUTPUT_STL_DIR/print_plate_all.stl" "$SCAD_DIR/print_plate.scad"
+    "$OPENSCAD_BIN" -o "$OUTPUT_IMG_DIR/print_plate_preview.png" --camera=0,-30,20,70,0,320,180 --imgsize=1000,750 --autocenter --viewall "$SCAD_DIR/print_plate.scad"
+    echo "✓ print_plate_all (STL & PNG) generated."
+fi
+
+# 6. 全体アセンブリプレビュー画像の出力
 if [ -f "$SCAD_DIR/main_assembly.scad" ]; then
     echo "Rendering assembly preview images..."
     # 分解図
