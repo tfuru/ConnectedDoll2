@@ -6,14 +6,14 @@ include <params.scad>;
 
 module side_button_cutout() {
     hull() {
-        translate([-btn_side_width/2 + btn_side_radius, 0, btn_side_radius])
-            rotate([90, 0, 0]) cylinder(h=wall_thickness * 3, r=btn_side_radius, center=true);
-        translate([btn_side_width/2 - btn_side_radius, 0, btn_side_radius])
-            rotate([90, 0, 0]) cylinder(h=wall_thickness * 3, r=btn_side_radius, center=true);
-        translate([btn_side_width/2 - btn_side_radius, 0, btn_side_height - btn_side_radius])
-            rotate([90, 0, 0]) cylinder(h=wall_thickness * 3, r=btn_side_radius, center=true);
-        translate([-btn_side_width/2 + btn_side_radius, 0, btn_side_height - btn_side_radius])
-            rotate([90, 0, 0]) cylinder(h=wall_thickness * 3, r=btn_side_radius, center=true);
+        translate([-btn_side_width/2 + btn_side_radius, 0, -btn_side_height/2 + btn_side_radius])
+            rotate([90, 0, 0]) cylinder(h=wall_thickness * 4, r=btn_side_radius, center=true);
+        translate([btn_side_width/2 - btn_side_radius, 0, -btn_side_height/2 + btn_side_radius])
+            rotate([90, 0, 0]) cylinder(h=wall_thickness * 4, r=btn_side_radius, center=true);
+        translate([btn_side_width/2 - btn_side_radius, 0, btn_side_height/2 - btn_side_radius])
+            rotate([90, 0, 0]) cylinder(h=wall_thickness * 4, r=btn_side_radius, center=true);
+        translate([-btn_side_width/2 + btn_side_radius, 0, btn_side_height/2 - btn_side_radius])
+            rotate([90, 0, 0]) cylinder(h=wall_thickness * 4, r=btn_side_radius, center=true);
     }
 }
 
@@ -83,13 +83,13 @@ module volume_dial_cutout() {
 
 module front_recess_cutout() {
     hull() {
-        translate([-front_recess_w/2 + front_recess_r, 0, front_recess_r])
+        translate([-front_recess_w/2 + front_recess_r, 0, -front_recess_h/2 + front_recess_r])
             rotate([90, 0, 0]) cylinder(h=front_recess_depth * 2, r=front_recess_r, center=true);
-        translate([front_recess_w/2 - front_recess_r, 0, front_recess_r])
+        translate([front_recess_w/2 - front_recess_r, 0, -front_recess_h/2 + front_recess_r])
             rotate([90, 0, 0]) cylinder(h=front_recess_depth * 2, r=front_recess_r, center=true);
-        translate([front_recess_w/2 - front_recess_r, 0, front_recess_h - front_recess_r])
+        translate([front_recess_w/2 - front_recess_r, 0, front_recess_h/2 - front_recess_r])
             rotate([90, 0, 0]) cylinder(h=front_recess_depth * 2, r=front_recess_r, center=true);
-        translate([-front_recess_w/2 + front_recess_r, 0, front_recess_h - front_recess_r])
+        translate([-front_recess_w/2 + front_recess_r, 0, front_recess_h/2 - front_recess_r])
             rotate([90, 0, 0]) cylinder(h=front_recess_depth * 2, r=front_recess_r, center=true);
     }
 }
@@ -108,11 +108,11 @@ module bottom_case() {
 
         // --- 手前側面（フロント壁: Y=0側）の大型ボタン開口部 ---
         // リセス（深さ front_recess_depth = 3.0mm）の奥壁から開口
-        translate([center_x, front_recess_depth + wall_thickness / 2, wall_thickness + pcb_standoff_h - btn_side_height / 2 + 1.0])
+        translate([center_x, front_recess_depth + wall_thickness / 2, btn_center_z])
             side_button_cutout();
 
         // --- 手前側面のアクリル化粧パネル用リセス（段差ポケット: 深さ3.0mm） ---
-        translate([center_x, front_recess_depth / 2 - 0.01, wall_thickness + pcb_standoff_h - front_recess_h / 2 + 1.0])
+        translate([center_x, front_recess_depth / 2 - 0.01, btn_center_z])
             front_recess_cutout();
 
         // --- 右側面（X=最大側）のボリューム調整スリット ---

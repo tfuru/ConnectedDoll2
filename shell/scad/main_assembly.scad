@@ -57,21 +57,25 @@ module pcb_mockup() {
         }
     }
 
-    // 基板手前側のタクトスイッチ (EVQPUC02K)
-    color([0.8, 0.8, 0.8, 1.0]) {
-        translate([-2.5, -pcb_height/2 - 1.5, 0])
-            cube([5.0, 3.0, 3.5]);
+    // 基板手前側のタクトスイッチ (EVQPUC02K: Top層実装, 4.7x4.5x1.65mm)
+    color([0.8, 0.8, 0.85, 1.0]) {
+        // スイッチ本体 (Top層)
+        translate([-4.7/2, -pcb_height/2, pcb_thickness])
+            cube([4.7, 4.5, 1.65]);
+        // 水平アクチュエータ突起 (手前側面への押しボタン)
+        translate([-1.5/2, -pcb_height/2 - 0.8, pcb_thickness + 0.3])
+            cube([1.5, 0.8, 1.0]);
     }
 
-    // 基板手前側のフルカラーLED (WS2812B: 前面ボタン中央導光窓へ向けて発光)
+    // 基板手前側のフルカラーLED (WS2812B: SW1の背面に配置され前方へ発光)
     color([1.0, 0.2, 0.2, 0.95]) {
-        translate([-ws2812b_size/2, -pcb_height/2 + 2.0, pcb_thickness])
+        translate([-ws2812b_size/2, -pcb_height/2 + 5.5, pcb_thickness])
             cube([ws2812b_size, ws2812b_size, ws2812b_thickness]);
     }
 
     // 基板右端のボリュームダイヤル (RK10J11R0A0H モックアップ)
     color([0.3, 0.3, 0.3, 1.0]) {
-        translate([pcb_width/2 - 2.0, vol_offset_y, 0.5])
+        translate([pcb_width/2 - 2.0, vol_offset_y, pcb_thickness])
             cylinder(h=2.2, d=11.0);
     }
 }
@@ -134,7 +138,7 @@ module main_assembly() {
     }
 
     // 3. 前面ボタン (フロント手前側面の3.0mmリセス奥壁に配置)
-    btn_z_pos = wall_thickness + pcb_standoff_h - btn_side_height / 2 + 1.0;
+    btn_z_pos = btn_center_z;
     btn_y_pos = front_recess_depth + wall_thickness; // Y = 5.0mm (ケース外壁Y=0から3mm奥)
     color([0.2, 0.6, 0.9, 0.9])
         translate([center_x, btn_y_pos - explode_btn, btn_z_pos])
