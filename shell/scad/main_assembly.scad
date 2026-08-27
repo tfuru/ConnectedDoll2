@@ -147,7 +147,9 @@ module main_assembly() {
 
     // 3b. アクリル化粧パネル (実パーツモジュール acrylic_panel_3d() を使用して配置)
     if (show_acrylic) {
-        acrylic_y_pos = (btn_y_pos - btn_cap_depth) - (explode_btn > 0 ? (explode_btn + 10.0) : 0.0);
+        // ボタン操作面（フランジ厚み1.2mm + キャップ深さ2.5mm = 3.7mm手前）に密着配置
+        btn_front_face_y = btn_y_pos - (btn_flange_t + btn_cap_depth);
+        acrylic_y_pos = btn_front_face_y - (explode_btn > 0 ? (explode_btn + 10.0) : 0.0);
         
         // アクリルプレート
         color([0.9, 0.9, 0.9, 0.65])
@@ -155,7 +157,7 @@ module main_assembly() {
                 rotate([90, 0, 0])
                     acrylic_panel_3d();
 
-        // 左右2箇所のネオジム磁石 (金/ニッケルメッキ色: 磁石穴内に配置)
+        // 左右2箇所のネオジム磁石 (金/ニッケルメッキ色: 磁石穴内に配置、ボタン側M2ナットに吸着)
         color([0.85, 0.75, 0.4, 1.0])
             translate([center_x, acrylic_y_pos, btn_z_pos]) {
                 for (dx = [-btn_magnet_pitch_w/2, btn_magnet_pitch_w/2]) {
