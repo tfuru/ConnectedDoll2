@@ -30,20 +30,6 @@ module nut_pocket() {
             cylinder(h=btn_nut_depth + 0.1, r=nut_radius, $fn=6);
 }
 
-// ボタン中央の LED 導光スリット（貫通窓）
-module light_guide_slit() {
-    hull() {
-        translate([-btn_light_slit_w/2 + btn_light_slit_r, -btn_light_slit_h/2 + btn_light_slit_r, -0.1])
-            cylinder(h=btn_flange_t + btn_cap_depth + 0.2, r=btn_light_slit_r);
-        translate([btn_light_slit_w/2 - btn_light_slit_r, -btn_light_slit_h/2 + btn_light_slit_r, -0.1])
-            cylinder(h=btn_flange_t + btn_cap_depth + 0.2, r=btn_light_slit_r);
-        translate([btn_light_slit_w/2 - btn_light_slit_r, btn_light_slit_h/2 - btn_light_slit_r, -0.1])
-            cylinder(h=btn_flange_t + btn_cap_depth + 0.2, r=btn_light_slit_r);
-        translate([-btn_light_slit_w/2 + btn_light_slit_r, btn_light_slit_h/2 - btn_light_slit_r, -0.1])
-            cylinder(h=btn_flange_t + btn_cap_depth + 0.2, r=btn_light_slit_r);
-    }
-}
-
 // 左右の復帰板バネ（サイド・スプリングウィング）
 // ケース前面内壁に押し当てられ、ボタンのガタつき防止と安定した復帰力を生み出す
 module side_return_springs() {
@@ -64,30 +50,29 @@ module side_return_springs() {
     }
 }
 
-// 裏面のタクトスイッチ収容ポケット（EVQPUC02Kとの干渉を完全に逃げるリセス）
-module switch_relief_pocket() {
+// 弾性プランジャー（基板内側に実装されたEVQPUC02Kタクトスイッチを押下する板バネ梁機構）
+// スイッチ中心高さ Y = +1.4mm に突出し、約1.2mmの深いストローク感とソフトな底付き感を実現
+module flexible_plunger() {
     py = btn_plunger_offset_y; // +1.4mm
-    pw = btn_switch_pocket_w;  // 5.6mm
-    ph = btn_switch_pocket_h;  // 3.2mm
-    pd = btn_switch_pocket_d;  // 1.4mm
-    
-    translate([-pw / 2, py - ph / 2, -0.1])
-        cube([pw, ph, pd + 0.1]);
-}
+    pw = btn_plunger_w;        // 3.5mm
+    pl = btn_plunger_l;        // 0.8mm
+    pt = btn_flex_plunger_t;   // 0.9mm
 
-// ポケット内蔵 弾性押下面（カンチレバー板バネ梁機構）
-// スイッチ先端(Z=1.4mm)に対してZ=1.2mm位置に押下面を配置し、0.2mmの初期隙間と1.2mmストロークを創出
-module internal_flex_actuator() {
-    py = btn_plunger_offset_y; // +1.4mm
-    pw = 4.0;                  // 押圧パッド幅
-    ph = 1.6;                  // 押圧パッド高さ
-    pd = btn_switch_pocket_d;  // 1.4mm
-    gap = btn_actuator_gap;    // 0.2mm
-    actuator_z = pd - gap;     // 1.2mm (Global Y = 3.8mm)
+    // フランジ裏面（Z=0）からの強固な弾性支持リブ
+    translate([-pw / 2, py - 0.6, -pt])
+        cube([pw, 1.2, pt + 0.01]);
 
-    // ポケット天井からの弾性カンチレバー支持アーム
-    translate([-pw / 2, py - ph / 2, actuator_z])
-        cube([pw, ph, pd - actuator_z + 0.6]);
+    // 45°傾斜した弾性カンチレバー梁（しなりによるストローク創出）
+    hull() {
+        translate([-pw / 2, py - 0.6, -pt])
+            cube([pw, 1.2, pt]);
+        translate([-pw / 2, py - 0.6, -pl])
+            cube([pw, 1.2, pt]);
+    }
+
+    // 先端の押下コンタクト部（EVQPUC02Kアクチュエータに確実に当接）
+    translate([-pw / 2, py - 0.6, -pl])
+        cube([pw, 1.2, pl]);
 }
 
 module front_button() {
@@ -104,26 +89,15 @@ module front_button() {
             // 3. 左右の復帰板バネアーム（ケース内壁当接スプリング）
             side_return_springs();
 
-            // 4. ポケット内蔵 弾性押下面（スイッチ押圧カンチレバー）
-            internal_flex_actuator();
+            // 4. スイッチ押下 弾性プランジャー（板バネ機構付き）
+            flexible_plunger();
         }
 
-        // 5. 裏面のタクトスイッチ収容ポケット（干渉回避）
-        // ※内蔵弾性押下面を残すため、ポケット側壁・底面を掘り込み
-        difference() {
-            switch_relief_pocket();
-            internal_flex_actuator();
-        }
-
-        // 6. 操作面 左右2箇所の M2 六角ナット接着ポケット（高さ中央）
+        // 5. 操作面 左右2箇所の M2 六角ナット接着ポケット（高さ中央）
         for (dx = [-btn_magnet_pitch_w / 2, btn_magnet_pitch_w / 2]) {
             translate([dx, 0, 0])
                 nut_pocket();
         }
-
-        // 7. 中央の LED 導光スリット窓（基板上の WS2812B 光をアクリル裏面へ誘導）
-        translate([0, 0, 0])
-            light_guide_slit();
     }
 }
 

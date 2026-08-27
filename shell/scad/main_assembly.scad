@@ -57,14 +57,14 @@ module pcb_mockup() {
         }
     }
 
-    // 基板手前側のタクトスイッチ (EVQPUC02K: Top層実装, 4.7x4.5x1.65mm)
+    // 基板手前側のタクトスイッチ (EVQPUC02K: Top層実装, 基板外形の内側に配置)
     color([0.8, 0.8, 0.85, 1.0]) {
-        // スイッチ本体 (Top層)
-        translate([-4.7/2, -pcb_height/2, pcb_thickness])
+        // スイッチ本体 (Top層: 基板端より0.8mm内側)
+        translate([-4.7/2, -pcb_height/2 + 0.8, pcb_thickness])
             cube([4.7, 4.5, 1.65]);
-        // 水平アクチュエータ突起 (手前側面への押しボタン)
-        translate([-1.5/2, -pcb_height/2 - 0.8, pcb_thickness + 0.3])
-            cube([1.5, 0.8, 1.0]);
+        // 水平アクチュエータ突起 (押しボタン: 基板端の内側に位置)
+        translate([-1.5/2, -pcb_height/2 + 0.2, pcb_thickness + 0.3])
+            cube([1.5, 0.6, 1.0]);
     }
 
     // 基板手前側のフルカラーLED (WS2812B: SW1の背面に配置され前方へ発光)

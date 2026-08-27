@@ -43,12 +43,10 @@ btn_nut_depth         = 1.6;        // M2 六角ナット接着ポケット深�
 btn_spring_arm_t        = 1.0;        // 左右復帰板バネアーム肉厚 (0.9〜1.0mm)
 btn_spring_arm_l        = 9.5;        // 復帰板バネアーム展開長
 btn_spring_reach        = 2.8;        // 復帰板バネ前方（ケース内壁当接）突き出し量
-btn_flex_plunger_t      = 1.0;        // 弾性押下面板バネ肉厚
+btn_flex_plunger_t      = 0.9;        // 弾性プランジャー板バネ肉厚
 btn_target_stroke       = 1.2;        // 目標ストローク量 (1.2mm)
-btn_switch_pocket_w     = 5.6;        // スイッチ収容ポケット幅 (EVQPUC02K 4.7mm収容)
-btn_switch_pocket_h     = 3.2;        // スイッチ収容ポケット高さ (1.65mm収容)
-btn_switch_pocket_d     = 1.4;        // スイッチ収容ポケット深さ (裏面Z=0からの彫り込み深さ: 1.4mm)
-btn_actuator_gap        = 0.2;        // 非押下時スイッチ先端クリアランス (0.2mm)
+btn_plunger_w           = 3.5;        // プランジャー幅 (スリム形状・LED光路非干渉)
+btn_plunger_l           = 0.8;        // プランジャー裏面突出長 (0.8mm: 実基板内側スイッチ位置に対応)
 btn_plunger_offset_y    = 1.4;        // スイッチアクチュエータ中心Yオフセット (+1.4mm)
 
 // --- WS2812B LED & 前面ボタン導光スリット ---
