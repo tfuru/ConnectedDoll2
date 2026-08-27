@@ -79,12 +79,13 @@ case_outer_h   = case_inner_h + wall_thickness * 2; // 外高 (約 68.8mm)
 
 // --- 統合締結ボス (基板 52x52mm ピッチに完全統合) ---
 joint_pitch        = pcb_hole_pitch; // 52.0mm
-joint_boss_outer   = 5.5;            // ボス外径
+joint_boss_outer   = 5.8;            // ボス外径 (強度アップ: 5.5mm -> 5.8mm)
 joint_screw_pass   = 2.2;            // M2 ネジ通過穴径（ボトム側）
 joint_screw_tap    = 1.8;            // M2 タッピング穴径（トップ側）
 joint_screw_head_d = 4.2;            // M2 ネジ頭沈め径
 joint_screw_head_h = 1.8;            // ネジ頭沈め深さ
 pcb_standoff_h     = 19.0;           // ボトム底面から基板受け面までの支柱高さ (電池17mmに対し2mmクリアランス)
+rib_thickness      = 1.2;            // 補強ガセットリブ厚み
 
 // --- 共通ユーティリティモジュール ---
 module rounded_cube(size, r) {

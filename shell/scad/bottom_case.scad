@@ -17,9 +17,38 @@ module side_button_cutout() {
     }
 }
 
-module screw_pass_boss(outer_d, pass_d, height) {
+module screw_pass_boss(outer_d, pass_d, height, dir_x=0, dir_y=0) {
     difference() {
-        cylinder(h=height, d=outer_d);
+        union() {
+            // メインボス円筒
+            cylinder(h=height, d=outer_d);
+            // 根元テーパーベース（応力集中を緩和）
+            cylinder(h=5.0, d1=outer_d + 3.0, d2=outer_d);
+            
+            // 外壁接続ガセット補強リブ（ケースコーナー・外壁へ向けて展開）
+            if (dir_x != 0 && dir_y != 0) {
+                rib_h = 14.0; // 支柱高さの約74%まで補強リブを立ち上げ
+                dx_wall = dir_x * (case_inner_w / 2 - joint_pitch / 2 + 0.1);
+                dy_wall = dir_y * (case_inner_h / 2 - joint_pitch / 2 + 0.1);
+                
+                // X方向外壁への三角リブ
+                hull() {
+                    translate([0, -rib_thickness/2, 0]) cube([0.01, rib_thickness, rib_h]);
+                    translate([dx_wall, -rib_thickness/2, 0]) cube([0.01, rib_thickness, 4.0]);
+                }
+                // Y方向外壁への三角リブ
+                hull() {
+                    translate([-rib_thickness/2, 0, 0]) cube([rib_thickness, 0.01, rib_h]);
+                    translate([-rib_thickness/2, dy_wall, 0]) cube([rib_thickness, 0.01, 4.0]);
+                }
+                // 対角コーナー方向への三角リブ
+                hull() {
+                    translate([-rib_thickness/2, -rib_thickness/2, 0]) cube([rib_thickness, rib_thickness, rib_h]);
+                    translate([dx_wall - dir_x*rib_thickness/2, dy_wall - dir_y*rib_thickness/2, 0]) cube([rib_thickness, rib_thickness, 4.0]);
+                }
+            }
+        }
+        // ネジ貫通穴
         translate([0, 0, -0.1])
             cylinder(h=height + 0.2, d=pass_d);
     }
@@ -27,7 +56,18 @@ module screw_pass_boss(outer_d, pass_d, height) {
 
 module speaker_boss(outer_d, inner_d, height) {
     difference() {
-        cylinder(h=height, d=outer_d);
+        union() {
+            // ボス円筒
+            cylinder(h=height, d=outer_d);
+            // 根元テーパー
+            cylinder(h=2.5, d1=outer_d + 2.0, d2=outer_d);
+            // 前面壁への三角リブ
+            dy_front = -(case_inner_h / 2 + spk_pos_y);
+            hull() {
+                translate([-rib_thickness/2, 0, 0]) cube([rib_thickness, 0.01, height]);
+                translate([-rib_thickness/2, dy_front, 0]) cube([rib_thickness, 0.01, 2.0]);
+            }
+        }
         translate([0, 0, -0.1])
             cylinder(h=height + 0.2, d=inner_d);
     }
@@ -130,7 +170,7 @@ module bottom_case() {
         for (dx = [-joint_pitch / 2, joint_pitch / 2]) {
             for (dy = [-joint_pitch / 2, joint_pitch / 2]) {
                 translate([dx, dy, 0])
-                    screw_pass_boss(joint_boss_outer, joint_screw_pass, pcb_standoff_h);
+                    screw_pass_boss(joint_boss_outer, joint_screw_pass, pcb_standoff_h, sign(dx), sign(dy));
             }
         }
     }

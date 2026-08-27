@@ -8,9 +8,32 @@ include <params.scad>;
 // bottom_case_h (26.0mm) からの超過量 = 2.0mm
 btn_cutout_overflow = (wall_thickness + pcb_standoff_h - btn_side_height / 2 + 1.0 + btn_side_height) - bottom_case_h; // 約 2.0mm
 
-module screw_tap_boss(outer_d, tap_d, height) {
+module screw_tap_boss(outer_d, tap_d, height, dir_x=0, dir_y=0) {
     difference() {
-        cylinder(h=height, d=outer_d);
+        union() {
+            // メインボス円筒
+            cylinder(h=height, d=outer_d);
+            // 天板根元テーパーベース
+            cylinder(h=min(height, 3.0), d1=outer_d + 2.5, d2=outer_d);
+            
+            // 外壁接続補強リブ
+            if (dir_x != 0 && dir_y != 0) {
+                dx_wall = dir_x * (case_inner_w / 2 - joint_pitch / 2 + 0.1);
+                dy_wall = dir_y * (case_inner_h / 2 - joint_pitch / 2 + 0.1);
+                
+                // X方向外壁への補強リブ
+                hull() {
+                    translate([0, -rib_thickness/2, 0]) cube([0.01, rib_thickness, height]);
+                    translate([dx_wall, -rib_thickness/2, 0]) cube([0.01, rib_thickness, height]);
+                }
+                // Y方向外壁への補強リブ
+                hull() {
+                    translate([-rib_thickness/2, 0, 0]) cube([rib_thickness, 0.01, height]);
+                    translate([-rib_thickness/2, dy_wall, 0]) cube([rib_thickness, 0.01, height]);
+                }
+            }
+        }
+        // タッピング穴
         translate([0, 0, -0.1])
             cylinder(h=height + 0.2, d=tap_d);
     }
@@ -42,7 +65,7 @@ module top_cover() {
             for (dx = [-joint_pitch / 2, joint_pitch / 2]) {
                 for (dy = [-joint_pitch / 2, joint_pitch / 2]) {
                     translate([dx, dy, 0])
-                        screw_tap_boss(joint_boss_outer, joint_screw_tap, top_cover_h - wall_thickness);
+                        screw_tap_boss(joint_boss_outer, joint_screw_tap, top_cover_h - wall_thickness, sign(dx), sign(dy));
                 }
             }
         }
