@@ -59,17 +59,20 @@ vol_slit_height = 4.5;        // スリット高さ
 vol_slit_radius = 1.5;        // スリット角丸
 vol_offset_y    = 0.0;        // Y軸方向オフセット（中央）
 
-// --- 電池ボックス ---
-batt_length    = 62.7;
-batt_width     = 37.3;
-batt_height    = 16.0;
+// --- 電池ボックス (単4×3本 スイッチ付き) ---
+batt_length    = 63.0;        // 横幅
+batt_width     = 37.0;        // 縦幅
+batt_height    = 17.0;        // 厚み
+batt_clearance = 0.6;         // 電池ボックス収容クリアランス
+batt_pos_y     = 3.0;         // 電池ボックス中心Yオフセット（奥側M2支柱および手前スピーカーとの干渉回避位置）
+spk_pos_y      = -23.5;       // スピーカー中心Yオフセット
 
 // --- ケース寸法計算 ---
 case_inner_w   = pcb_width + clearance * 2 + 4.0; // 内部余裕 (約 64.8mm)
 case_inner_h   = pcb_height + clearance * 2 + 4.0; // 内部余裕 (約 64.8mm)
 
 top_cover_h    = 8.0;         // トップカバー高さ（薄型フタ・天板）
-bottom_case_h  = 26.0;        // ボトムケース高さ（電池ボックス 16mm + 基板 + スイッチ開口を収容）
+bottom_case_h  = 27.0;        // ボトムケース高さ（電池ボックス 17mm + 基板 + スイッチ開口を収容、1mm拡張）
 
 case_outer_w   = case_inner_w + wall_thickness * 2; // 外幅 (約 68.8mm)
 case_outer_h   = case_inner_h + wall_thickness * 2; // 外高 (約 68.8mm)
@@ -81,7 +84,7 @@ joint_screw_pass   = 2.2;            // M2 ネジ通過穴径（ボトム側）
 joint_screw_tap    = 1.8;            // M2 タッピング穴径（トップ側）
 joint_screw_head_d = 4.2;            // M2 ネジ頭沈め径
 joint_screw_head_h = 1.8;            // ネジ頭沈め深さ
-pcb_standoff_h     = 18.0;           // ボトム底面から基板受け面までの支柱高さ
+pcb_standoff_h     = 19.0;           // ボトム底面から基板受け面までの支柱高さ (電池17mmに対し2mmクリアランス)
 
 // --- 共通ユーティリティモジュール ---
 module rounded_cube(size, r) {

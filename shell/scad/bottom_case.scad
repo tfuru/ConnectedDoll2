@@ -103,21 +103,27 @@ module bottom_case() {
     // --- 内部固定構造 (Union) ---
     translate([center_x, center_y, wall_thickness]) {
         // 1. スピーカー固定ボス (TR-WS-2014B 用 M1.8 取付穴ピッチ 24.7mm / 手前前面側)
-        translate([0, -18.0, 0]) {
+        translate([0, spk_pos_y, 0]) {
             translate([-spk_hole_pitch / 2, 0, 0])
                 speaker_boss(spk_boss_dia, spk_boss_inner, spk_boss_h);
             translate([spk_hole_pitch / 2, 0, 0])
                 speaker_boss(spk_boss_dia, spk_boss_inner, spk_boss_h);
         }
 
-        // 2. 電池ボックス位置決めガイドリブ (横向き配置 / 後方奥側)
-        translate([0, 8.0, 0]) {
-            // 奥側ガイド
-            translate([-batt_length / 4, batt_width / 2, 0])
+        // 2. 電池ボックス位置決めガイドリブ (横向き配置 / 中央〜奥側)
+        translate([0, batt_pos_y, 0]) {
+            eff_w = batt_width + batt_clearance;
+            // 奥側ガイドリブ
+            translate([-batt_length / 4, eff_w / 2, 0])
                 cube([batt_length / 2, 1.2, 8.0]);
-            // 手前側ガイド
-            translate([-batt_length / 4, -batt_width / 2 - 1.2, 0])
+            // 手前側ガイドリブ
+            translate([-batt_length / 4, -eff_w / 2 - 1.2, 0])
                 cube([batt_length / 2, 1.2, 8.0]);
+            // 左右位置決めストッパー (左右振れ止め)
+            translate([-(batt_length + batt_clearance) / 2 - 1.0, -eff_w / 4, 0])
+                cube([1.0, eff_w / 2, 5.0]);
+            translate([(batt_length + batt_clearance) / 2, -eff_w / 4, 0])
+                cube([1.0, eff_w / 2, 5.0]);
         }
 
         // 3. 統合基板・ケース締結支柱ボス (四隅 52x52mm ピッチ、底面から基板を支えネジを通す)

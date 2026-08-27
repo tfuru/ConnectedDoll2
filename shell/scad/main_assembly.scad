@@ -98,12 +98,12 @@ module main_assembly() {
 
     // 2. 内部部品（ボトムケース内）
     if (show_mockup) {
-        // スピーカー (手前前面側 Y=-18mm)
-        translate([center_x, center_y - 18.0, wall_thickness + spk_boss_h])
+        // スピーカー (手前前面側 Y=spk_pos_y)
+        translate([center_x, center_y + spk_pos_y, wall_thickness + spk_boss_h])
             speaker_mockup();
 
-        // 電池ボックス (横向き配置 / 後方奥側 Y=+8mm)
-        translate([center_x, center_y + 8.0, wall_thickness])
+        // 電池ボックス (横向き配置 / Y=batt_pos_y)
+        translate([center_x, center_y + batt_pos_y, wall_thickness])
             battery_box_mockup();
 
         // メイン基板 (ボス高さ pcb_standoff_h の上)
