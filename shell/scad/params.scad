@@ -57,7 +57,7 @@ front_recess_r        = btn_side_radius + front_recess_margin;      // 3.6mm
 vol_slit_width  = 16.0;       // ダイヤル操作スリット幅
 vol_slit_height = 4.5;        // スリット高さ
 vol_slit_radius = 1.5;        // スリット角丸
-vol_offset_y    = 0.0;        // Y軸方向オフセット（中央）
+vol_offset_y    = -5.0;       // Y軸方向オフセット（前方向へ5mm移動）
 
 // --- 電池ボックス (単4×3本 スイッチ付き) ---
 batt_length    = 63.0;        // 横幅
