@@ -72,20 +72,27 @@ case_inner_w   = pcb_width + clearance * 2 + 4.0; // 内部余裕 (約 64.8mm)
 case_inner_h   = pcb_height + clearance * 2 + 4.0; // 内部余裕 (約 64.8mm)
 
 top_cover_h    = 8.0;         // トップカバー高さ（薄型フタ・天板）
-bottom_case_h  = 27.0;        // ボトムケース高さ（電池ボックス 17mm + 基板 + スイッチ開口を収容、1mm拡張）
+bottom_case_h  = 28.0;        // ボトムケース高さ（20mmスペーサー + 基板 + スイッチ開口を収容、28mm）
 
 case_outer_w   = case_inner_w + wall_thickness * 2; // 外幅 (約 68.8mm)
 case_outer_h   = case_inner_h + wall_thickness * 2; // 外高 (約 68.8mm)
 
-// --- 統合締結ボス (基板 52x52mm ピッチに完全統合) ---
+// --- M2 六角オスメスネジスペーサー仕様 ---
+spacer_body_h      = 20.0;           // スペーサー本体（六角部）長さ = 20.0mm
+spacer_male_h      = 6.0;            // 先端おねじ部長さ = 6.0mm
+spacer_hex_w       = 4.4;            // ボトム側回り止め六角ポケット二面幅 (対辺 4.0mm + 余裕0.4mm)
+spacer_pocket_d    = 1.0;            // 回り止め六角ポケット深さ
+spacer_pad_h       = 1.2;            // ボトム底面のスペーサー受け座パッド高さ
+pcb_standoff_h     = spacer_body_h;  // 基板受け面高さ = 20.0mm
+
+// --- 統合締結ボス・ネジ穴寸法 ---
 joint_pitch        = pcb_hole_pitch; // 52.0mm
-joint_boss_outer   = 5.8;            // ボス外径 (強度アップ: 5.5mm -> 5.8mm)
-joint_screw_pass   = 2.2;            // M2 ネジ通過穴径（ボトム側）
-joint_screw_tap    = 1.8;            // M2 タッピング穴径（トップ側）
-joint_screw_head_d = 4.2;            // M2 ネジ頭沈め径
+joint_boss_outer   = 6.0;            // トップ側ボス外径
+joint_screw_pass   = 2.2;            // M2 ネジ通過穴径（ボトム底面）
+joint_screw_tap    = 1.8;            // M2 おねじ受けタッピング穴径（トップ側）
+joint_screw_head_d = 4.4;            // M2 ネジ頭沈め径
 joint_screw_head_h = 1.8;            // ネジ頭沈め深さ
-pcb_standoff_h     = 19.0;           // ボトム底面から基板受け面までの支柱高さ (電池17mmに対し2mmクリアランス)
-rib_thickness      = 1.2;            // 補強ガセットリブ厚み
+rib_thickness      = 1.2;            // 補強リブ厚み
 
 // --- 共通ユーティリティモジュール ---
 module rounded_cube(size, r) {

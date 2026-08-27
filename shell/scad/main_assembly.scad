@@ -76,13 +76,25 @@ module pcb_mockup() {
     }
 }
 
-// 4. M2 締結ネジモックアップ (M2 x 25mm相当)
-module m2_screw_mockup(length=24.0) {
+// 4. M2 六角オスメススペーサーモックアップ (20mm + 6mm)
+module hex_spacer_mockup(body_h=20.0, male_h=6.0, hex_w=4.0) {
+    color([0.2, 0.2, 0.2, 0.95]) { // ブラック/ナイロンまたは真鍮色
+        // 六角柱本体
+        rotate([0, 0, 30])
+            cylinder(h=body_h, d=hex_w / cos(30), $fn=6);
+        // 先端おねじ
+        translate([0, 0, body_h])
+            cylinder(h=male_h, d=2.0);
+    }
+}
+
+// 5. M2 ボトム締結小ネジモックアップ (M2 x 5mm)
+module m2_screw_mockup(length=5.0) {
     color([0.85, 0.85, 0.9, 1.0]) {
         // ネジ頭 (鍋頭 / 皿頭)
-        cylinder(h=1.6, d=joint_screw_head_d);
+        cylinder(h=1.4, d=joint_screw_head_d);
         // ネジ軸
-        translate([0, 0, 1.6])
+        translate([0, 0, 1.4])
             cylinder(h=length, d=2.0);
     }
 }
@@ -106,7 +118,17 @@ module main_assembly() {
         translate([center_x, center_y + batt_pos_y, wall_thickness])
             battery_box_mockup();
 
-        // メイン基板 (ボス高さ pcb_standoff_h の上)
+        // M2 六角スペーサー (四隅 52x52mm ピッチ、底面から直立)
+        translate([center_x, center_y, wall_thickness]) {
+            for (dx = [-joint_pitch / 2, joint_pitch / 2]) {
+                for (dy = [-joint_pitch / 2, joint_pitch / 2]) {
+                    translate([dx, dy, 0])
+                        hex_spacer_mockup(spacer_body_h, spacer_male_h, 4.0);
+                }
+            }
+        }
+
+        // メイン基板 (スペーサー高さ pcb_standoff_h の上)
         translate([center_x, center_y, wall_thickness + pcb_standoff_h])
             pcb_mockup();
     }
@@ -146,13 +168,13 @@ module main_assembly() {
             rotate([0, 180, 0])
                 top_cover();
 
-    // 5. ボトム底面からのM2締結ネジ (4隅 52x52mm ピッチ)
+    // 5. ボトム底面からのM2締結短ネジ (4隅 52x52mm ピッチ、L=5mm)
     if (show_screws) {
         translate([center_x, center_y, -explode_screw]) {
             for (dx = [-joint_pitch / 2, joint_pitch / 2]) {
                 for (dy = [-joint_pitch / 2, joint_pitch / 2]) {
                     translate([dx, dy, 0])
-                        m2_screw_mockup(24.0);
+                        m2_screw_mockup(5.0);
                 }
             }
         }

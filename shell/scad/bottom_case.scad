@@ -17,40 +17,35 @@ module side_button_cutout() {
     }
 }
 
-module screw_pass_boss(outer_d, pass_d, height, dir_x=0, dir_y=0) {
+module spacer_mount_pad(pad_d=7.2, pad_h=1.2, hex_w=4.4, pocket_d=1.0, pass_d=2.2, dir_x=0, dir_y=0) {
     difference() {
         union() {
-            // メインボス円筒
-            cylinder(h=height, d=outer_d);
-            // 根元テーパーベース（応力集中を緩和）
-            cylinder(h=5.0, d1=outer_d + 3.0, d2=outer_d);
-            
-            // 外壁接続ガセット補強リブ（ケースコーナー・外壁へ向けて展開）
+            // スペーサー受け座パッド
+            cylinder(h=pad_h, d=pad_d);
+            // 根元テーパーベース
+            cylinder(h=pad_h, d1=pad_d + 2.0, d2=pad_d);
+            // コーナー外壁への小型リブ（底面補強）
             if (dir_x != 0 && dir_y != 0) {
-                rib_h = 14.0; // 支柱高さの約74%まで補強リブを立ち上げ
                 dx_wall = dir_x * (case_inner_w / 2 - joint_pitch / 2 + 0.1);
                 dy_wall = dir_y * (case_inner_h / 2 - joint_pitch / 2 + 0.1);
-                
-                // X方向外壁への三角リブ
                 hull() {
-                    translate([0, -rib_thickness/2, 0]) cube([0.01, rib_thickness, rib_h]);
-                    translate([dx_wall, -rib_thickness/2, 0]) cube([0.01, rib_thickness, 4.0]);
+                    translate([0, -rib_thickness/2, 0]) cube([0.01, rib_thickness, pad_h]);
+                    translate([dx_wall, -rib_thickness/2, 0]) cube([0.01, rib_thickness, pad_h]);
                 }
-                // Y方向外壁への三角リブ
                 hull() {
-                    translate([-rib_thickness/2, 0, 0]) cube([rib_thickness, 0.01, rib_h]);
-                    translate([-rib_thickness/2, dy_wall, 0]) cube([rib_thickness, 0.01, 4.0]);
-                }
-                // 対角コーナー方向への三角リブ
-                hull() {
-                    translate([-rib_thickness/2, -rib_thickness/2, 0]) cube([rib_thickness, rib_thickness, rib_h]);
-                    translate([dx_wall - dir_x*rib_thickness/2, dy_wall - dir_y*rib_thickness/2, 0]) cube([rib_thickness, rib_thickness, 4.0]);
+                    translate([-rib_thickness/2, 0, 0]) cube([rib_thickness, 0.01, pad_h]);
+                    translate([-rib_thickness/2, dy_wall, 0]) cube([rib_thickness, 0.01, pad_h]);
                 }
             }
         }
-        // ネジ貫通穴
+        // 回り止め六角ポケット（六角柱の二面幅 hex_w を収容）
+        translate([0, 0, pad_h - pocket_d])
+            rotate([0, 0, 30])
+                cylinder(h=pocket_d + 0.1, d=hex_w / cos(30), $fn=6);
+        
+        // M2ネジ貫通穴
         translate([0, 0, -0.1])
-            cylinder(h=height + 0.2, d=pass_d);
+            cylinder(h=pad_h + 0.2, d=pass_d);
     }
 }
 
@@ -166,11 +161,11 @@ module bottom_case() {
                 cube([1.0, eff_w / 2, 5.0]);
         }
 
-        // 3. 統合基板・ケース締結支柱ボス (四隅 52x52mm ピッチ、底面から基板を支えネジを通す)
+        // 3. M2 六角スペーサー受け座パッド (四隅 52x52mm ピッチ、回り止め六角ポケット付き)
         for (dx = [-joint_pitch / 2, joint_pitch / 2]) {
             for (dy = [-joint_pitch / 2, joint_pitch / 2]) {
                 translate([dx, dy, 0])
-                    screw_pass_boss(joint_boss_outer, joint_screw_pass, pcb_standoff_h, sign(dx), sign(dy));
+                    spacer_mount_pad(pad_d=7.2, pad_h=spacer_pad_h, hex_w=spacer_hex_w, pocket_d=spacer_pocket_d, pass_d=joint_screw_pass, dir_x=sign(dx), dir_y=sign(dy));
             }
         }
     }
