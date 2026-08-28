@@ -151,9 +151,11 @@ module bottom_case() {
             // 奥側ガイドリブ
             translate([-batt_length / 4, eff_w / 2, 0])
                 cube([batt_length / 2, 1.2, 8.0]);
-            // 手前側ガイドリブ
-            translate([-batt_length / 4, -eff_w / 2 - 1.2, 0])
-                cube([batt_length / 2, 1.2, 8.0]);
+            // 手前側ガイドリブ (スピーカー本体との干渉回避のため左右に分割配置)
+            translate([-batt_length / 2 + 3, -eff_w / 2 - 1.2, 0])
+                cube([10, 1.2, 8.0]);
+            translate([batt_length / 2 - 13, -eff_w / 2 - 1.2, 0])
+                cube([10, 1.2, 8.0]);
             // 左右位置決めストッパー (左右振れ止め)
             translate([-(batt_length + batt_clearance) / 2 - 1.0, -eff_w / 4, 0])
                 cube([1.0, eff_w / 2, 5.0]);

@@ -17,10 +17,12 @@ pcb_hole_pitch = 52.0;        // 取付穴ピッチ (四隅 52x52mm)
 pcb_hole_dia   = 2.0;         // M2 穴
 
 // --- スピーカー (TR-WS-2014B) ---
-spk_width      = 20.0;
-spk_height     = 14.0;
-spk_thickness  = 4.5;
-spk_hole_pitch = 24.7;        // フランジ取付穴ピッチ
+spk_body_w     = 20.0;        // 本体幅 (20.0mm)
+spk_body_h     = 13.9;        // 本体奥行き (13.9mm)
+spk_thickness  = 4.5;         // 本体厚み (4.5mm)
+spk_ear_w      = 28.5;        // フランジ含む全幅 (28.5mm)
+spk_ear_to_front = 1.65;      // 出音口端面から取付穴中心までの距離 (1.65mm)
+spk_hole_pitch = 24.7;        // フランジ取付穴ピッチ (24.7mm)
 spk_hole_dia   = 1.8;         // M1.8 穴
 spk_boss_dia   = 4.2;
 spk_boss_inner = 1.4;         // M1.8 タッピング穴径
@@ -81,8 +83,8 @@ batt_length    = 63.0;        // 横幅
 batt_width     = 37.0;        // 縦幅
 batt_height    = 17.0;        // 厚み
 batt_clearance = 0.6;         // 電池ボックス収容クリアランス
-batt_pos_y     = 3.0;         // 電池ボックス中心Yオフセット（奥側M2支柱および手前スピーカーとの干渉回避位置）
-spk_pos_y      = -23.5;       // スピーカー中心Yオフセット
+batt_pos_y     = 3.5;         // 電池ボックス中心Yオフセット（奥側M2支柱および手前スピーカーとの干渉回避位置）
+spk_pos_y      = -28.5;       // スピーカー固定ボス中心Yオフセット（出音口を手前-Y方向に向ける）
 
 // --- ケース寸法計算 ---
 case_inner_w   = pcb_width + clearance * 2 + 4.0; // 内部余裕 (約 64.8mm)

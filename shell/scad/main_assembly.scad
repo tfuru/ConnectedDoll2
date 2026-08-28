@@ -21,15 +21,32 @@ center_y = case_outer_h / 2;
 
 // --- ダミーモックアップ部品モジュール ---
 
-// 1. スピーカーモックアップ (TR-WS-2014B)
+// 1. スピーカーモックアップ (TR-WS-2014B: 出音口・取付耳を手前-Y方向に向ける)
 module speaker_mockup() {
     color([0.2, 0.2, 0.2, 0.9]) {
-        // スピーカー本体
-        translate([-spk_width/2, -spk_height/2, 0])
-            cube([spk_width, spk_height, spk_thickness]);
-        // 取付耳（フランジ）
-        translate([-spk_hole_pitch/2 - 2, -3.5, 0])
-            cube([spk_hole_pitch + 4, 7, 1.0]);
+        // スピーカー本体 (奥行き 13.9mm, 取付穴中心から手前 1.65mm, 奥へ 12.25mm)
+        translate([-spk_body_w/2, -spk_ear_to_front, 0])
+            cube([spk_body_w, spk_body_h, spk_thickness]);
+
+        // 取付耳（フランジ: 厚み 1.0mm, ネジ穴位置 Y=0）
+        translate([-spk_ear_w/2, -spk_ear_to_front, 0])
+            difference() {
+                cube([spk_ear_w, 3.5, 1.0]);
+                // M1.8 ネジ穴 (ピッチ 24.7mm)
+                for (dx = [-spk_hole_pitch/2, spk_hole_pitch/2]) {
+                    translate([dx + spk_ear_w/2, spk_ear_to_front, -0.1])
+                        cylinder(h=1.2, d=spk_hole_dia);
+                }
+            }
+    }
+    // 出音口の視覚化 (レッドアクセント: 手前側面スロット & 前面開口)
+    color([0.9, 0.2, 0.2, 1.0]) {
+        // 手前側面出音スロット
+        translate([-12.0/2, -spk_ear_to_front - 0.1, 1.2])
+            cube([12.0, 0.2, 2.0]);
+        // 前面開口インジケータ
+        translate([-12.0/2, -spk_ear_to_front + 0.5, spk_thickness - 0.1])
+            cube([12.0, 3.0, 0.2]);
     }
 }
 
