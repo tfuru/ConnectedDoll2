@@ -33,6 +33,8 @@ btn_side_radius       = 3.0;        // 側面ボタン角丸
 
 btn_cap_depth         = 2.5;        // ボタンキャップ厚み（ズレ・傾き防止ガイド長）
 btn_flange_t          = 1.2;        // 脱落防止フランジ厚み
+btn_flange_w          = btn_side_width + 3.0;   // 47.0mm (左右抜け止めツバ幅: 片側+1.5mm)
+btn_flange_h          = btn_side_height + 1.0;  // 21.0mm (上下抜け止めツバ高: 片側+0.5mm, 天板天井クリアランス+0.5mm)
 btn_magnet_d          = 6.0;        // ネオジム磁石直径 (φ6.0mm)
 btn_magnet_t          = 3.0;        // ネオジム磁石厚み (3.0mm)
 btn_magnet_pitch_w    = 34.0;       // 左右磁石・ナット位置ピッチ (2個配置)
