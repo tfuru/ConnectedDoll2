@@ -94,6 +94,23 @@ module front_recess_cutout() {
     }
 }
 
+module speaker_sound_slits() {
+    slit_half_h = spk_slit_h / 2 - spk_slit_r;
+    for (i = [0 : spk_slit_count - 1]) {
+        dx = (i - (spk_slit_count - 1) / 2) * spk_slit_pitch;
+        hull() {
+            // 下端半円 (Z = spk_slit_center_z - slit_half_h)
+            translate([center_x + dx, -wall_thickness, spk_slit_center_z - slit_half_h])
+                rotate([-90, 0, 0])
+                    cylinder(h=wall_thickness * 3, r=spk_slit_r, $fn=24);
+            // 上端半円 (Z = spk_slit_center_z + slit_half_h)
+            translate([center_x + dx, -wall_thickness, spk_slit_center_z + slit_half_h])
+                rotate([-90, 0, 0])
+                    cylinder(h=wall_thickness * 3, r=spk_slit_r, $fn=24);
+        }
+    }
+}
+
 module bottom_case() {
     // center_x, center_y は params.scad で定義済み (center_x=34.4, center_y=37.4)
 
@@ -113,6 +130,9 @@ module bottom_case() {
         // --- 手前側面のアクリル化粧パネル用リセス（段差ポケット: 深さ3.0mm） ---
         translate([center_x, front_recess_depth / 2 - 0.01, btn_center_z])
             front_recess_cutout();
+
+        // --- 手前側面（フロント壁: Y=0側）のスピーカー出音スリット (7連バーチカルスリット) ---
+        speaker_sound_slits();
 
         // --- 右側面（X=最大側）のボリューム調整スリット (Uノッチ開放形状) ---
         // スリット下端 vol_slit_bottom_z (Z=23.5mm) から天端まで開口
