@@ -80,6 +80,10 @@ if [ -f "$SCAD_DIR/main_assembly.scad" ]; then
     "$OPENSCAD_BIN" -o "$OUTPUT_IMG_DIR/assembly_exploded.png" --camera=0,-50,0,60,0,325,280 --imgsize=1000,750 --autocenter --viewall "$SCAD_DIR/main_assembly.scad"
     # 組立図
     "$OPENSCAD_BIN" -D "explode_z=0;explode_btn=0;explode_screw=0" -o "$OUTPUT_IMG_DIR/assembly_closed.png" --camera=20,0,0,65,0,70,220 --imgsize=1000,750 --autocenter --viewall "$SCAD_DIR/main_assembly.scad"
+    # 内部断面図 (Cutaway)
+    if [ -f "$SCAD_DIR/cutaway_assembly.scad" ]; then
+        "$OPENSCAD_BIN" -o "$OUTPUT_IMG_DIR/assembly_cutaway.png" --camera=10,-10,20,65,0,50,200 --imgsize=1000,750 --autocenter --viewall "$SCAD_DIR/cutaway_assembly.scad"
+    fi
     echo "✓ main_assembly previews generated."
 fi
 

@@ -30,7 +30,8 @@ module front_recess_cutout() {
     }
 }
 
-module screw_tap_boss(outer_d, tap_d, height, dir_x=0, dir_y=0) {
+module screw_pass_boss(outer_d, pass_d, height, dir_x=0, dir_y=0) {
+    rib_h = min(height, top_cover_h - wall_thickness);
     difference() {
         union() {
             // メインボス円筒
@@ -38,26 +39,26 @@ module screw_tap_boss(outer_d, tap_d, height, dir_x=0, dir_y=0) {
             // 天板根元テーパーベース
             cylinder(h=min(height, 3.0), d1=outer_d + 2.5, d2=outer_d);
             
-            // 外壁接続補強リブ
+            // 外壁接続補強リブ (トップカバー内壁深さ rib_h 以内に収容)
             if (dir_x != 0 && dir_y != 0) {
                 dx_wall = dir_x * (case_inner_w / 2 - joint_pitch / 2 + 0.1);
                 dy_wall = dir_y * (case_inner_h / 2 - joint_pitch / 2 + 0.1);
                 
                 // X方向外壁への補強リブ
                 hull() {
-                    translate([0, -rib_thickness/2, 0]) cube([0.01, rib_thickness, height]);
-                    translate([dx_wall, -rib_thickness/2, 0]) cube([0.01, rib_thickness, height]);
+                    translate([0, -rib_thickness/2, 0]) cube([0.01, rib_thickness, rib_h]);
+                    translate([dx_wall, -rib_thickness/2, 0]) cube([0.01, rib_thickness, rib_h]);
                 }
                 // Y方向外壁への補強リブ
                 hull() {
-                    translate([-rib_thickness/2, 0, 0]) cube([rib_thickness, 0.01, height]);
-                    translate([-rib_thickness/2, dy_wall, 0]) cube([rib_thickness, 0.01, height]);
+                    translate([-rib_thickness/2, 0, 0]) cube([rib_thickness, 0.01, rib_h]);
+                    translate([-rib_thickness/2, dy_wall, 0]) cube([rib_thickness, 0.01, rib_h]);
                 }
             }
         }
-        // タッピング穴
+        // ネジ軸貫通穴
         translate([0, 0, -0.1])
-            cylinder(h=height + 0.2, d=tap_d);
+            cylinder(h=height + 0.2, d=pass_d);
     }
 }
 
@@ -77,13 +78,27 @@ module top_cover() {
                     rounded_cube([case_inner_w, case_inner_h, top_cover_h], max(1, corner_radius - wall_thickness));
             }
 
-            // --- 内部ボス構造 (Union: ボトム底面からのM2ネジを受けるタッピングボス) ---
+            // --- 内部ボス構造 (Union: 基板上面まで届く支柱ボス) ---
             translate([center_x, center_y, wall_thickness]) {
                 for (dx = [-joint_pitch / 2, joint_pitch / 2]) {
                     for (dy = [-joint_pitch / 2, joint_pitch / 2]) {
                         translate([dx, dy, 0])
-                            screw_tap_boss(joint_boss_outer, joint_screw_tap, top_cover_h - wall_thickness, sign(dx), sign(dy));
+                            screw_pass_boss(joint_boss_outer, joint_screw_pass, top_joint_boss_h, sign(dx), sign(dy));
                     }
+                }
+            }
+        }
+
+        // --- 天面側からのM2ネジ貫通穴 & ネジ頭沈め（ザグリ穴） ---
+        translate([center_x, center_y, 0]) {
+            for (dx = [-joint_pitch / 2, joint_pitch / 2]) {
+                for (dy = [-joint_pitch / 2, joint_pitch / 2]) {
+                    // ネジ頭沈め穴 (天面外側: Z=0 から深さ joint_screw_head_h)
+                    translate([dx, dy, -0.1])
+                        cylinder(h=joint_screw_head_h + 0.1, d=joint_screw_head_d);
+                    // ネジ軸貫通穴 (天面からボス先端まで全通)
+                    translate([dx, dy, -0.1])
+                        cylinder(h=wall_thickness + top_joint_boss_h + 0.2, d=joint_screw_pass);
                 }
             }
         }

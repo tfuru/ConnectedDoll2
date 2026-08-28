@@ -94,25 +94,27 @@ module pcb_mockup() {
     }
 }
 
-// 4. M2 六角オスメススペーサーモックアップ (20mm + 6mm)
-module hex_spacer_mockup(body_h=20.0, male_h=6.0, hex_w=4.0) {
+// 4. M2 六角両メススペーサーモックアップ (20mm, 二面幅4.0mm)
+module hex_spacer_mockup(body_h=20.0, hex_w=4.0) {
     color([0.2, 0.2, 0.2, 0.95]) { // ブラック/ナイロンまたは真鍮色
-        // 六角柱本体
-        rotate([0, 0, 30])
-            cylinder(h=body_h, d=hex_w / cos(30), $fn=6);
-        // 先端おねじ
-        translate([0, 0, body_h])
-            cylinder(h=male_h, d=2.0);
+        difference() {
+            // 六角柱本体
+            rotate([0, 0, 30])
+                cylinder(h=body_h, d=hex_w / cos(30), $fn=6);
+            // 上下 M2 めねじ穴
+            translate([0, 0, -0.1])
+                cylinder(h=body_h + 0.2, d=2.0);
+        }
     }
 }
 
-// 5. M2 ボトム締結小ネジモックアップ (M2 x 5mm)
+// 5. M2 締結小ネジモックアップ (なべ小ねじ)
 module m2_screw_mockup(length=5.0) {
     color([0.85, 0.85, 0.9, 1.0]) {
-        // ネジ頭 (鍋頭 / 皿頭)
-        cylinder(h=1.4, d=joint_screw_head_d);
+        // ネジ頭 (なべ頭)
+        cylinder(h=1.3, d=3.5);
         // ネジ軸
-        translate([0, 0, 1.4])
+        translate([0, 0, 1.3])
             cylinder(h=length, d=2.0);
     }
 }
@@ -141,7 +143,7 @@ module main_assembly(explode_z=explode_z, explode_btn=explode_btn, explode_screw
             for (dx = [-joint_pitch / 2, joint_pitch / 2]) {
                 for (dy = [-joint_pitch / 2, joint_pitch / 2]) {
                     translate([dx, dy, 0])
-                        hex_spacer_mockup(spacer_body_h, spacer_male_h, 4.0);
+                        hex_spacer_mockup(spacer_body_h, 4.0);
                 }
             }
         }
@@ -218,18 +220,32 @@ module main_assembly(explode_z=explode_z, explode_btn=explode_btn, explode_screw
     }
 
     // 4. トップカバー (天板リッド: 開口部をボトムケースに向けて被せる)
+    top_cover_z = bottom_case_h + top_cover_h + explode_z;
     color([0.9, 0.7, 0.2, 0.75])
-        translate([case_outer_w, 0, bottom_case_h + top_cover_h + explode_z])
+        translate([case_outer_w, 0, top_cover_z])
             rotate([0, 180, 0])
                 top_cover();
 
-    // 5. ボトム底面からのM2締結短ネジ (4隅 52x52mm ピッチ、L=5mm)
+    // 5. ネジ締結部品
     if (show_screws) {
+        // 5a. ボトム底面からのM2締結小ネジ (4隅 52x52mm ピッチ、L=5mm)
         translate([center_x, center_y, -explode_screw]) {
             for (dx = [-joint_pitch / 2, joint_pitch / 2]) {
                 for (dy = [-joint_pitch / 2, joint_pitch / 2]) {
                     translate([dx, dy, 0])
-                        m2_screw_mockup(5.0);
+                        m2_screw_mockup(bottom_screw_len);
+                }
+            }
+        }
+
+        // 5b. トップ天面ザグリからのM2締結小ネジ (4隅 52x52mm ピッチ、L=14mm)
+        top_screw_z = top_cover_z + (explode_screw > 0 ? (explode_screw + 5.0) : 0);
+        translate([center_x, center_y, top_screw_z]) {
+            for (dx = [-joint_pitch / 2, joint_pitch / 2]) {
+                for (dy = [-joint_pitch / 2, joint_pitch / 2]) {
+                    translate([dx, dy, 0])
+                        rotate([180, 0, 0])
+                            m2_screw_mockup(top_screw_len);
                 }
             }
         }

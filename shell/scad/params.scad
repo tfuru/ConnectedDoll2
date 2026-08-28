@@ -134,11 +134,14 @@ btn_plunger_offset_y = tact_switch_center_z - btn_center_z; // +1.625mm (スイ�
 
 // --- 統合締結ボス・ネジ穴寸法 ---
 joint_pitch        = pcb_hole_pitch; // 52.0mm
-joint_boss_outer   = 6.0;            // トップ側ボス外径
-joint_screw_pass   = 2.2;            // M2 ネジ通過穴径（ボトム底面）
-joint_screw_tap    = 1.8;            // M2 おねじ受けタッピング穴径（トップ側）
-joint_screw_head_d = 4.4;            // M2 ネジ頭沈め径
-joint_screw_head_h = 1.8;            // ネジ頭沈め深さ
+joint_boss_outer   = 6.0;            // 締結ボス外径 (φ6.0mm)
+joint_screw_pass   = 2.2;            // M2 ネジ通過穴径 (φ2.2mm)
+joint_screw_tap    = 1.8;            // M2 おねじ受けタッピング穴径 (φ1.8mm)
+joint_screw_head_d = 4.4;            // M2 ネジ頭沈め径 (φ4.4mm: なべ頭φ3.5mmに対して余裕確保)
+joint_screw_head_h = 1.8;            // ネジ頭沈め深さ (1.8mm: なべ頭厚み1.3mmを完全にフラットに沈める)
+top_joint_boss_h   = top_cover_h - wall_thickness + (bottom_case_h - pcb_top_z); // トップ側ボス高さ = 10.2mm (基板表面Z=23.8mmまで延長して基板を挟持)
+top_screw_len      = 14.0;           // トップ側推奨M2締結小ネジ長さ (L=14〜16mm)
+bottom_screw_len   = 5.0;            // ボトム側推奨M2締結小ネジ長さ (L=5〜6mm)
 rib_thickness      = 1.2;            // 補強リブ厚み
 
 // --- 共通ユーティリティモジュール ---
