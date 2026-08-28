@@ -172,16 +172,17 @@ module main_assembly(explode_z=explode_z, explode_btn=explode_btn, explode_screw
         translate([center_x, center_y + batt_pos_y, lid_z_pos])
             battery_lid();
 
-    // 1c. 回転ロックダイヤル (Rotary Lock: 分解時は解錠90°、組立時は施錠0°)
+    // 1c. 回転ロックダイヤル (Rotary Lock: 分解時は解錠90°、組立時は施錠0°、底面Z=0より0.2mm奥へ完全没入)
     rotary_angle = (explode_z > 0) ? 90 : 0;
+    rotary_z_pos = (explode_z > 0) ? (-explode_z * 1.2) : rotary_cam_shelf_z;
     color([0.85, 0.85, 0.90, 1.0])
-        translate([center_x + rotary_pos_x, center_y + rotary_pos_y, 0])
+        translate([center_x + rotary_pos_x, center_y + rotary_pos_y, rotary_z_pos])
             rotary_lock(angle=rotary_angle);
 
     // 1d. 回転ロック用 M2支柱ネジ (ケース内側から締結)
     if (show_screws) {
         color([0.8, 0.8, 0.85, 1.0])
-            translate([center_x + rotary_pos_x, center_y + rotary_pos_y, wall_thickness + 1.8])
+            translate([center_x + rotary_pos_x, center_y + rotary_pos_y, wall_thickness + 2.0])
                 rotate([180, 0, 0])
                     m2_screw_mockup(5.0);
     }

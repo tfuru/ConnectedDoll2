@@ -171,24 +171,27 @@ module bottom_case() {
 
         // --- 奥側 回転ロックダイヤル受座ポケット & 支柱貫通穴 ---
         translate([center_x + rotary_pos_x, center_y + rotary_pos_y, 0]) {
-            // ダイヤル沈め込みポケット (φ13.6mm x 深さ 1.6mm)
+            // ダイヤル完全沈め込みポケット (φ14.6mm x 深さ rotary_pocket_d = 2.4mm: ダイヤル全高2.2mmが底面より0.2mm奥に完全没入)
             translate([0, 0, -0.1])
-                cylinder(h=rotary_rim_t + 0.1, d=rotary_dial_d + 0.6, $fn=48);
+                cylinder(h=rotary_pocket_d + 0.1, d=rotary_pocket_dia, $fn=48);
+            // ポケット口元の指掛かり導入面取り (すり鉢状)
+            translate([0, 0, -0.1])
+                cylinder(h=0.6, d1=rotary_pocket_dia + 1.4, d2=rotary_pocket_dia, $fn=48);
             // M2支柱ネジ通過穴
             translate([0, 0, -0.1])
                 cylinder(h=bottom_case_h, d=rotary_pivot_dia, $fn=24);
-            // 90度回転リミッター規制円弧溝 (半径4.8mm, 0°〜90°)
+            // 90度回転リミッター規制円弧溝 (ポケット天井 Z=2.4mm の上部に配置)
             for (a = [0 : 10 : 90]) {
                 rotate([0, 0, a + 45])
-                    translate([4.8, 0, -0.1])
-                        cylinder(h=rotary_rim_t + 0.6, d=1.8, $fn=16);
+                    translate([4.5, 0, rotary_pocket_d - 0.1])
+                        cylinder(h=1.2, d=1.8, $fn=16);
             }
             // 底面状態インジケーター刻印 (LOCK / OPEN ドット)
             // LOCK位置 (手前側 -Y)
-            translate([0, -rotary_dial_d / 2 - 1.4, -0.1])
+            translate([0, -rotary_pocket_dia / 2 - 1.4, -0.1])
                 cylinder(h=0.5, d=1.2, $fn=16);
             // OPEN位置 (時計回り90度 +X)
-            translate([rotary_dial_d / 2 + 1.4, 0, -0.1])
+            translate([rotary_pocket_dia / 2 + 1.4, 0, -0.1])
                 cylinder(h=0.5, d=1.2, $fn=16);
         }
     }
@@ -203,11 +206,11 @@ module bottom_case() {
                 speaker_boss(spk_boss_dia, spk_boss_inner, spk_boss_h);
         }
 
-        // 2. 回転ロック支柱 内側M2ネジ頭受け座ボス
+        // 2. 回転ロック支柱 内側M2ネジ頭受け座ボス (十分な肉厚を確保)
         translate([rotary_pos_x, rotary_pos_y, 0]) {
             difference() {
-                cylinder(h=3.5, d=6.4, $fn=32);
-                // 内側M2ネジ頭沈め
+                cylinder(h=4.0, d=6.8, $fn=32);
+                // 内側M2ネジ頭沈め (Z=3.8mmから上部へ沈め込み)
                 translate([0, 0, 1.8])
                     cylinder(h=5.0, d=rotary_pivot_head_d, $fn=24);
                 translate([0, 0, -0.1])

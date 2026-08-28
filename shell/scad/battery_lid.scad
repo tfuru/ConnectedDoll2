@@ -56,9 +56,9 @@ module battery_lid() {
 
         // 5. 奥側 回転ロック受け円弧ポケット & カム通過貫通穴
         translate([rotary_pos_x, dial_rel_y, 0]) {
-            // (a) ダイヤルツバ受座シェルフ (深さ 0.8mm, 半径 6.9mm)
+            // (a) ダイヤルツバ受座シェルフ (深さ rotary_cam_shelf_z = 1.0mm: シェルフ厚み 0.6mm を保持)
             translate([0, 0, -0.2])
-                cylinder(h=0.85, r=rotary_dial_d / 2 + 0.4, $fn=60);
+                cylinder(h=rotary_cam_shelf_z + 0.2, r=rotary_dial_d / 2 + 0.4, $fn=60);
             // (b) カム解錠時通過貫通穴 (半径 cam_shelf_r = 4.7mm: 全層貫通)
             translate([0, 0, -0.2])
                 cylinder(h=batt_lid_t + 2.0, r=cam_shelf_r, $fn=60);

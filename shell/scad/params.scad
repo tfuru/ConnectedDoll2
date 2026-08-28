@@ -124,13 +124,16 @@ batt_sw_offset_y   = 0.0;         // 電池ボックス中心からのYオフセ
 
 // --- 回転ロック (Rotary Lock) ---
 rotary_dial_d      = 13.0;        // ダイヤル外径 (φ13.0mm)
-rotary_dial_t      = 2.4;         // ダイヤル全高 (ツバ1.6mm + 操作リブ0.8mm)
-rotary_rim_t       = 1.6;         // ダイヤルツバ厚み (ケース底面深さに一致)
+rotary_rim_t       = 1.4;         // ダイヤルツバ厚み (カム厚み 1.4mm)
+rotary_rib_h       = 0.8;         // ダイヤルつまみリブ高さ (コイン溝兼用 0.8mm)
+rotary_dial_t      = rotary_rim_t + rotary_rib_h; // ダイヤル全高 (2.2mm)
+rotary_pocket_d    = 2.4;         // 底面沈め込みポケット深さ (全高2.2mmに対し2.4mm沈め込み、底面Z=0より0.2mm奥へ完全没入)
+rotary_pocket_dia  = 14.6;        // 沈め込みポケット径 (操作用外周クリアランス0.8mm)
+rotary_cam_shelf_z = rotary_pocket_d - rotary_rim_t; // カム下面高さ = 1.0mm (フタ受座シェルフ高さ)
 rotary_cam_overlap = 1.8;         // ロック時のフタへの掛かり代 (1.8mm)
 rotary_pivot_dia   = 2.2;         // M2支柱ネジ通過穴径
 rotary_pivot_head_d= 4.4;         // M2支柱ネジ頭ザグリ径 (ケース内側)
 rotary_pivot_head_h= 1.6;         // M2支柱ネジ頭ザグリ深さ
-rotary_rib_h       = 0.8;         // ダイヤルつまみリブ高さ
 rotary_pos_x       = 0.0;         // X中心 (center_xに対称)
 rotary_pos_y       = batt_pos_y + batt_bay_d / 2 + rotary_dial_d / 2 - rotary_cam_overlap; // 奥側ローカルY座標 = 25.2mm
 rotary_stop_angle  = 90.0;        // 施錠〜解錠の回転角度 (90°)
