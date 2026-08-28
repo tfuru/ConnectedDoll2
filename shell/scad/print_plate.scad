@@ -64,8 +64,8 @@ module print_plate() {
         rotate([0, 180, 0])
             top_cover();
 
-    // 4. 前面ボタン (ボトムケース手前のベッド上に配置: Z=0〜3.7mm)
-    translate([0, -center_y - 14.0, 0])
+    // 4. 前面ボタン (ボトムケース手前のベッド上に配置: ボス最下面接地 Z=0)
+    translate([0, -center_y - 14.0, btn_m2_boss_h])
         front_button();
 }
 

@@ -47,29 +47,27 @@ module side_return_springs() {
     }
 }
 
-// 弾性プランジャー（基板内側に実装されたEVQPUC02Kタクトスイッチを押下する板バネ梁機構）
-// スイッチ中心高さ Y = +1.4mm に突出し、約1.2mmの深いストローク感とソフトな底付き感を実現
-module flexible_plunger() {
-    py = btn_plunger_offset_y; // +1.4mm
-    pw = btn_plunger_w;        // 3.5mm
-    pl = btn_plunger_l;        // 0.8mm
-    pt = btn_flex_plunger_t;   // 0.9mm
-
-    // フランジ裏面（Z=0）からの強固な弾性支持リブ
-    translate([-pw / 2, py - 0.6, -pt])
-        cube([pw, 1.2, pt + 0.01]);
-
-    // 45°傾斜した弾性カンチレバー梁（しなりによるストローク創出）
-    hull() {
-        translate([-pw / 2, py - 0.6, -pt])
-            cube([pw, 1.2, pt]);
-        translate([-pw / 2, py - 0.6, -pl])
-            cube([pw, 1.2, pt]);
+// M2ネジ式アジャスタブル・プランジャーボス（基板上のタクトスイッチ押下用）
+// スイッチ中心高さ Y = +1.4mm にM2タッピング下穴ボスを配置し、
+// M2なべ小ねじ（L=4〜6mm）をねじ込んで突出量を無段階微調整する
+module m2_plunger_boss() {
+    py = btn_plunger_offset_y;
+    d_out = btn_m2_boss_outer_d;
+    h_boss = btn_m2_boss_h;
+    translate([0, py, -h_boss]) {
+        // ボス本体（付け根に緩やかなテーパーを設けてPLAの層間せん断強度を向上）
+        cylinder(h=h_boss + 0.01, d1=d_out, d2=d_out + 1.2, $fn=32);
     }
+}
 
-    // 先端の押下コンタクト部（EVQPUC02Kアクチュエータに確実に当接）
-    translate([-pw / 2, py - 0.6, -pl])
-        cube([pw, 1.2, pl]);
+// M2タッピング用下穴（φ1.7mm, 深さ4.0mm）
+module m2_plunger_hole() {
+    py = btn_plunger_offset_y;
+    d_in = btn_m2_boss_inner_d;
+    h_boss = btn_m2_boss_h;
+    h_hole = btn_m2_hole_depth;
+    translate([0, py, -h_boss - 0.1])
+        cylinder(h=h_hole + 0.1, d=d_in, $fn=24);
 }
 
 module front_button() {
@@ -86,8 +84,8 @@ module front_button() {
             // 3. 左右の復帰板バネアーム（ケース内壁当接スプリング）
             side_return_springs();
 
-            // 4. スイッチ押下 弾性プランジャー（板バネ機構付き）
-            flexible_plunger();
+            // 4. M2ネジ式アジャスタブル・プランジャーボス
+            m2_plunger_boss();
         }
 
         // 5. 操作面 左右2箇所の ネオジム磁石埋め込みポケット（高さ中央）
@@ -95,6 +93,9 @@ module front_button() {
             translate([dx, 0, 0])
                 magnet_pocket();
         }
+
+        // 6. M2アジャスタブル・プランジャー タッピング下穴
+        m2_plunger_hole();
     }
 }
 
