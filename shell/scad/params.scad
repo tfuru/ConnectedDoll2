@@ -72,11 +72,14 @@ front_recess_w        = btn_side_width + front_recess_margin * 2;   // 45.2mm
 front_recess_h        = btn_side_height + front_recess_margin * 2;  // 21.2mm
 front_recess_r        = btn_side_radius + front_recess_margin;      // 3.6mm
 
-// --- ボリューム調整スリット（右側面に配置） ---
-vol_slit_width  = 16.0;       // ダイヤル操作スリット幅
-vol_slit_height = 4.5;        // スリット高さ
-vol_slit_radius = 1.5;        // スリット角丸
-vol_offset_y    = -5.0;       // Y軸方向オフセット（前方向へ5mm移動）
+// --- ボリューム調整スリット（右側面に配置）および RK10J ダイヤル仕様 ---
+vol_dial_d         = 14.0;       // ダイヤル外径 (φ14.0mm)
+vol_dial_h         = 2.5;        // ダイヤル本体高さ (2.5mm)
+vol_slit_width     = 16.0;       // ダイヤル操作スリット幅
+vol_slit_radius    = 1.5;        // スリット下部角丸
+vol_offset_y       = -5.0;       // Y軸方向オフセット（前方向へ5mm移動）
+vol_slit_bottom_z  = 23.5;       // スリット下端高さ (基板表面23.8mmより0.3mm下: 内部露出を防ぎつつダイヤル全高を露出)
+vol_slit_height    = 4.5;        // スリット高さ (天面28.0mmまで開放するUノッチ形状: 28.0 - 23.5 = 4.5mm)
 
 // --- 電池ボックス (単4×3本 スイッチ付き) ---
 batt_length        = 63.0;        // 横幅
@@ -109,6 +112,12 @@ spacer_hex_w       = 4.4;            // ボトム側回り止め六角ポケッ�
 spacer_pocket_d    = 1.0;            // 回り止め六角ポケット深さ
 spacer_pad_h       = 1.2;            // ボトム底面のスペーサー受け座パッド高さ
 pcb_standoff_h     = spacer_body_h;  // 基板受け面高さ = 20.0mm
+pcb_seat_z         = wall_thickness + (spacer_pad_h - spacer_pocket_d) + pcb_standoff_h; // 基板底面高さ = 22.2mm
+pcb_top_z          = pcb_seat_z + pcb_thickness; // 基板表面高さ = 23.8mm
+
+// ダイヤル中心座標 (RK10J)
+vol_dial_center_x  = pcb_width / 2 - 4.5; // ダイヤル中心X座標 (外周φ14mmが基板端から2.5mm突出)
+vol_dial_center_z  = pcb_top_z + vol_dial_h / 2; // ダイヤル中心高さ = 25.05mm
 
 // ボタンおよびアクリルパネルの統一中心高さ (PCB表面・タクトスイッチ中心高さ: Z = 23.0mm)
 btn_center_z       = wall_thickness + pcb_standoff_h + 1.0;

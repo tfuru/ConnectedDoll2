@@ -84,10 +84,13 @@ module pcb_mockup() {
             cube([1.5, 0.6, 1.0]);
     }
 
-    // 基板右端のボリュームダイヤル (RK10J11R0A0H モックアップ)
-    color([0.3, 0.3, 0.3, 1.0]) {
-        translate([pcb_width/2 - 2.0, vol_offset_y, pcb_thickness])
-            cylinder(h=2.2, d=11.0);
+    // 基板右端のボリュームダイヤル (RK10J11R0A0H モックアップ: φ14.0mm x 2.5mm)
+    color([0.25, 0.25, 0.25, 1.0]) {
+        translate([vol_dial_center_x, vol_offset_y, pcb_thickness]) {
+            cylinder(h=vol_dial_h, d=vol_dial_d);
+            // ダイヤルローレット外周
+            cylinder(h=1.0, d=vol_dial_d + 0.3);
+        }
     }
 }
 
@@ -133,8 +136,8 @@ module main_assembly() {
         translate([center_x, center_y + batt_pos_y, wall_thickness])
             battery_box_mockup();
 
-        // M2 六角スペーサー (四隅 52x52mm ピッチ、底面から直立)
-        translate([center_x, center_y, wall_thickness]) {
+        // M2 六角スペーサー (四隅 52x52mm ピッチ、底面座面ポケットから直立)
+        translate([center_x, center_y, wall_thickness + (spacer_pad_h - spacer_pocket_d)]) {
             for (dx = [-joint_pitch / 2, joint_pitch / 2]) {
                 for (dy = [-joint_pitch / 2, joint_pitch / 2]) {
                     translate([dx, dy, 0])
@@ -143,8 +146,8 @@ module main_assembly() {
             }
         }
 
-        // メイン基板 (スペーサー高さ pcb_standoff_h の上)
-        translate([center_x, center_y, wall_thickness + pcb_standoff_h])
+        // メイン基板 (スペーサー座面高さ pcb_seat_z の上)
+        translate([center_x, center_y, pcb_seat_z])
             pcb_mockup();
     }
 

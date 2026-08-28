@@ -68,16 +68,16 @@ module speaker_boss(outer_d, inner_d, height) {
     }
 }
 
-module volume_dial_cutout() {
+module volume_dial_cutout(h_cut=vol_slit_height + 1.0) {
     hull() {
+        // 底面左右2隅の角丸 (R = vol_slit_radius)
         translate([0, -vol_slit_width/2 + vol_slit_radius, vol_slit_radius])
-            rotate([0, 90, 0]) cylinder(h=wall_thickness * 3, r=vol_slit_radius, center=true);
+            rotate([0, 90, 0]) cylinder(h=wall_thickness * 4, r=vol_slit_radius, center=true);
         translate([0, vol_slit_width/2 - vol_slit_radius, vol_slit_radius])
-            rotate([0, 90, 0]) cylinder(h=wall_thickness * 3, r=vol_slit_radius, center=true);
-        translate([0, vol_slit_width/2 - vol_slit_radius, vol_slit_height - vol_slit_radius])
-            rotate([0, 90, 0]) cylinder(h=wall_thickness * 3, r=vol_slit_radius, center=true);
-        translate([0, -vol_slit_width/2 + vol_slit_radius, vol_slit_height - vol_slit_radius])
-            rotate([0, 90, 0]) cylinder(h=wall_thickness * 3, r=vol_slit_radius, center=true);
+            rotate([0, 90, 0]) cylinder(h=wall_thickness * 4, r=vol_slit_radius, center=true);
+        // 上端（ボトムケース天端を抜けて開放する直線エッジ）
+        translate([-wall_thickness * 2, -vol_slit_width/2, h_cut])
+            cube([wall_thickness * 4, vol_slit_width, 0.01]);
     }
 }
 
@@ -115,9 +115,9 @@ module bottom_case() {
         translate([center_x, front_recess_depth / 2 - 0.01, btn_center_z])
             front_recess_cutout();
 
-        // --- 右側面（X=最大側）のボリューム調整スリット ---
-        // 基板表面高さ (wall_thickness + pcb_standoff_h) に合わせて配置
-        translate([case_outer_w - wall_thickness / 2, center_y + vol_offset_y, wall_thickness + pcb_standoff_h - 1.0])
+        // --- 右側面（X=最大側）のボリューム調整スリット (Uノッチ開放形状) ---
+        // スリット下端 vol_slit_bottom_z (Z=23.5mm) から天端まで開口
+        translate([case_outer_w - wall_thickness / 2, center_y + vol_offset_y, vol_slit_bottom_z])
             volume_dial_cutout();
 
         // --- ボトム底面からのM2ネジ貫通穴 & ネジ頭沈め（ザグリ穴） ---
