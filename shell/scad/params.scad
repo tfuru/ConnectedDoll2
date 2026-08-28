@@ -79,12 +79,18 @@ vol_slit_radius = 1.5;        // スリット角丸
 vol_offset_y    = -5.0;       // Y軸方向オフセット（前方向へ5mm移動）
 
 // --- 電池ボックス (単4×3本 スイッチ付き) ---
-batt_length    = 63.0;        // 横幅
-batt_width     = 37.0;        // 縦幅
-batt_height    = 17.0;        // 厚み
-batt_clearance = 0.6;         // 電池ボックス収容クリアランス
-batt_pos_y     = 3.5;         // 電池ボックス中心Yオフセット（奥側M2支柱および手前スピーカーとの干渉回避位置）
-spk_pos_y      = -28.5;       // スピーカー固定ボス中心Yオフセット（出音口を手前-Y方向に向ける）
+batt_length        = 63.0;        // 横幅
+batt_width         = 37.0;        // 縦幅
+batt_height        = 17.0;        // 厚み
+batt_clearance     = 0.6;         // 電池ボックス収容クリアランス
+batt_pos_y         = 3.5;         // 電池ボックス中心Yオフセット（奥側M2支柱および手前スピーカーとの干渉回避位置）
+batt_rib_t         = 1.6;         // ガイドリブ基本肉厚（剛性向上: 1.2 -> 1.6mm）
+batt_rib_h         = 8.0;         // ガイドリブ高さ
+batt_gusset_t      = 1.5;         // 補強三角リブ厚み
+batt_gusset_rear_d = 4.0;         // 奥側三角リブ奥行き
+batt_gusset_front_d= 3.0;         // 手前側三角リブ奥行き
+batt_gusset_h      = 6.5;         // 三角リブ高さ
+spk_pos_y          = -28.5;       // スピーカー固定ボス中心Yオフセット（出音口を手前-Y方向に向ける）
 
 // --- ケース寸法計算 ---
 case_inner_w   = pcb_width + clearance * 2 + 4.0; // 内部余裕 (約 64.8mm)

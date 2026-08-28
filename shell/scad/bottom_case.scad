@@ -17,13 +17,13 @@ module side_button_cutout() {
     }
 }
 
-module spacer_mount_pad(pad_d=7.2, pad_h=1.2, hex_w=4.4, pocket_d=1.0, pass_d=2.2, dir_x=0, dir_y=0) {
+module spacer_mount_pad(pad_d=6.8, pad_h=1.2, hex_w=4.4, pocket_d=1.0, pass_d=2.2, dir_x=0, dir_y=0) {
     difference() {
         union() {
-            // スペーサー受け座パッド
+            // スペーサー受け座パッド (φ6.8mm: 六角対辺4.4mmに対し肉厚1.2mmを確保)
             cylinder(h=pad_h, d=pad_d);
-            // 根元テーパーベース
-            cylinder(h=pad_h, d1=pad_d + 2.0, d2=pad_d);
+            // 根元テーパーベース (φ7.4mm)
+            cylinder(h=pad_h, d1=pad_d + 0.6, d2=pad_d);
             // コーナー外壁への小型リブ（底面補強）
             if (dir_x != 0 && dir_y != 0) {
                 dx_wall = dir_x * (case_inner_w / 2 - joint_pitch / 2 + 0.1);
@@ -145,29 +145,79 @@ module bottom_case() {
                 speaker_boss(spk_boss_dia, spk_boss_inner, spk_boss_h);
         }
 
-        // 2. 電池ボックス位置決めガイドリブ (横向き配置 / 中央〜奥側)
+        // 2. 電池ボックス位置決めガイドリブ (高剛性補強リブ・三角バットレス・側壁一体化)
         translate([0, batt_pos_y, 0]) {
             eff_w = batt_width + batt_clearance;
-            // 奥側ガイドリブ
+
+            // --- 奥側ガイドリブ (背面三角バットレスリブ & 根元テーパー付き) ---
+            // メインリブ壁 (幅 31.5mm, 肉厚 batt_rib_t = 1.6mm, 高さ 8.0mm)
             translate([-batt_length / 4, eff_w / 2, 0])
-                cube([batt_length / 2, 1.2, 8.0]);
-            // 手前側ガイドリブ (スピーカー本体との干渉回避のため左右に分割配置)
-            translate([-batt_length / 2 + 3, -eff_w / 2 - 1.2, 0])
-                cube([10, 1.2, 8.0]);
-            translate([batt_length / 2 - 13, -eff_w / 2 - 1.2, 0])
-                cube([10, 1.2, 8.0]);
-            // 左右位置決めストッパー (左右振れ止め)
-            translate([-(batt_length + batt_clearance) / 2 - 1.0, -eff_w / 4, 0])
-                cube([1.0, eff_w / 2, 5.0]);
-            translate([(batt_length + batt_clearance) / 2, -eff_w / 4, 0])
-                cube([1.0, eff_w / 2, 5.0]);
+                cube([batt_length / 2, batt_rib_t, batt_rib_h]);
+            // 根元テーパー補強
+            hull() {
+                translate([-batt_length / 4, eff_w / 2, 0])
+                    cube([batt_length / 2, batt_rib_t + 1.0, 0.01]);
+                translate([-batt_length / 4, eff_w / 2, 1.2])
+                    cube([batt_length / 2, batt_rib_t, 0.01]);
+            }
+            // 背面三角バットレスリブ (3箇所: X = 0, ±10mm)
+            for (gx = [-10, 0, 10]) {
+                translate([gx - batt_gusset_t / 2, eff_w / 2 + batt_rib_t, 0])
+                    hull() {
+                        cube([batt_gusset_t, 0.01, batt_gusset_h]);
+                        cube([batt_gusset_t, batt_gusset_rear_d, 0.01]);
+                    }
+            }
+
+            // --- 手前側ガイドリブ (左右2箇所: 前面三角バットレスリブ & 根元テーパー付き) ---
+            for (tab_x = [-batt_length / 2 + 3, batt_length / 2 - 13]) {
+                // ガイドリブ片 (幅 10.0mm, 肉厚 1.6mm, 高さ 8.0mm)
+                translate([tab_x, -eff_w / 2 - batt_rib_t, 0])
+                    cube([10.0, batt_rib_t, batt_rib_h]);
+                // 根元テーパー補強
+                hull() {
+                    translate([tab_x, -eff_w / 2 - batt_rib_t - 1.0, 0])
+                        cube([10.0, batt_rib_t + 1.0, 0.01]);
+                    translate([tab_x, -eff_w / 2 - batt_rib_t, 1.2])
+                        cube([10.0, batt_rib_t, 0.01]);
+                }
+            }
+            // 手前側三角バットレスリブ (左右各1箇所: スピーカー外側の安全領域)
+            for (gx = [-batt_length / 2 + 8, batt_length / 2 - 8]) {
+                translate([gx - batt_gusset_t / 2, -eff_w / 2 - batt_rib_t, 0])
+                    hull() {
+                        cube([batt_gusset_t, 0.01, batt_gusset_h]);
+                        translate([0, -batt_gusset_front_d, 0])
+                            cube([batt_gusset_t, 0.01, 0.01]);
+                    }
+            }
+
+            // --- 左右位置決めストッパー (ケース側壁直結・一体成型 & 導入テーパー付き) ---
+            stop_len_y = 12.0;
+            stop_h     = 6.0;
+            step_w     = case_inner_w / 2 - (batt_length + batt_clearance) / 2; // 約 0.6mm 突出
+
+            // 左側側壁一体ストッパー
+            translate([-case_inner_w / 2, -stop_len_y / 2, 0])
+                hull() {
+                    cube([step_w, stop_len_y, stop_h - 1.5]);
+                    cube([0.01, stop_len_y, stop_h]);
+                }
+
+            // 右側側壁一体ストッパー
+            translate([(batt_length + batt_clearance) / 2, -stop_len_y / 2, 0])
+                hull() {
+                    cube([step_w, stop_len_y, stop_h - 1.5]);
+                    translate([step_w - 0.01, 0, 0])
+                        cube([0.01, stop_len_y, stop_h]);
+                }
         }
 
         // 3. M2 六角スペーサー受け座パッド (四隅 52x52mm ピッチ、回り止め六角ポケット付き)
         for (dx = [-joint_pitch / 2, joint_pitch / 2]) {
             for (dy = [-joint_pitch / 2, joint_pitch / 2]) {
                 translate([dx, dy, 0])
-                    spacer_mount_pad(pad_d=7.2, pad_h=spacer_pad_h, hex_w=spacer_hex_w, pocket_d=spacer_pocket_d, pass_d=joint_screw_pass, dir_x=sign(dx), dir_y=sign(dy));
+                    spacer_mount_pad(pad_d=6.8, pad_h=spacer_pad_h, hex_w=spacer_hex_w, pocket_d=spacer_pocket_d, pass_d=joint_screw_pass, dir_x=sign(dx), dir_y=sign(dy));
             }
         }
 
