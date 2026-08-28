@@ -7,6 +7,8 @@ use <top_cover.scad>;
 use <bottom_case.scad>;
 use <front_button.scad>;
 use <acrylic_panel.scad>;
+use <battery_lid.scad>;
+use <rotary_lock.scad>;
 
 // アセンブリ表示パラメータ
 explode_z       = 20.0; // 分解表示の隙間（0で完全組み立て状態）
@@ -50,11 +52,21 @@ module speaker_mockup() {
     }
 }
 
-// 2. 電池ボックスモックアップ (単4x3本 横向き)
+// 2. 電池ボックスモックアップ (単4x3本 横向き・底面向き電源スイッチ付き)
 module battery_box_mockup() {
     color([0.15, 0.15, 0.15, 0.85]) {
-        translate([-batt_length/2, -batt_width/2, 0])
-            cube([batt_length, batt_width, batt_height]);
+        difference() {
+            translate([-batt_length/2, -batt_width/2, 0])
+                cube([batt_length, batt_width, batt_height]);
+            // 底面向きスイッチ埋め込みリセス
+            translate([batt_sw_offset_x - 6.0, batt_sw_offset_y - 4.5, -0.1])
+                cube([12.0, 9.0, 1.6]);
+        }
+    }
+    // スイッチ突起 (レッドアクセント: ON/OFFスライダ)
+    color([0.9, 0.2, 0.2, 1.0]) {
+        translate([batt_sw_offset_x - 1.5, batt_sw_offset_y - 1.5, 0.2])
+            cube([3.0, 3.0, 1.6]);
     }
 }
 
@@ -134,8 +146,9 @@ module main_assembly(explode_z=explode_z, explode_btn=explode_btn, explode_screw
         translate([center_x, center_y + spk_pos_y, wall_thickness + spk_boss_h])
             speaker_mockup();
 
-        // 電池ボックス (横向き配置 / Y=batt_pos_y)
-        translate([center_x, center_y + batt_pos_y, wall_thickness])
+        // 電池ボックス (横向き配置 / 底面引き抜き分解アニメーション連動)
+        batt_z_pos = (explode_z > 0) ? (-explode_z * 0.6) : wall_thickness;
+        translate([center_x, center_y + batt_pos_y, batt_z_pos])
             battery_box_mockup();
 
         // M2 六角スペーサー (四隅 52x52mm ピッチ、底面座面ポケットから直立)
@@ -151,6 +164,26 @@ module main_assembly(explode_z=explode_z, explode_btn=explode_btn, explode_screw
         // メイン基板 (スペーサー座面高さ pcb_seat_z の上)
         translate([center_x, center_y, pcb_seat_z])
             pcb_mockup();
+    }
+
+    // 1b. 底面電池フタ (Battery Lid: -Z方向へ引き抜き分解表示)
+    lid_z_pos = (explode_z > 0) ? (-explode_z * 1.2) : 0;
+    color([0.90, 0.70, 0.20, 0.95])
+        translate([center_x, center_y + batt_pos_y, lid_z_pos])
+            battery_lid();
+
+    // 1c. 回転ロックダイヤル (Rotary Lock: 分解時は解錠90°、組立時は施錠0°)
+    rotary_angle = (explode_z > 0) ? 90 : 0;
+    color([0.85, 0.85, 0.90, 1.0])
+        translate([center_x + rotary_pos_x, center_y + rotary_pos_y, 0])
+            rotary_lock(angle=rotary_angle);
+
+    // 1d. 回転ロック用 M2支柱ネジ (ケース内側から締結)
+    if (show_screws) {
+        color([0.8, 0.8, 0.85, 1.0])
+            translate([center_x + rotary_pos_x, center_y + rotary_pos_y, wall_thickness + 1.8])
+                rotate([180, 0, 0])
+                    m2_screw_mockup(5.0);
     }
 
     btn_z_pos = btn_center_z;

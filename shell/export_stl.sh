@@ -65,7 +65,23 @@ if [ -f "$SCAD_DIR/acrylic_panel.scad" ]; then
     echo "✓ acrylic_panel (STL, DXF, SVG, PNG) generated."
 fi
 
-# 5. 一括3Dプリントプレートの出力 (All-in-One: Top, Bottom, Button)
+# 5. 電池フタの出力
+if [ -f "$SCAD_DIR/battery_lid.scad" ]; then
+    echo "Rendering battery_lid.stl and preview..."
+    "$OPENSCAD_BIN" -o "$OUTPUT_STL_DIR/battery_lid.stl" "$SCAD_DIR/battery_lid.scad"
+    "$OPENSCAD_BIN" -o "$OUTPUT_IMG_DIR/battery_lid_preview.png" --camera=0,0,0,55,0,25,80 --imgsize=800,600 --autocenter --viewall "$SCAD_DIR/battery_lid.scad"
+    echo "✓ battery_lid (STL & PNG) generated."
+fi
+
+# 6. 回転ロックダイヤルの出力
+if [ -f "$SCAD_DIR/rotary_lock.scad" ]; then
+    echo "Rendering rotary_lock.stl and preview..."
+    "$OPENSCAD_BIN" -o "$OUTPUT_STL_DIR/rotary_lock.stl" "$SCAD_DIR/rotary_lock.scad"
+    "$OPENSCAD_BIN" -o "$OUTPUT_IMG_DIR/rotary_lock_preview.png" --camera=0,0,0,55,0,25,30 --imgsize=800,600 --autocenter --viewall "$SCAD_DIR/rotary_lock.scad"
+    echo "✓ rotary_lock (STL & PNG) generated."
+fi
+
+# 7. 一括3Dプリントプレートの出力 (All-in-One: Top, Bottom, Button, Lid, Lock)
 if [ -f "$SCAD_DIR/print_plate.scad" ]; then
     echo "Rendering print_plate_all.stl and preview..."
     "$OPENSCAD_BIN" -o "$OUTPUT_STL_DIR/print_plate_all.stl" "$SCAD_DIR/print_plate.scad"
@@ -80,6 +96,8 @@ if [ -f "$SCAD_DIR/main_assembly.scad" ]; then
     "$OPENSCAD_BIN" -o "$OUTPUT_IMG_DIR/assembly_exploded.png" --camera=0,-50,0,60,0,325,280 --imgsize=1000,750 --autocenter --viewall "$SCAD_DIR/main_assembly.scad"
     # 組立図
     "$OPENSCAD_BIN" -D "explode_z=0;explode_btn=0;explode_screw=0" -o "$OUTPUT_IMG_DIR/assembly_closed.png" --camera=20,0,0,65,0,70,220 --imgsize=1000,750 --autocenter --viewall "$SCAD_DIR/main_assembly.scad"
+    # 底面視点プレビュー (電池フタ・回転ロック・スイッチ窓確認用)
+    "$OPENSCAD_BIN" -D "explode_z=0;explode_btn=0;explode_screw=0" -o "$OUTPUT_IMG_DIR/assembly_bottom_view.png" --camera=0,0,0,140,0,30,200 --imgsize=1000,750 --autocenter --viewall "$SCAD_DIR/main_assembly.scad"
     # 内部断面図 (Cutaway)
     if [ -f "$SCAD_DIR/cutaway_assembly.scad" ]; then
         "$OPENSCAD_BIN" -o "$OUTPUT_IMG_DIR/assembly_cutaway.png" --camera=10,-10,20,65,0,50,200 --imgsize=1000,750 --autocenter --viewall "$SCAD_DIR/cutaway_assembly.scad"

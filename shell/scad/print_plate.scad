@@ -7,6 +7,8 @@ include <params.scad>;
 use <bottom_case.scad>;
 use <top_cover.scad>;
 use <front_button.scad>;
+use <battery_lid.scad>;
+use <rotary_lock.scad>;
 
 // スタック印刷パラメータ
 stack_gap_z    = 3.0; // ボトムとトップの間の隙間 (3.0mm)
@@ -67,6 +69,15 @@ module print_plate() {
     // 4. 前面ボタン (ボトムケース手前のベッド上に配置: ボス最下面接地 Z=0)
     translate([0, -center_y - 14.0, btn_m2_boss_h])
         front_button();
+
+    // 5. 電池フタ (ボトムケース奥側のベッド上に配置: 外面接地 Z=0)
+    translate([0, center_y + batt_lid_d / 2 + 6.0, 0])
+        battery_lid();
+
+    // 6. 回転ロックダイヤル (フタ脇のベッド上に配置: 天面接地 Z=0)
+    translate([batt_lid_w / 2 + 10.0, center_y + batt_lid_d / 2 + 6.0, rotary_dial_t])
+        rotate([180, 0, 0])
+            rotary_lock(0);
 }
 
 // 描画

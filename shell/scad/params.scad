@@ -90,19 +90,53 @@ vol_offset_y       = -5.0;       // Y軸方向オフセット（前方向へ5mm�
 vol_slit_bottom_z  = 23.5;       // スリット下端高さ (基板表面23.8mmより0.3mm下: 内部露出を防ぎつつダイヤル全高を露出)
 vol_slit_height    = 4.5;        // スリット高さ (天面28.0mmまで開放するUノッチ形状: 28.0 - 23.5 = 4.5mm)
 
-// --- 電池ボックス (単4×3本 スイッチ付き) ---
+// --- 電池ボックス (単4×3本 スイッチ付き) & 底面取り出しベイ ---
 batt_length        = 63.0;        // 横幅
 batt_width         = 37.0;        // 縦幅
 batt_height        = 17.0;        // 厚み
 batt_clearance     = 0.6;         // 電池ボックス収容クリアランス
-batt_pos_y         = 3.5;         // 電池ボックス中心Yオフセット（奥側M2支柱および手前スピーカーとの干渉回避位置）
-batt_rib_t         = 1.6;         // ガイドリブ基本肉厚（剛性向上: 1.2 -> 1.6mm）
-batt_rib_h         = 8.0;         // ガイドリブ高さ
-batt_gusset_t      = 1.5;         // 補強三角リブ厚み
-batt_gusset_rear_d = 4.0;         // 奥側三角リブ奥行き
-batt_gusset_front_d= 3.0;         // 手前側三角リブ奥行き
-batt_gusset_h      = 6.5;         // 三角リブ高さ
+batt_pos_y         = 1.5;         // 電池ボックス中心Yオフセット（手前スピーカーおよび奥側回転ロックとの最適バランス）
+batt_stop_z        = wall_thickness + batt_height + 0.2; // 内部天井ストッパー高さ (Z = 19.2mm: 基板裏面22.2mmに対し3.0mmクリアランス)
+
+// --- 底面開口ベイ (Battery Bay) ---
+batt_bay_clearance = 0.5;         // 開口部クリアランス (全周0.5mm)
+batt_bay_w         = batt_length + batt_bay_clearance * 2; // 64.0mm
+batt_bay_d         = batt_width + batt_bay_clearance * 2;  // 38.0mm
+
+// --- 電池フタ (Battery Lid) ---
+batt_lid_t         = 1.6;         // フタ本体肉厚
+batt_lid_margin    = 0.3;         // フタ外周クリアランス
+batt_lid_flange    = 1.5;         // 段差受座幅
+batt_lid_w         = batt_bay_w + batt_lid_flange * 2 - batt_lid_margin * 2; // 66.4mm
+batt_lid_d         = batt_bay_d + batt_lid_flange * 2 - batt_lid_margin * 2; // 40.4mm
+batt_lid_recess_d  = batt_lid_t;  // 段差リセス深さ (1.6mm: ツライチ)
+batt_tab_w         = 8.0;         // 手前側差し込みツメ幅
+batt_tab_d         = 2.0;         // 差し込みツメ突出量
+batt_tab_t         = 1.3;         // 差し込みツメ厚み
+batt_tab_pitch     = 30.0;        // 左右2箇所ツメ配置ピッチ
+
+// --- 電池ボックス スイッチアクセス開口窓 ---
+batt_sw_w          = 14.0;        // スイッチ開口窓 幅 (X方向)
+batt_sw_d          = 10.0;        // スイッチ開口窓 奥行き (Y方向)
+batt_sw_r          = 2.0;         // スイッチ窓 角丸
+batt_sw_offset_x   = 18.0;        // 電池ボックス中心からのXオフセット (スイッチ位置)
+batt_sw_offset_y   = 0.0;         // 電池ボックス中心からのYオフセット
+
+// --- 回転ロック (Rotary Lock) ---
+rotary_dial_d      = 13.0;        // ダイヤル外径 (φ13.0mm)
+rotary_dial_t      = 2.4;         // ダイヤル全高 (ツバ1.6mm + 操作リブ0.8mm)
+rotary_rim_t       = 1.6;         // ダイヤルツバ厚み (ケース底面深さに一致)
+rotary_cam_overlap = 1.8;         // ロック時のフタへの掛かり代 (1.8mm)
+rotary_pivot_dia   = 2.2;         // M2支柱ネジ通過穴径
+rotary_pivot_head_d= 4.4;         // M2支柱ネジ頭ザグリ径 (ケース内側)
+rotary_pivot_head_h= 1.6;         // M2支柱ネジ頭ザグリ深さ
+rotary_rib_h       = 0.8;         // ダイヤルつまみリブ高さ
+rotary_pos_x       = 0.0;         // X中心 (center_xに対称)
+rotary_pos_y       = batt_pos_y + batt_bay_d / 2 + rotary_dial_d / 2 - rotary_cam_overlap; // 奥側ローカルY座標 = 25.2mm
+rotary_stop_angle  = 90.0;        // 施錠〜解錠の回転角度 (90°)
+
 spk_pos_y          = -28.5;       // スピーカー固定ボス中心Yオフセット（出音口を手前-Y方向に向ける）
+
 
 // --- ケース寸法計算 ---
 case_front_extend = 3.0;         // ケース手前側壁の前方拡張量 (+3.0mm: 基板とのクリアランス確保)

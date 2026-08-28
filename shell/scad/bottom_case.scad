@@ -152,6 +152,45 @@ module bottom_case() {
                 }
             }
         }
+
+        // --- 底面 電池ボックス通過用開口 (64x38mm) ---
+        translate([center_x - batt_bay_w/2, center_y + batt_pos_y - batt_bay_d/2, -0.1])
+            rounded_cube([batt_bay_w, batt_bay_d, wall_thickness + 0.2], 2.0);
+
+        // --- 底面 電池フタ用段差リセス座面 (深さ batt_lid_recess_d = 1.6mm: ツライチ) ---
+        recess_w = batt_lid_w + batt_lid_margin * 2;
+        recess_d = batt_lid_d + batt_lid_margin * 2;
+        translate([center_x - recess_w/2, center_y + batt_pos_y - recess_d/2, -0.1])
+            rounded_cube([recess_w, recess_d, batt_lid_recess_d + 0.1], 2.5);
+
+        // --- 手前側 電池フタ差し込みツメ受けスリット (2箇所) ---
+        for (dx = [-batt_tab_pitch / 2, batt_tab_pitch / 2]) {
+            translate([center_x + dx - (batt_tab_w + 1.0) / 2, center_y + batt_pos_y - recess_d / 2 - batt_tab_d - 0.2, -0.1])
+                cube([batt_tab_w + 1.0, batt_tab_d + 0.5, batt_tab_t + 0.4]);
+        }
+
+        // --- 奥側 回転ロックダイヤル受座ポケット & 支柱貫通穴 ---
+        translate([center_x + rotary_pos_x, center_y + rotary_pos_y, 0]) {
+            // ダイヤル沈め込みポケット (φ13.6mm x 深さ 1.6mm)
+            translate([0, 0, -0.1])
+                cylinder(h=rotary_rim_t + 0.1, d=rotary_dial_d + 0.6, $fn=48);
+            // M2支柱ネジ通過穴
+            translate([0, 0, -0.1])
+                cylinder(h=bottom_case_h, d=rotary_pivot_dia, $fn=24);
+            // 90度回転リミッター規制円弧溝 (半径4.8mm, 0°〜90°)
+            for (a = [0 : 10 : 90]) {
+                rotate([0, 0, a + 45])
+                    translate([4.8, 0, -0.1])
+                        cylinder(h=rotary_rim_t + 0.6, d=1.8, $fn=16);
+            }
+            // 底面状態インジケーター刻印 (LOCK / OPEN ドット)
+            // LOCK位置 (手前側 -Y)
+            translate([0, -rotary_dial_d / 2 - 1.4, -0.1])
+                cylinder(h=0.5, d=1.2, $fn=16);
+            // OPEN位置 (時計回り90度 +X)
+            translate([rotary_dial_d / 2 + 1.4, 0, -0.1])
+                cylinder(h=0.5, d=1.2, $fn=16);
+        }
     }
 
     // --- 内部固定構造 (Union) ---
@@ -164,72 +203,46 @@ module bottom_case() {
                 speaker_boss(spk_boss_dia, spk_boss_inner, spk_boss_h);
         }
 
-        // 2. 電池ボックス位置決めガイドリブ (高剛性補強リブ・三角バットレス・側壁一体化)
+        // 2. 回転ロック支柱 内側M2ネジ頭受け座ボス
+        translate([rotary_pos_x, rotary_pos_y, 0]) {
+            difference() {
+                cylinder(h=3.5, d=6.4, $fn=32);
+                // 内側M2ネジ頭沈め
+                translate([0, 0, 1.8])
+                    cylinder(h=5.0, d=rotary_pivot_head_d, $fn=24);
+                translate([0, 0, -0.1])
+                    cylinder(h=5.0, d=rotary_pivot_dia, $fn=24);
+            }
+        }
+
+        // 3. 電池ボックス底面挿入ガイド & 上部天井ストッパー (Z = batt_stop_z = 19.2mm)
         translate([0, batt_pos_y, 0]) {
-            eff_w = batt_width + batt_clearance;
+            eff_w = batt_bay_w;
+            eff_d = batt_bay_d;
+            stop_z_rel = batt_stop_z - wall_thickness; // 相対高さ 17.2mm
 
-            // --- 奥側ガイドリブ (背面三角バットレスリブ & 根元テーパー付き) ---
-            // メインリブ壁 (幅 31.5mm, 肉厚 batt_rib_t = 1.6mm, 高さ 8.0mm)
-            translate([-batt_length / 4, eff_w / 2, 0])
-                cube([batt_length / 2, batt_rib_t, batt_rib_h]);
-            // 根元テーパー補強
-            hull() {
-                translate([-batt_length / 4, eff_w / 2, 0])
-                    cube([batt_length / 2, batt_rib_t + 1.0, 0.01]);
-                translate([-batt_length / 4, eff_w / 2, 1.2])
-                    cube([batt_length / 2, batt_rib_t, 0.01]);
+            // (a) 上部天井ストッパーリブ (基板保護: Z=19.2mmで電池を受け止め、基板裏面との間に3.0mmクリアランスを保持)
+            // 左右ストッパーリブ
+            for (sx = [-eff_w / 2, eff_w / 2 - 2.5]) {
+                translate([sx, -10.0, stop_z_rel])
+                    cube([2.5, 20.0, 1.5]);
             }
-            // 背面三角バットレスリブ (3箇所: X = 0, ±10mm)
-            for (gx = [-10, 0, 10]) {
-                translate([gx - batt_gusset_t / 2, eff_w / 2 + batt_rib_t, 0])
-                    hull() {
-                        cube([batt_gusset_t, 0.01, batt_gusset_h]);
-                        cube([batt_gusset_t, batt_gusset_rear_d, 0.01]);
-                    }
-            }
+            // 奥側ストッパーリブ (配線逃げノッチを避けて2分割)
+            translate([-eff_w / 3, eff_d / 2 - 2.5, stop_z_rel])
+                cube([eff_w / 3, 2.5, 1.5]);
+            translate([eff_w / 6, eff_d / 2 - 2.5, stop_z_rel])
+                cube([eff_w / 4, 2.5, 1.5]);
 
-            // --- 手前側ガイドリブ (左右2箇所: 前面三角バットレスリブ & 根元テーパー付き) ---
-            for (tab_x = [-batt_length / 2 + 3, batt_length / 2 - 13]) {
-                // ガイドリブ片 (幅 10.0mm, 肉厚 1.6mm, 高さ 8.0mm)
-                translate([tab_x, -eff_w / 2 - batt_rib_t, 0])
-                    cube([10.0, batt_rib_t, batt_rib_h]);
-                // 根元テーパー補強
-                hull() {
-                    translate([tab_x, -eff_w / 2 - batt_rib_t - 1.0, 0])
-                        cube([10.0, batt_rib_t + 1.0, 0.01]);
-                    translate([tab_x, -eff_w / 2 - batt_rib_t, 1.2])
-                        cube([10.0, batt_rib_t, 0.01]);
-                }
-            }
-            // 手前側三角バットレスリブ (左右各1箇所: スピーカー外側の安全領域)
-            for (gx = [-batt_length / 2 + 8, batt_length / 2 - 8]) {
-                translate([gx - batt_gusset_t / 2, -eff_w / 2 - batt_rib_t, 0])
-                    hull() {
-                        cube([batt_gusset_t, 0.01, batt_gusset_h]);
-                        translate([0, -batt_gusset_front_d, 0])
-                            cube([batt_gusset_t, 0.01, 0.01]);
-                    }
-            }
-
-            // --- 左右位置決めストッパー (ケース側壁直結・一体成型 & 導入テーパー付き) ---
-            stop_len_y = 12.0;
-            stop_h     = 6.0;
-            step_w     = case_inner_w / 2 - (batt_length + batt_clearance) / 2; // 約 0.6mm 突出
-
-            // 左側側壁一体ストッパー
-            translate([-case_inner_w / 2, -stop_len_y / 2, 0])
-                hull() {
-                    cube([step_w, stop_len_y, stop_h - 1.5]);
-                    cube([0.01, stop_len_y, stop_h]);
-                }
-
-            // 右側側壁一体ストッパー
-            translate([(batt_length + batt_clearance) / 2, -stop_len_y / 2, 0])
-                hull() {
-                    cube([step_w, stop_len_y, stop_h - 1.5]);
-                    translate([step_w - 0.01, 0, 0])
-                        cube([0.01, stop_len_y, stop_h]);
-                }
+            // (b) 側壁垂直ガイドレール (ケース側壁に0.5mm埋め込んで確実に融合)
+            guide_h = stop_z_rel;
+            // 左右垂直ガイドレール
+            translate([-case_inner_w / 2 - 0.5, -6.0, 0])
+                cube([case_inner_w / 2 - eff_w / 2 + 0.7, 12.0, guide_h]);
+            translate([eff_w / 2 - 0.2, -6.0, 0])
+                cube([case_inner_w / 2 - eff_w / 2 + 0.7, 12.0, guide_h]);
+            // 奥側垂直ガイド壁
+            translate([-eff_w / 4, eff_d / 2 - 0.1, 0])
+                cube([eff_w / 2, 1.4, guide_h]);
         }
 
         // 3. M2 六角スペーサー受け座パッド (四隅 52x52mm ピッチ、回り止め六角ポケット付き)
