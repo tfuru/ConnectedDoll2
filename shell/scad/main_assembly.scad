@@ -67,12 +67,6 @@ module pcb_mockup() {
             cube([1.5, 0.6, 1.0]);
     }
 
-    // 基板手前側のフルカラーLED (WS2812B: SW1の背面に配置され前方へ発光)
-    color([1.0, 0.2, 0.2, 0.95]) {
-        translate([-ws2812b_size/2, -pcb_height/2 + 5.5, pcb_thickness])
-            cube([ws2812b_size, ws2812b_size, ws2812b_thickness]);
-    }
-
     // 基板右端のボリュームダイヤル (RK10J11R0A0H モックアップ)
     color([0.3, 0.3, 0.3, 1.0]) {
         translate([pcb_width/2 - 2.0, vol_offset_y, pcb_thickness])

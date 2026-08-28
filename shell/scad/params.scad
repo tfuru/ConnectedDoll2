@@ -28,7 +28,7 @@ spk_boss_h     = 4.0;
 
 // --- 前面ボタン（ボトムケース手前側面に配置） ---
 btn_side_width        = 44.0;       // 側面ボタン開口幅
-btn_side_height       = 14.0;       // 側面ボタン開口高さ
+btn_side_height       = 20.0;       // 側面ボタン開口高さ
 btn_side_radius       = 3.0;        // 側面ボタン角丸
 
 btn_cap_depth         = 2.5;        // ボタンキャップ厚み（ズレ・傾き防止ガイド長）
@@ -45,22 +45,15 @@ btn_spring_arm_l        = 9.5;        // 復帰板バネアーム展開長
 btn_spring_reach        = 2.8;        // 復帰板バネ前方（ケース内壁当接）突き出し量
 btn_flex_plunger_t      = 0.9;        // 弾性プランジャー板バネ肉厚
 btn_target_stroke       = 1.2;        // 目標ストローク量 (1.2mm)
-btn_plunger_w           = 3.5;        // プランジャー幅 (スリム形状・LED光路非干渉)
+btn_plunger_w           = 3.5;        // プランジャー幅 (スリム形状)
 btn_plunger_l           = 0.8;        // プランジャー裏面突出長 (0.8mm: 実基板内側スイッチ位置に対応)
 btn_plunger_offset_y    = 1.4;        // スイッチアクチュエータ中心Yオフセット (+1.4mm)
-
-// --- WS2812B LED & 前面ボタン導光スリット ---
-ws2812b_size          = 5.0;        // WS2812B 5050 パッケージ寸法 (5.0x5.0mm)
-ws2812b_thickness     = 1.6;        // パッケージ厚み
-btn_light_slit_w      = 10.0;       // 導光スリット幅 (アクリル中央へ均一導光)
-btn_light_slit_h      = 4.5;        // 導光スリット高さ
-btn_light_slit_r      = 2.0;        // 導光スリット角丸
 
 // --- 前面アクリル化粧パネル埋め込み用リセス（段差ポケット） ---
 front_recess_depth    = btn_magnet_t; // 3.0mm (アクリル厚みに完全一致)
 front_recess_margin   = 0.6;          // リセスクリアランス (周囲0.6mm)
 front_recess_w        = btn_side_width + front_recess_margin * 2;   // 45.2mm
-front_recess_h        = btn_side_height + front_recess_margin * 2;  // 15.2mm
+front_recess_h        = btn_side_height + front_recess_margin * 2;  // 21.2mm
 front_recess_r        = btn_side_radius + front_recess_margin;      // 3.6mm
 
 // --- ボリューム調整スリット（右側面に配置） ---
