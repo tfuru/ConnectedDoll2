@@ -43,17 +43,10 @@ btn_magnet_pocket_depth = 3.0;      // ボタン側磁石埋め込みポケッ�
 panel_nut_width       = 4.4;        // パネル側 M2 六角ナット二面幅 (対辺 4.0mm + 余裕0.4mm)
 panel_nut_depth       = 1.6;        // パネル側 M2 六角ナット厚み / ポケット深さ (1.6mm)
 
-// --- 前面ボタン 復帰バネ機構＆M2アジャスタブル・プランジャー ---
+// --- 前面ボタン 復帰バネ機構 ---
 btn_spring_arm_t        = 1.0;        // 左右復帰板バネアーム肉厚 (0.9〜1.0mm)
 btn_spring_arm_l        = 9.5;        // 復帰板バネアーム展開長
 btn_spring_reach        = 2.8;        // 復帰板バネ前方（ケース内壁当接）突き出し量
-btn_target_stroke       = 0.4;        // スイッチ作動ストローク目安 (約0.3〜0.5mm)
-btn_plunger_offset_y    = 1.4;        // スイッチアクチュエータ中心Yオフセット (+1.4mm)
-btn_m2_boss_outer_d     = 4.4;        // M2ネジ受けボス外径 (肉厚強化 φ4.4mm)
-btn_m2_boss_inner_d     = 1.7;        // M2ネジ下穴径 (PLAタッピング用 φ1.7mm)
-btn_m2_boss_h           = 1.2;        // ボス裏面突出高さ (1.2mm)
-btn_m2_hole_depth       = 4.0;        // M2ネジ下穴深さ (4.0mm)
-btn_plunger_screw_l     = 4.0;        // 推奨M2なべ小ねじ長さ (L=4〜6mm)
 
 // --- 前面アクリル化粧パネル埋め込み用リセス（段差ポケット） ---
 front_recess_depth    = btn_magnet_t; // 3.0mm (アクリル厚みに完全一致)

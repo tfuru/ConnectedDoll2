@@ -151,17 +151,6 @@ module main_assembly() {
             }
         }
 
-    // ボタン裏面 M2アジャスタブル・プランジャーネジ (スチールシルバー色: スイッチ押下調整用 M2x4mm)
-    color([0.85, 0.85, 0.9, 1.0])
-        translate([center_x, btn_explode_y + btn_m2_boss_h, btn_z_pos + btn_plunger_offset_y])
-            rotate([-90, 0, 0]) {
-                // ネジ頭 (φ3.5mm x 1.3mm: タクトスイッチを押下)
-                cylinder(h=1.3, d=3.5, $fn=24);
-                // ネジ軸 (M2 x 4mm: ボス内へねじ込み)
-                translate([0, 0, -btn_plunger_screw_l])
-                    cylinder(h=btn_plunger_screw_l, d=2.0, $fn=20);
-            }
-
     // 3b. アクリル化粧パネル (実パーツモジュール acrylic_panel_3d() を使用して配置)
     if (show_acrylic) {
         // ボタン操作面（フランジ厚み1.2mm + キャップ深さ2.5mm = 3.7mm手前）に密着配置
