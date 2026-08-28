@@ -58,10 +58,9 @@ btn_case_boss_pocket_d  = 2.5;        // ボトムケース側受けボス深さ
 btn_case_boss_outer_d   = 5.4;        // ボトムケース側受けボス外径 (φ5.4mm)
 btn_case_boss_y         = 9.5;        // ボトムケース側受けボス中心Y座標 (9.5mm)
 btn_target_stroke       = 0.4;        // スイッチ作動ストローク目安 (約0.3〜0.5mm)
-btn_plunger_offset_y    = 1.4;        // スイッチアクチュエータ中心Yオフセット (+1.4mm)
 btn_m2_boss_outer_d     = 4.4;        // M2ネジ受けボス外径 (肉厚強化 φ4.4mm)
 btn_m2_boss_inner_d     = 1.7;        // M2ネジ下穴径 (PLAタッピング用 φ1.7mm)
-btn_m2_boss_h           = 1.2;        // ボス裏面突出高さ (1.2mm)
+btn_m2_boss_h           = 0.6;        // ボス裏面突出高さ (0.6mm: 基板前端面との衝突を回避し安全クリアランス確保)
 btn_m2_hole_depth       = 4.0;        // M2ネジ下穴深さ (4.0mm)
 btn_plunger_screw_l     = 4.0;        // 推奨M2なべ小ねじ長さ (L=4〜6mm)
 
@@ -119,8 +118,12 @@ pcb_top_z          = pcb_seat_z + pcb_thickness; // 基板表面高さ = 23.8mm
 vol_dial_center_x  = pcb_width / 2 - 4.5; // ダイヤル中心X座標 (外周φ14mmが基板端から2.5mm突出)
 vol_dial_center_z  = pcb_top_z + vol_dial_h / 2; // ダイヤル中心高さ = 25.05mm
 
-// ボタンおよびアクリルパネルの統一中心高さ (PCB表面・タクトスイッチ中心高さ: Z = 23.0mm)
+// ボタンおよびアクリルパネルの統一中心高さ (Z = 23.0mm: 天面および底面とのクリアランス調和)
 btn_center_z       = wall_thickness + pcb_standoff_h + 1.0;
+
+// タクトスイッチ (EVQPUC02K: 全高1.65mm) 中心高さおよびボタン中心からのプランジャーオフセット
+tact_switch_center_z = pcb_top_z + 1.65 / 2; // Z = 24.625mm (基板20mmスペーサー上の実高さ)
+btn_plunger_offset_y = tact_switch_center_z - btn_center_z; // +1.625mm (スイッチ中心に完全一致)
 
 // --- 統合締結ボス・ネジ穴寸法 ---
 joint_pitch        = pcb_hole_pitch; // 52.0mm

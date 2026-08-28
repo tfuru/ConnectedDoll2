@@ -33,15 +33,22 @@ module spring_pocket() {
 }
 
 // M2ネジ式アジャスタブル・プランジャーボス（基板上のタクトスイッチ押下用）
-// スイッチ中心高さ Y = +1.4mm にM2タッピング下穴ボスを配置し、
+// スイッチ中心高さ Y = +btn_plunger_offset_y (+1.625mm) にM2タッピング下穴ボスを配置し、
 // M2なべ小ねじ（L=4〜6mm）をねじ込んで突出量を無段階微調整する
 module m2_plunger_boss() {
     py = btn_plunger_offset_y;
     d_out = btn_m2_boss_outer_d;
     h_boss = btn_m2_boss_h;
-    translate([0, py, -h_boss]) {
-        // ボス本体（付け根に緩やかなテーパーを設けてPLAの層間せん断強度を向上）
-        cylinder(h=h_boss + 0.01, d1=d_out, d2=d_out + 1.2, $fn=32);
+    // 基板上面（Y=pcb_top_z - btn_center_z = 0.8mm）より下側を逃げるDカット
+    pcb_clearance_y = pcb_top_z - btn_center_z; // Y = 0.8mm
+    difference() {
+        translate([0, py, -h_boss]) {
+            // ボス本体（付け根に緩やかなテーパーを設けてPLAの層間せん断強度を向上）
+            cylinder(h=h_boss + 0.01, d1=d_out, d2=d_out + 0.8, $fn=32);
+        }
+        // 基板前端面（FR4エッジ）との干渉を完全に防ぐDカット (PCB上面Z=23.8mmに対し+0.1mm上まで逃げ)
+        translate([-d_out, -d_out, -h_boss - 0.1])
+            cube([d_out * 2, pcb_clearance_y + d_out + 0.1, h_boss + 0.2]);
     }
 }
 

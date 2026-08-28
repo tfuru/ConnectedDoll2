@@ -151,10 +151,10 @@ module main_assembly() {
             pcb_mockup();
     }
 
-    // 3. 前面ボタン (フロント手前側面の3.0mmリセス奥壁に配置)
-    // 3. 前面ボタン (フロント手前側面の3.0mmリセス奥壁に配置)
     btn_z_pos = btn_center_z;
-    btn_y_pos = front_recess_depth + wall_thickness; // Y = 5.0mm (ケース外壁Y=0から3mm奥)
+    // ボタンフランジ前面がケース前面内壁 (Y = wall_thickness = 2.0mm) に当接
+    // フランジ裏面 (ローカルZ=0) のグローバルY座標 = 2.0 + btn_flange_t = 3.2mm
+    btn_y_pos = wall_thickness + btn_flange_t;
     btn_explode_y = btn_y_pos - explode_btn;
     color([0.2, 0.6, 0.9, 0.9])
         translate([center_x, btn_explode_y, btn_z_pos])
