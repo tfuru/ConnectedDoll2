@@ -95,8 +95,7 @@ module front_recess_cutout() {
 }
 
 module bottom_case() {
-    center_x = case_outer_w / 2;
-    center_y = case_outer_h / 2;
+    // center_x, center_y は params.scad で定義済み (center_x=34.4, center_y=37.4)
 
     difference() {
         // --- 外殻シェル ---
@@ -222,10 +221,12 @@ module bottom_case() {
         }
 
         // 4. 前面ボタン用 マイクロコイルスプリング受け座ボス (左右2箇所)
-        boss_rel_y = -(case_inner_h / 2 - front_recess_depth - 3.5 - btn_case_boss_outer_d / 2); // Y ≈ -23.2mm
+        front_inner_wall_y = wall_thickness - center_y; // Y ≈ -35.4mm (ケース前面内壁のローカルY座標)
+        btn_back_y = front_inner_wall_y + btn_flange_t; // Y ≈ -34.2mm (ボタンフランジ裏面のローカルY座標)
+        boss_rel_y = btn_back_y + 3.5 + btn_case_boss_outer_d / 2; // Y ≈ -28.0mm (ボタン側ポケットに対向)
         boss_z_ctr = (btn_center_z + btn_spring_offset_y) - wall_thickness; // Z ≈ 15.5mm
         boss_h_top = boss_z_ctr + btn_case_boss_outer_d / 2; // Z ≈ 18.2mm
-        front_wall_y = -(case_inner_h / 2 - front_recess_depth); // Y ≈ -29.4mm
+        front_wall_y = front_inner_wall_y; // リブを接続する前面内壁座標
 
         for (dx = [-btn_spring_pitch_w / 2, btn_spring_pitch_w / 2]) {
             translate([dx, boss_rel_y, 0]) {

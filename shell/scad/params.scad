@@ -60,8 +60,10 @@ btn_case_boss_y         = 9.5;        // ボトムケース側受けボス中心
 btn_target_stroke       = 0.4;        // スイッチ作動ストローク目安 (約0.3〜0.5mm)
 btn_m2_boss_outer_d     = 4.4;        // M2ネジ受けボス外径 (肉厚強化 φ4.4mm)
 btn_m2_boss_inner_d     = 1.7;        // M2ネジ下穴径 (PLAタッピング用 φ1.7mm)
-btn_m2_boss_h           = 0.6;        // ボス裏面突出高さ (0.6mm: 基板前端面との衝突を回避し安全クリアランス確保)
-btn_m2_hole_depth       = 4.0;        // M2ネジ下穴深さ (4.0mm)
+btn_m2_boss_h           = 0.0;        // インセット構造により裏面突出ボスは0mm (完全フラット)
+btn_inset_pocket_d      = 5.0;        // M2ネジ頭インセット収容ポケット径 (φ5.0mm)
+btn_inset_pocket_depth  = 1.5;        // M2ネジ頭インセット収容ポケット深さ (1.5mm)
+btn_m2_tap_depth        = 2.0;        // ポケット底面からのタッピング下穴深さ (2.0mm)
 btn_plunger_screw_l     = 4.0;        // 推奨M2なべ小ねじ長さ (L=4〜6mm)
 
 // --- 前面アクリル化粧パネル埋め込み用リセス（段差ポケット） ---
@@ -95,14 +97,19 @@ batt_gusset_h      = 6.5;         // 三角リブ高さ
 spk_pos_y          = -28.5;       // スピーカー固定ボス中心Yオフセット（出音口を手前-Y方向に向ける）
 
 // --- ケース寸法計算 ---
-case_inner_w   = pcb_width + clearance * 2 + 4.0; // 内部余裕 (約 64.8mm)
-case_inner_h   = pcb_height + clearance * 2 + 4.0; // 内部余裕 (約 64.8mm)
+case_front_extend = 3.0;         // ケース手前側壁の前方拡張量 (+3.0mm: 基板とのクリアランス確保)
+case_inner_w   = pcb_width + clearance * 2 + 4.0; // 内部幅 (約 64.8mm)
+case_inner_h   = pcb_height + clearance * 2 + 4.0 + case_front_extend; // 内部奥行き (64.8 + 3.0 = 67.8mm)
 
 top_cover_h    = 8.0;         // トップカバー高さ（薄型フタ・天板）
 bottom_case_h  = 28.0;        // ボトムケース高さ（20mmスペーサー + 基板 + スイッチ開口を収容、28mm）
 
 case_outer_w   = case_inner_w + wall_thickness * 2; // 外幅 (約 68.8mm)
-case_outer_h   = case_inner_h + wall_thickness * 2; // 外高 (約 68.8mm)
+case_outer_h   = case_inner_h + wall_thickness * 2; // 外高 (約 71.8mm)
+
+// 基板および内部固定部品の基準中心座標 (背面クリアランス2.4mmを維持し、前方を+3mm拡大)
+center_x       = case_outer_w / 2; // 34.4mm
+center_y       = (pcb_width + clearance * 2 + 4.0) / 2 + wall_thickness + case_front_extend; // 37.4mm
 
 // --- M2 六角オスメスネジスペーサー仕様 ---
 spacer_body_h      = 20.0;           // スペーサー本体（六角部）長さ = 20.0mm

@@ -32,34 +32,20 @@ module spring_pocket() {
         cylinder(h=btn_spring_pocket_depth + 0.1, d=btn_spring_pocket_d, $fn=24);
 }
 
-// M2ネジ式アジャスタブル・プランジャーボス（基板上のタクトスイッチ押下用）
-// スイッチ中心高さ Y = +btn_plunger_offset_y (+1.625mm) にM2タッピング下穴ボスを配置し、
-// M2なべ小ねじ（L=4〜6mm）をねじ込んで突出量を無段階微調整する
-module m2_plunger_boss() {
+// M2ネジ頭インセット収容ポケット (深さ 1.5mm, φ5.0mm)
+// ネジ頭（φ3.5mm x 1.3mm）をボタン内部に沈め込み、突出量を無段階微調整する
+module m2_inset_pocket() {
     py = btn_plunger_offset_y;
-    d_out = btn_m2_boss_outer_d;
-    h_boss = btn_m2_boss_h;
-    // 基板上面（Y=pcb_top_z - btn_center_z = 0.8mm）より下側を逃げるDカット
-    pcb_clearance_y = pcb_top_z - btn_center_z; // Y = 0.8mm
-    difference() {
-        translate([0, py, -h_boss]) {
-            // ボス本体（付け根に緩やかなテーパーを設けてPLAの層間せん断強度を向上）
-            cylinder(h=h_boss + 0.01, d1=d_out, d2=d_out + 0.8, $fn=32);
-        }
-        // 基板前端面（FR4エッジ）との干渉を完全に防ぐDカット (PCB上面Z=23.8mmに対し+0.1mm上まで逃げ)
-        translate([-d_out, -d_out, -h_boss - 0.1])
-            cube([d_out * 2, pcb_clearance_y + d_out + 0.1, h_boss + 0.2]);
-    }
+    translate([0, py, -0.1])
+        cylinder(h=btn_inset_pocket_depth + 0.1, d=btn_inset_pocket_d, $fn=32);
 }
 
-// M2タッピング用下穴（φ1.7mm, 深さ4.0mm）
+// M2タッピング用下穴（φ1.7mm, ポケット底面から前方へ深さ 2.0mm）
 module m2_plunger_hole() {
     py = btn_plunger_offset_y;
     d_in = btn_m2_boss_inner_d;
-    h_boss = btn_m2_boss_h;
-    h_hole = btn_m2_hole_depth;
-    translate([0, py, -h_boss - 0.1])
-        cylinder(h=h_hole + 0.1, d=d_in, $fn=24);
+    translate([0, py, btn_inset_pocket_depth - 0.1])
+        cylinder(h=btn_m2_tap_depth + 0.1, d=d_in, $fn=24);
 }
 
 module front_button() {
@@ -72,22 +58,22 @@ module front_button() {
             // 2. ボタンキャップ（ズレ・傾き防止ガイド部: 厚み 2.5mm）
             translate([0, 0, btn_flange_t])
                 button_face(btn_cap_w, btn_cap_h, btn_cap_depth, btn_cap_r);
-
-            // 3. M2ネジ式アジャスタブル・プランジャーボス
-            m2_plunger_boss();
         }
 
-        // 4. 操作面 左右2箇所の ネオジム磁石埋め込みポケット（高さ中央 Y=0）
+        // 3. 操作面 左右2箇所の ネオジム磁石埋め込みポケット（高さ中央 Y=0）
         for (dx = [-btn_magnet_pitch_w / 2, btn_magnet_pitch_w / 2]) {
             translate([dx, 0, 0])
                 magnet_pocket();
         }
 
-        // 5. 左右2箇所の マイクロコイルスプリング収容ポケット（裏面 Y=btn_spring_offset_y）
+        // 4. 左右2箇所の マイクロコイルスプリング収容ポケット（裏面 Y=btn_spring_offset_y）
         for (dx = [-btn_spring_pitch_w / 2, btn_spring_pitch_w / 2]) {
             translate([dx, btn_spring_offset_y, 0])
                 spring_pocket();
         }
+
+        // 5. M2ネジ頭インセット収容ポケット（沈め込み深さ 1.5mm）
+        m2_inset_pocket();
 
         // 6. M2アジャスタブル・プランジャー タッピング下穴
         m2_plunger_hole();

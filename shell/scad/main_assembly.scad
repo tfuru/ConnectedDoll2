@@ -17,7 +17,7 @@ show_screws     = true; // 締結M2ネジの表示フラグ
 show_acrylic    = true; // アクリル化粧パネルの表示フラグ
 
 center_x = case_outer_w / 2;
-center_y = case_outer_h / 2;
+// center_y は params.scad で定義済み (center_y=37.4)
 
 // --- ダミーモックアップ部品モジュール ---
 
@@ -121,7 +121,7 @@ module m2_screw_mockup(length=5.0) {
 // 全体アセンブリ配置
 // ==========================================
 
-module main_assembly() {
+module main_assembly(explode_z=explode_z, explode_btn=explode_btn, explode_screw=explode_screw) {
     // 1. ボトムケース (Base)
     color([0.95, 0.75, 0.2, 0.85])
         bottom_case();
@@ -171,13 +171,15 @@ module main_assembly() {
             }
         }
 
-    // ボタン裏面 M2アジャスタブル・プランジャーネジ (スチールシルバー色: スイッチ押下調整用 M2x4mm)
+    // ボタン裏面 M2アジャスタブル・プランジャーネジ (スチールシルバー色: インセットポケットからスイッチ押下調整用 M2x4mm)
+    // スイッチ先端 (Y ≈ 7.6mm) に対して初期隙間0.3mmを残して調整配置
+    screw_reach_y = (explode_btn > 0) ? (btn_explode_y + 0.5) : (center_y - pcb_height / 2 + 0.2 - 0.3 - 1.3);
     color([0.85, 0.85, 0.9, 1.0])
-        translate([center_x, btn_explode_y + btn_m2_boss_h, btn_z_pos + btn_plunger_offset_y])
+        translate([center_x, screw_reach_y, btn_z_pos + btn_plunger_offset_y])
             rotate([-90, 0, 0]) {
                 // ネジ頭 (φ3.5mm x 1.3mm: タクトスイッチを押下)
                 cylinder(h=1.3, d=3.5, $fn=24);
-                // ネジ軸 (M2 x 4mm: ボス内へねじ込み)
+                // ネジ軸 (M2 x 4mm: ボタン内部のタッピング穴へねじ込み)
                 translate([0, 0, -btn_plunger_screw_l])
                     cylinder(h=btn_plunger_screw_l, d=2.0, $fn=20);
             }

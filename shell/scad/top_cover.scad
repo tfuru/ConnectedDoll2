@@ -62,8 +62,7 @@ module screw_tap_boss(outer_d, tap_d, height, dir_x=0, dir_y=0) {
 }
 
 module top_cover() {
-    center_x = case_outer_w / 2;
-    center_y = case_outer_h / 2;
+    // center_x, center_y は params.scad で定義済み (center_x=34.4, center_y=37.4)
     // top_coverローカル座標におけるボタン中心Z
     top_btn_z = bottom_case_h + top_cover_h - btn_center_z;
 
