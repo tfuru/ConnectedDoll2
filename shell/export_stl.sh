@@ -94,7 +94,9 @@ if [ -f "$SCAD_DIR/main_assembly.scad" ]; then
     echo "Rendering assembly preview images..."
     # 分解図
     "$OPENSCAD_BIN" -o "$OUTPUT_IMG_DIR/assembly_exploded.png" --camera=0,-50,0,60,0,325,280 --imgsize=1000,750 --autocenter --viewall "$SCAD_DIR/main_assembly.scad"
-    # 組立図
+    # 組立図 (STL & PNG)
+    echo "Rendering main_assembly_closed.stl and preview..."
+    "$OPENSCAD_BIN" -D "explode_z=0;explode_btn=0;explode_screw=0" -o "$OUTPUT_STL_DIR/main_assembly_closed.stl" "$SCAD_DIR/main_assembly.scad"
     "$OPENSCAD_BIN" -D "explode_z=0;explode_btn=0;explode_screw=0" -o "$OUTPUT_IMG_DIR/assembly_closed.png" --camera=20,0,0,65,0,70,220 --imgsize=1000,750 --autocenter --viewall "$SCAD_DIR/main_assembly.scad"
     # 底面視点プレビュー (電池フタ・回転ロック・スイッチ窓確認用)
     "$OPENSCAD_BIN" -D "explode_z=0;explode_btn=0;explode_screw=0" -o "$OUTPUT_IMG_DIR/assembly_bottom_view.png" --camera=0,0,0,140,0,30,200 --imgsize=1000,750 --autocenter --viewall "$SCAD_DIR/main_assembly.scad"
