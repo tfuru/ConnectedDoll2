@@ -132,12 +132,24 @@ module main_assembly() {
     }
 
     // 3. 前面ボタン (フロント手前側面の3.0mmリセス奥壁に配置)
+    // 3. 前面ボタン (フロント手前側面の3.0mmリセス奥壁に配置)
     btn_z_pos = btn_center_z;
     btn_y_pos = front_recess_depth + wall_thickness; // Y = 5.0mm (ケース外壁Y=0から3mm奥)
+    btn_explode_y = btn_y_pos - explode_btn;
     color([0.2, 0.6, 0.9, 0.9])
-        translate([center_x, btn_y_pos - explode_btn, btn_z_pos])
+        translate([center_x, btn_explode_y, btn_z_pos])
             rotate([90, 0, 0])
                 front_button();
+
+    // ボタン内蔵 ネオジム磁石 (金/ニッケルメッキ色: ボタン操作面ポケット内に配置)
+    color([0.85, 0.75, 0.4, 1.0])
+        translate([center_x, btn_explode_y - (btn_flange_t + btn_cap_depth - btn_magnet_t), btn_z_pos]) {
+            for (dx = [-btn_magnet_pitch_w/2, btn_magnet_pitch_w/2]) {
+                translate([dx, 0, 0])
+                    rotate([90, 0, 0])
+                        cylinder(h=btn_magnet_t, d=btn_magnet_d);
+            }
+        }
 
     // 3b. アクリル化粧パネル (実パーツモジュール acrylic_panel_3d() を使用して配置)
     if (show_acrylic) {
@@ -151,13 +163,14 @@ module main_assembly() {
                 rotate([90, 0, 0])
                     acrylic_panel_3d();
 
-        // 左右2箇所のネオジム磁石 (金/ニッケルメッキ色: 磁石穴内に配置、ボタン側M2ナットに吸着)
-        color([0.85, 0.75, 0.4, 1.0])
+        // 左右2箇所の M2 六角ナット (スチールシルバー色: パネル穴内に配置、ボタン側磁石に吸着)
+        color([0.8, 0.8, 0.85, 1.0])
             translate([center_x, acrylic_y_pos, btn_z_pos]) {
                 for (dx = [-btn_magnet_pitch_w/2, btn_magnet_pitch_w/2]) {
                     translate([dx, 0, 0])
                         rotate([90, 0, 0])
-                            cylinder(h=btn_magnet_t, d=btn_magnet_d);
+                            rotate([0, 0, 30])
+                                cylinder(h=panel_nut_depth, d=4.0 / cos(30), $fn=6);
                 }
             }
     }

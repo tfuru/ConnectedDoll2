@@ -21,13 +21,10 @@ module button_face(w, h, d, r) {
     }
 }
 
-// 表面の M2 六角ナット接着用ポケット (深さ 1.6mm, 二面幅 4.4mm)
-module nut_pocket() {
-    // $fn=6 の外接半径 = (二面幅 / 2) / cos(30°)
-    nut_radius = (btn_nut_width / 2) / cos(30);
-    translate([0, 0, btn_flange_t + btn_cap_depth - btn_nut_depth])
-        rotate([0, 0, 30])
-            cylinder(h=btn_nut_depth + 0.1, r=nut_radius, $fn=6);
+// 表面の ネオジム磁石埋め込みポケット (深さ 3.0mm, 直径 6.1mm)
+module magnet_pocket() {
+    translate([0, 0, btn_flange_t + btn_cap_depth - btn_magnet_pocket_depth])
+        cylinder(h=btn_magnet_pocket_depth + 0.1, d=btn_magnet_pocket_d, $fn=32);
 }
 
 // 左右の復帰板バネ（サイド・スプリングウィング）
@@ -93,10 +90,10 @@ module front_button() {
             flexible_plunger();
         }
 
-        // 5. 操作面 左右2箇所の M2 六角ナット接着ポケット（高さ中央）
+        // 5. 操作面 左右2箇所の ネオジム磁石埋め込みポケット（高さ中央）
         for (dx = [-btn_magnet_pitch_w / 2, btn_magnet_pitch_w / 2]) {
             translate([dx, 0, 0])
-                nut_pocket();
+                magnet_pocket();
         }
     }
 }

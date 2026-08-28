@@ -33,11 +33,15 @@ btn_side_radius       = 3.0;        // 側面ボタン角丸
 
 btn_cap_depth         = 2.5;        // ボタンキャップ厚み（ズレ・傾き防止ガイド長）
 btn_flange_t          = 1.2;        // 脱落防止フランジ厚み
-btn_magnet_d          = 6.0;        // ネオジム磁石直径 (0.6cm)
-btn_magnet_t          = 3.0;        // ネオジム磁石厚み (0.3cm)
-btn_magnet_pitch_w    = 34.0;       // 左右ナット・磁石位置ピッチ (2個配置)
-btn_nut_width         = 4.4;        // M2 六角ナット二面幅 (対辺)
-btn_nut_depth         = 1.6;        // M2 六角ナット接着ポケット深さ
+btn_magnet_d          = 6.0;        // ネオジム磁石直径 (φ6.0mm)
+btn_magnet_t          = 3.0;        // ネオジム磁石厚み (3.0mm)
+btn_magnet_pitch_w    = 34.0;       // 左右磁石・ナット位置ピッチ (2個配置)
+btn_magnet_pocket_d   = 6.1;        // ボタン側磁石埋め込みポケット径 (φ6.1mm)
+btn_magnet_pocket_depth = 3.0;      // ボタン側磁石埋め込みポケット深さ (3.0mm)
+
+// --- 前面化粧パネル（アクリル等）および M2 六角ナット仕様 ---
+panel_nut_width       = 4.4;        // パネル側 M2 六角ナット二面幅 (対辺 4.0mm + 余裕0.4mm)
+panel_nut_depth       = 1.6;        // パネル側 M2 六角ナット厚み / ポケット深さ (1.6mm)
 
 // --- 前面ボタン バネ機構（弾性ストローク＆復帰スプリング） ---
 btn_spring_arm_t        = 1.0;        // 左右復帰板バネアーム肉厚 (0.9〜1.0mm)
