@@ -27,24 +27,10 @@ module magnet_pocket() {
         cylinder(h=btn_magnet_pocket_depth + 0.1, d=btn_magnet_pocket_d, $fn=32);
 }
 
-// 左右の復帰板バネ（サイド・スプリングウィング）
-// ケース前面内壁に押し当てられ、ボタンのガタつき防止と安定した復帰力を生み出す
-module side_return_springs() {
-    arm_h = 7.0; // 上下幅
-    for (side = [-1, 1]) {
-        translate([side * (btn_flange_w / 2 - 0.6), 0, 0]) {
-            // フランジ外縁から前方（+Z方向）へ湾曲して伸びる板バネアーム
-            hull() {
-                translate([0, -arm_h / 2, 0])
-                    cube([btn_spring_arm_t, arm_h, btn_flange_t]);
-                translate([-side * 1.8, -arm_h / 2, btn_flange_t + btn_spring_reach])
-                    cube([btn_spring_arm_t, arm_h, 0.4]);
-            }
-            // 先端の滑らかな当接パッド（ケース内壁との摺動抵抗を低減）
-            translate([-side * 1.8 + btn_spring_arm_t / 2, -arm_h / 2, btn_flange_t + btn_spring_reach])
-                cylinder(h=0.5, r=btn_spring_arm_t, $fn=16);
-        }
-    }
+// 左右のマイクロコイルスプリング収容ポケット (φ3.4mm, 深さ 2.0mm)
+module spring_pocket() {
+    translate([0, 0, -0.1])
+        cylinder(h=btn_spring_pocket_depth + 0.1, d=btn_spring_pocket_d, $fn=24);
 }
 
 // M2ネジ式アジャスタブル・プランジャーボス（基板上のタクトスイッチ押下用）
@@ -81,17 +67,20 @@ module front_button() {
             translate([0, 0, btn_flange_t])
                 button_face(btn_cap_w, btn_cap_h, btn_cap_depth, btn_cap_r);
 
-            // 3. 左右の復帰板バネアーム（ケース内壁当接スプリング）
-            side_return_springs();
-
-            // 4. M2ネジ式アジャスタブル・プランジャーボス
+            // 3. M2ネジ式アジャスタブル・プランジャーボス
             m2_plunger_boss();
         }
 
-        // 5. 操作面 左右2箇所の ネオジム磁石埋め込みポケット（高さ中央）
+        // 4. 操作面 左右2箇所の ネオジム磁石埋め込みポケット（高さ中央 Y=0）
         for (dx = [-btn_magnet_pitch_w / 2, btn_magnet_pitch_w / 2]) {
             translate([dx, 0, 0])
                 magnet_pocket();
+        }
+
+        // 5. 左右2箇所の マイクロコイルスプリング収容ポケット（裏面 Y=btn_spring_offset_y）
+        for (dx = [-btn_spring_pitch_w / 2, btn_spring_pitch_w / 2]) {
+            translate([dx, btn_spring_offset_y, 0])
+                spring_pocket();
         }
 
         // 6. M2アジャスタブル・プランジャー タッピング下穴

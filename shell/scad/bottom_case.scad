@@ -168,6 +168,36 @@ module bottom_case() {
                     spacer_mount_pad(pad_d=7.2, pad_h=spacer_pad_h, hex_w=spacer_hex_w, pocket_d=spacer_pocket_d, pass_d=joint_screw_pass, dir_x=sign(dx), dir_y=sign(dy));
             }
         }
+
+        // 4. 前面ボタン用 マイクロコイルスプリング受け座ボス (左右2箇所)
+        boss_rel_y = -(case_inner_h / 2 - front_recess_depth - 3.5 - btn_case_boss_outer_d / 2); // Y ≈ -23.2mm
+        boss_z_ctr = (btn_center_z + btn_spring_offset_y) - wall_thickness; // Z ≈ 15.5mm
+        boss_h_top = boss_z_ctr + btn_case_boss_outer_d / 2; // Z ≈ 18.2mm
+        front_wall_y = -(case_inner_h / 2 - front_recess_depth); // Y ≈ -29.4mm
+
+        for (dx = [-btn_spring_pitch_w / 2, btn_spring_pitch_w / 2]) {
+            translate([dx, boss_rel_y, 0]) {
+                difference() {
+                    union() {
+                        // 支持円柱ボス
+                        cylinder(h=boss_h_top, d=btn_case_boss_outer_d);
+                        // 根元補強テーパー
+                        cylinder(h=2.5, d1=btn_case_boss_outer_d + 2.0, d2=btn_case_boss_outer_d);
+                        // 前面内壁への一体補強リブ
+                        hull() {
+                            translate([-rib_thickness / 2, 0, 0])
+                                cube([rib_thickness, 0.01, boss_h_top]);
+                            translate([-rib_thickness / 2, front_wall_y - boss_rel_y, 0])
+                                cube([rib_thickness, 0.01, 2.0]);
+                        }
+                    }
+                    // 手前方向（-Y）に開口するスプリング収容ポケット穴 (φ3.4mm, 深さ2.5mm)
+                    translate([0, -btn_case_boss_outer_d / 2 - 0.05, boss_z_ctr])
+                        rotate([-90, 0, 0])
+                            cylinder(h=btn_case_boss_pocket_d + 0.1, d=btn_spring_pocket_d, $fn=24);
+                }
+            }
+        }
     }
 }
 

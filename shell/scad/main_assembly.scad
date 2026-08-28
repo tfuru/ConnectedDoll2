@@ -162,6 +162,15 @@ module main_assembly() {
                     cylinder(h=btn_plunger_screw_l, d=2.0, $fn=20);
             }
 
+    // 左右2箇所の マイクロコイルスプリング (押しバネ: φ3.0mm x 7.0mm, ゴールド色)
+    color([0.85, 0.75, 0.3, 0.95]) {
+        for (dx = [-btn_spring_pitch_w / 2, btn_spring_pitch_w / 2]) {
+            translate([center_x + dx, btn_explode_y, btn_z_pos + btn_spring_offset_y])
+                rotate([-90, 0, 0])
+                    cylinder(h=btn_spring_free_l, d=btn_spring_d, $fn=20);
+        }
+    }
+
     // 3b. アクリル化粧パネル (実パーツモジュール acrylic_panel_3d() を使用して配置)
     if (show_acrylic) {
         // ボタン操作面（フランジ厚み1.2mm + キャップ深さ2.5mm = 3.7mm手前）に密着配置

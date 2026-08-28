@@ -43,10 +43,16 @@ btn_magnet_pocket_depth = 3.0;      // ボタン側磁石埋め込みポケッ�
 panel_nut_width       = 4.4;        // パネル側 M2 六角ナット二面幅 (対辺 4.0mm + 余裕0.4mm)
 panel_nut_depth       = 1.6;        // パネル側 M2 六角ナット厚み / ポケット深さ (1.6mm)
 
-// --- 前面ボタン 復帰バネ機構＆M2アジャスタブル・プランジャー ---
-btn_spring_arm_t        = 1.0;        // 左右復帰板バネアーム肉厚 (0.9〜1.0mm)
-btn_spring_arm_l        = 9.5;        // 復帰板バネアーム展開長
-btn_spring_reach        = 2.8;        // 復帰板バネ前方（ケース内壁当接）突き出し量
+// --- 前面ボタン 左右押しバネ（マイクロコイルスプリング）＆M2アジャスタブル・プランジャー ---
+btn_spring_d            = 3.0;        // 押しバネ外径 (φ3.0mm)
+btn_spring_pocket_d     = 3.4;        // バネ収容ポケット穴径 (φ3.4mm: 余裕+0.4mm)
+btn_spring_pocket_depth = 2.0;        // ボタン側バネポケット深さ (2.0mm)
+btn_spring_pitch_w      = 34.0;       // 左右押しバネ配置ピッチ (34.0mm: 左右均等対称)
+btn_spring_offset_y     = -5.5;       // 押しバネYオフセット (磁石ポケットとの干渉回避: 下側 -5.5mm)
+btn_spring_free_l       = 7.0;        // 押しバネ自由長目安 (6.0〜8.0mm)
+btn_case_boss_pocket_d  = 2.5;        // ボトムケース側受けボス深さ (2.5mm)
+btn_case_boss_outer_d   = 5.4;        // ボトムケース側受けボス外径 (φ5.4mm)
+btn_case_boss_y         = 9.5;        // ボトムケース側受けボス中心Y座標 (9.5mm)
 btn_target_stroke       = 0.4;        // スイッチ作動ストローク目安 (約0.3〜0.5mm)
 btn_plunger_offset_y    = 1.4;        // スイッチアクチュエータ中心Yオフセット (+1.4mm)
 btn_m2_boss_outer_d     = 4.4;        // M2ネジ受けボス外径 (肉厚強化 φ4.4mm)
