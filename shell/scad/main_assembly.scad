@@ -179,12 +179,12 @@ module main_assembly(explode_z=explode_z, explode_btn=explode_btn, explode_screw
         translate([center_x + rotary_pos_x, center_y + rotary_pos_y, rotary_z_pos])
             rotary_lock(angle=rotary_angle);
 
-    // 1d. 回転ロック用 M2支柱ネジ (ケース内側から締結)
+    // 1d. 回転ロック用 M2支柱ネジ (底面外側からダイヤルを貫通してボトムボスへ締結: M2x5mm)
     if (show_screws) {
+        screw_rotary_z = (explode_screw > 0) ? (-explode_screw * 1.5) : (rotary_z_pos - rotary_rib_h);
         color([0.8, 0.8, 0.85, 1.0])
-            translate([center_x + rotary_pos_x, center_y + rotary_pos_y, wall_thickness + 2.0])
-                rotate([180, 0, 0])
-                    m2_screw_mockup(5.0);
+            translate([center_x + rotary_pos_x, center_y + rotary_pos_y, screw_rotary_z])
+                m2_screw_mockup(5.0);
     }
 
     btn_z_pos = btn_center_z;

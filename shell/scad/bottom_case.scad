@@ -180,14 +180,14 @@ module bottom_case() {
             // ポケット口元の指掛かり導入面取り (すり鉢状)
             translate([0, 0, -0.1])
                 cylinder(h=0.6, d1=rotary_pocket_dia + 1.4, d2=rotary_pocket_dia, $fn=48);
-            // M2支柱ネジ通過穴
-            translate([0, 0, -0.1])
-                cylinder(h=bottom_case_h, d=rotary_pivot_dia, $fn=24);
-            // 90度回転リミッター規制円弧溝 (ポケット天井 Z=2.4mm の上部に配置)
-            for (a = [0 : 10 : 90]) {
+            // M2支柱ネジ タッピング下穴 (外側からねじ込み締結: φ1.7mm, 深さ5.0mm)
+            translate([0, 0, rotary_pocket_d - 0.1])
+                cylinder(h=rotary_tap_depth + 0.5, d=rotary_tap_hole_d, $fn=24);
+            // 90度回転リミッター規制円弧溝 (ポケット天井 Z=2.4mm の上部に配置: 余裕径 d=2.4mm)
+            for (a = [0 : 5 : 90]) {
                 rotate([0, 0, a + 45])
                     translate([4.5, 0, rotary_pocket_d - 0.1])
-                        cylinder(h=1.2, d=1.8, $fn=16);
+                        cylinder(h=1.3, d=2.4, $fn=16);
             }
             // 底面状態インジケーター刻印 (LOCK / OPEN ドット)
             // LOCK位置 (手前側 -Y)
@@ -209,7 +209,7 @@ module bottom_case() {
                 speaker_boss(spk_boss_dia, spk_boss_inner, spk_boss_h);
         }
 
-        // 2. 回転ロック支柱 補強台座ブロック ＆ 内側M2ネジ頭受け座ボス
+        // 2. 回転ロック支柱 補強台座ブロック ＆ 外側M2タッピング受け座ボス
         rear_inner_wall_y = (case_outer_h - wall_thickness) - center_y; // +32.4mm (背面内壁ローカルY)
         pedestal_front_y = batt_pos_y + batt_lid_recess_d / 2; // +22.0mm (フタリセス奥端)
         pedestal_len = rear_inner_wall_y - pedestal_front_y + 0.5; // 背面壁までの接続長
@@ -224,12 +224,22 @@ module bottom_case() {
                 translate([rotary_pos_x, rotary_pos_y, 0])
                     cylinder(h=rotary_pedestal_h, d=6.8, $fn=32);
             }
-            // 内側M2ネジ頭沈め (Z=1.8mm〜上部へ沈め込み)
-            translate([rotary_pos_x, rotary_pos_y, 1.8])
-                cylinder(h=5.0, d=rotary_pivot_head_d, $fn=24);
-            // M2ネジ貫通穴
+            // ポケット空間のくり抜き (ポケット天井 Z=2.4mm まで完全に開放し侵入を防止)
+            translate([rotary_pos_x, rotary_pos_y, -0.1])
+                cylinder(h=rotary_pocket_d - wall_thickness + 0.1, d=rotary_pocket_dia, $fn=48);
+
+            // 外側からのM2タッピング下穴 (貫通逃げ: φ1.7mm, 内側にネジ頭が出ないソリッド設計)
             translate([rotary_pos_x, rotary_pos_y, -0.5])
-                cylinder(h=6.0, d=rotary_pivot_dia, $fn=24);
+                cylinder(h=rotary_pedestal_h + 1.0, d=rotary_tap_hole_d, $fn=24);
+
+            // 90度回転リミッター規制円弧溝 (台座ブロック内でもくり抜き、ピン可動空間を完全開放)
+            translate([rotary_pos_x, rotary_pos_y, 0]) {
+                for (a = [0 : 5 : 90]) {
+                    rotate([0, 0, a + 45])
+                        translate([4.5, 0, rotary_pocket_d - wall_thickness - 0.1])
+                            cylinder(h=1.4, d=2.6, $fn=16);
+                }
+            }
         }
 
         // 2b. 電池フタ受け座 補強フレーム ＆ スリット天井高剛性土手 (上面 Z = 3.6mm〜4.8mm)
@@ -261,6 +271,10 @@ module bottom_case() {
                     translate([dx - batt_slot_w / 2, -batt_lid_recess_d / 2 - (batt_tab_d + 0.5), batt_slot_z - wall_thickness - 0.01])
                         cube([batt_slot_w, batt_lid_flange + (batt_tab_d + 0.5) + 1.0, batt_slot_h + 0.02]);
                 }
+
+                // ダイヤル沈め込みポケットの逃げ (フレーム奥枠がポケット天井 Z=2.4mm に侵入するのを完全防止)
+                translate([rotary_pos_x, rotary_pos_y - batt_pos_y, -0.1])
+                    cylinder(h=rotary_pocket_d - wall_thickness + 0.15, d=rotary_pocket_dia + 0.4, $fn=48);
             }
         }
 

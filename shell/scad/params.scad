@@ -147,9 +147,11 @@ rotary_pocket_d    = 2.4;         // 底面沈め込みポケット深さ (全�
 rotary_pocket_dia  = 14.6;        // 沈め込みポケット径 (操作用外周クリアランス0.8mm)
 rotary_cam_shelf_z = rotary_pocket_d - rotary_rim_t; // カム下面高さ = 1.0mm (フタ受座シェルフ高さ)
 rotary_cam_overlap = 1.8;         // ロック時のフタへの掛かり代 (1.8mm)
-rotary_pivot_dia   = 2.2;         // M2支柱ネジ通過穴径
-rotary_pivot_head_d= 4.4;         // M2支柱ネジ頭ザグリ径 (ケース内側)
-rotary_pivot_head_h= 1.6;         // M2支柱ネジ頭ザグリ深さ
+rotary_pivot_pass_d = 2.3;        // ダイヤル中心 M2支柱ネジ通過穴径 (M2ネジ軸φ2.0mmに対しスムーズな空転を確保)
+rotary_screw_head_d = 4.2;        // ダイヤル表面 M2ネジ頭沈め穴径 (φ4.2mm: なべ頭φ3.5mmに十分なクリアランス)
+rotary_screw_head_h = 1.3;        // ダイヤル表面 M2ネジ頭沈め深さ (1.3mm: なべ頭が完全に沈み込む)
+rotary_tap_hole_d   = 1.7;        // ボトムケース側 M2タッピング下穴径 (PLA直接タッピング用 φ1.7mm)
+rotary_tap_depth    = 5.0;        // ボトムケース側 M2タッピング有効深さ (5.0mm)
 rotary_pos_x       = 0.0;         // X中心 (center_xに対称)
 rotary_pos_y       = batt_pos_y + batt_bay_d / 2 + rotary_dial_d / 2 - rotary_cam_overlap; // 奥側ローカルY座標 = 25.2mm
 rotary_stop_angle  = 90.0;        // 施錠〜解錠の回転角度 (90°)

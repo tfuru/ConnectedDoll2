@@ -30,11 +30,11 @@ module rotary_lock(angle=0) {
                             cube([0.3, 0.8, rotary_rim_t]);
                 }
 
-                // (d) 裏面 90度回転リミッターピン (ケース円弧溝と嵌合し0°〜90°で制動: Z = 1.4〜2.4mm)
+                // (d) 裏面 90度回転リミッターピン (ケース円弧溝と嵌合し0°〜90°で制動: 高さ0.9mm)
                 translate([0, 0, rotary_rim_t]) {
                     rotate([0, 0, 45])
-                        translate([4.5, -0.7, 0])
-                            cube([1.2, 1.4, 1.0]);
+                        translate([4.5 - 0.5, -0.5, 0])
+                            cube([1.0, 1.0, 0.9]);
                 }
             }
 
@@ -45,15 +45,19 @@ module rotary_lock(angle=0) {
                 translate([-rotary_dial_d, -rotary_dial_d, -rotary_rib_h - 0.5])
                     cube([rotary_dial_d * 2, rotary_dial_d - cut_r, rotary_dial_t + 2.0]);
 
-            // 3. 中心 M2支柱ネジ タッピング下穴 (裏面側からの止まり穴: φ1.8mm, 深さ2.0mm)
-            translate([0, 0, rotary_rim_t + 1.1 - 2.2])
-                cylinder(h=2.2, d=1.8, $fn=24);
+            // 3. 中心 M2支柱ネジ 表面頭沈め穴 ＆ 貫通ピボット穴 (外側からの貫通締結仕様)
+            // (a) ネジ頭沈めザグリ穴 (φ4.2mm x 深さ1.3mm: なべ頭がリブ内部に完全沈み込み)
+            translate([0, 0, -rotary_rib_h - 0.1])
+                cylinder(h=rotary_screw_head_h + 0.1, d=rotary_screw_head_d, $fn=32);
+            // (b) ネジ軸通過貫通穴 (φ2.3mm: M2ネジ軸の周りをダイヤルがスムーズに空転)
+            translate([0, 0, -rotary_rib_h - 0.2])
+                cylinder(h=rotary_dial_t + 2.0, d=rotary_pivot_pass_d, $fn=32);
 
             // 4. 状態インジケーター刻印 (施錠側を示す矢印ドット: リブ先端)
             translate([0, -rotary_dial_d / 2 + 1.2, -rotary_rib_h])
                 cylinder(h=0.5, d=1.0, $fn=16);
 
-            // 5. リブ中央コインスロット (幅1.2mm x 深さ0.5mm: 硬貨やマイナスドライバーでも操作可能)
+            // 5. 指先つまみ操作用 コインスロット (左右リブ上面)
             translate([-5.0, -0.6, -rotary_rib_h - 0.1])
                 cube([10.0, 1.2, 0.5]);
         }
