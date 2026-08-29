@@ -58,15 +58,15 @@ module battery_box_mockup() {
         difference() {
             translate([-batt_length/2, -batt_width/2, 0])
                 cube([batt_length, batt_width, batt_height]);
-            // 底面向きスイッチ埋め込みリセス
-            translate([batt_sw_offset_x - 6.0, batt_sw_offset_y - 4.5, -0.1])
-                cube([12.0, 9.0, 1.6]);
+            // 底面向きスイッチ埋め込みリセス (実寸忠実: X = +14.0mm 〜 +29.0mm)
+            translate([14.0, -5.0, -0.1])
+                cube([15.0, 10.0, 2.0]);
         }
     }
-    // スイッチ突起 (レッドアクセント: ON/OFFスライダ)
+    // スイッチ突起 (レッドアクセント: ON/OFFスライダ, X = +23.5mm: 実機写真と完全一致)
     color([0.9, 0.2, 0.2, 1.0]) {
-        translate([batt_sw_offset_x - 1.5, batt_sw_offset_y - 1.5, 0.2])
-            cube([3.0, 3.0, 1.6]);
+        translate([23.5, -1.8, 0.2])
+            cube([3.2, 3.6, 1.8]);
     }
 }
 

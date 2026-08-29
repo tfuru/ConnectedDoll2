@@ -6,16 +6,16 @@
 include <params.scad>;
 
 module battery_switch_cutout() {
-    // スイッチ操作開口窓 (テーパー面取り付き、全層完全貫通)
+    // スイッチ操作開口窓 (すり鉢状テーパー面取り付き、全層完全貫通)
     hull() {
         for (dx = [-batt_sw_w/2 + batt_sw_r, batt_sw_w/2 - batt_sw_r]) {
             for (dy = [-batt_sw_d/2 + batt_sw_r, batt_sw_d/2 - batt_sw_r]) {
-                // 底面外側 (面取り広がり)
+                // 底面外側 (広大なすり鉢状面取り)
                 translate([dx, dy, -0.2])
-                    cylinder(h=0.01, r=batt_sw_r + 0.8, $fn=24);
-                // 内部側貫通 (内側ステップも含めて抜く)
+                    cylinder(h=0.01, r=batt_sw_r + batt_sw_chamfer, $fn=32);
+                // 内部側貫通 (内側ステップも含めて確実に全層抜く)
                 translate([dx, dy, batt_lid_t + 1.2])
-                    cylinder(h=0.01, r=batt_sw_r, $fn=24);
+                    cylinder(h=0.01, r=batt_sw_r, $fn=32);
             }
         }
     }
