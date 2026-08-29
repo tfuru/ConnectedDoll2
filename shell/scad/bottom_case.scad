@@ -163,10 +163,13 @@ module bottom_case() {
         translate([center_x - recess_w/2, center_y + batt_pos_y - recess_d/2, -0.1])
             rounded_cube([recess_w, recess_d, batt_lid_recess_depth + 0.1], 2.5);
 
-        // --- 手前側 電池フタ差し込みツメ受けスリット (2箇所) ---
+        // --- 手前側 電池フタアンダーカット差し込みスリット (2箇所: リセス座面裏側 Z=1.6〜3.2mm に配置) ---
+        // 底面外側表面(Z=0〜1.6mm)は一切開口せず、ツメをボトム内側で抱え込んで浮き上がりを完全防止
+        slot_y_start = center_y + batt_pos_y - recess_d / 2 - (batt_tab_d + 0.4);
+        slot_y_len   = (batt_lid_flange + batt_tab_d + 0.9); // 約4.6mm (開口ベイ内壁と確実に貫通連通)
         for (dx = [-batt_tab_pitch / 2, batt_tab_pitch / 2]) {
-            translate([center_x + dx - (batt_tab_w + 1.0) / 2, center_y + batt_pos_y - recess_d / 2 - batt_tab_d - 0.2, -0.1])
-                cube([batt_tab_w + 1.0, batt_tab_d + 0.5, batt_tab_t + 0.4]);
+            translate([center_x + dx - batt_slot_w / 2, slot_y_start, batt_slot_z])
+                cube([batt_slot_w, slot_y_len, batt_slot_h]);
         }
 
         // --- 奥側 回転ロックダイヤル受座ポケット & 支柱貫通穴 ---
@@ -229,20 +232,35 @@ module bottom_case() {
                 cylinder(h=6.0, d=rotary_pivot_dia, $fn=24);
         }
 
-        // 2b. 電池フタ受け座 補強フレーム (上面 Z = batt_lid_seat_z = 3.6mm, 実肉厚2.0mm: 薄肉折損を完全防止)
-        // リセス座面（幅1.5mm、旧厚み0.4mm）をケース内側へ+1.6mm盛り上げ、ツメ受けスリット天井も含めて一体強化
+        // 2b. 電池フタ受け座 補強フレーム ＆ スリット天井高剛性土手 (上面 Z = 3.6mm〜4.8mm)
+        // 手前側ツメ受けスリット天井（Z=3.2mm）を Z=4.8mm まで盛り上げ、純残存肉厚1.6mmを確保（こじり折損防止）
         translate([0, batt_pos_y, 0]) {
             difference() {
-                // 外枠 (上面 67.0x41.0mm、根元裾野フィレット付き)
-                hull() {
-                    translate([-(batt_lid_recess_w + 1.6)/2, -(batt_lid_recess_d + 1.6)/2, 0])
-                        rounded_cube([batt_lid_recess_w + 1.6, batt_lid_recess_d + 1.6, 0.01], 3.0);
-                    translate([-batt_lid_recess_w/2, -batt_lid_recess_d/2, batt_lid_seat_z - wall_thickness])
-                        rounded_cube([batt_lid_recess_w, batt_lid_recess_d, 0.01], 2.5);
+                union() {
+                    // 全周基本フレーム (上面 Z=3.6mm: 内側底面から1.6mm)
+                    hull() {
+                        translate([-(batt_lid_recess_w + 1.6)/2, -(batt_lid_recess_d + 1.6)/2, 0])
+                            rounded_cube([batt_lid_recess_w + 1.6, batt_lid_recess_d + 1.6, 0.01], 3.0);
+                        translate([-batt_lid_recess_w/2, -batt_lid_recess_d/2, batt_lid_seat_z - wall_thickness])
+                            rounded_cube([batt_lid_recess_w, batt_lid_recess_d, 0.01], 2.5);
+                    }
+                    // 手前側 スリット天井強化ビーム (上面 Z=4.8mm: 内側底面から2.8mm, 天井肉厚1.6mm確保)
+                    hull() {
+                        translate([-batt_lid_recess_w/2, -batt_lid_recess_d/2, batt_lid_seat_z - wall_thickness])
+                            cube([batt_lid_recess_w, (batt_lid_recess_d - batt_bay_d)/2 + 1.0, 0.01]);
+                        translate([-(batt_lid_recess_w - 2.0)/2, -batt_lid_recess_d/2 + 0.5, batt_tab_roof_z - wall_thickness])
+                            cube([batt_lid_recess_w - 2.0, (batt_lid_recess_d - batt_bay_d)/2 + 0.2, 0.01]);
+                    }
                 }
                 // 内側くり抜き (開口ベイ 64.0x38.0mm と完全一致し、電池ボックス通過を阻害しない)
                 translate([-batt_bay_w/2, -batt_bay_d/2, -0.1])
-                    rounded_cube([batt_bay_w, batt_bay_d, batt_lid_seat_z - wall_thickness + 0.2], 2.0);
+                    rounded_cube([batt_bay_w, batt_bay_d, batt_tab_roof_z - wall_thickness + 0.2], 2.0);
+
+                // ツメ受けスリットくり抜き (内部フレームからも Z=1.6〜3.2mm を確実に抜き、スリット空間を完全開放)
+                for (dx = [-batt_tab_pitch / 2, batt_tab_pitch / 2]) {
+                    translate([dx - batt_slot_w / 2, -batt_lid_recess_d / 2 - (batt_tab_d + 0.5), batt_slot_z - wall_thickness - 0.01])
+                        cube([batt_slot_w, batt_lid_flange + (batt_tab_d + 0.5) + 1.0, batt_slot_h + 0.02]);
+                }
             }
         }
 

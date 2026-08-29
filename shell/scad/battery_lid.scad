@@ -37,14 +37,23 @@ module battery_lid() {
             translate([-step_w/2, -step_d/2, batt_lid_t - 0.01])
                 rounded_cube([step_w, step_d, 0.8], 2.0);
 
-            // 3. 手前側 差し込み係止ツメ (左右2箇所)
-            for (dx = [-batt_tab_pitch/2, batt_tab_pitch/2]) {
-                translate([dx - batt_tab_w/2, -batt_lid_d/2 - batt_tab_d, 0]) {
+            // 3. 手前側 アンダーカット差し込み係止ツメ (左右2箇所: 裏面ステップ Z=1.6mm〜2.7mmから手前へ突出)
+            step_front_y = -step_d / 2; // 内側ステップ手前端面 (-18.35mm)
+            tab_tip_y = -batt_lid_d / 2 - batt_tab_d; // ツメ先端Y座標 (-22.15mm: ベース手前端より手前へ2.2mm突出)
+            tab_total_d = step_front_y - tab_tip_y;   // ツメ総前後長 (約3.8mm: ステップと強固に一体化)
+
+            for (dx = [-batt_tab_pitch / 2, batt_tab_pitch / 2]) {
+                translate([dx - batt_tab_w / 2, tab_tip_y, batt_tab_z]) {
                     hull() {
-                        cube([batt_tab_w, batt_tab_d, batt_tab_t]);
-                        // 先端導入テーパー
-                        translate([0, 0, 0]) cube([batt_tab_w, 0.01, batt_tab_t]);
-                        translate([0.5, 0, 0]) cube([batt_tab_w - 1.0, 0.01, batt_tab_t - 0.4]);
+                        // 根元側（ステップ手前壁と完全一体化）
+                        translate([0, tab_total_d - 0.01, 0])
+                            cube([batt_tab_w, 0.01, batt_tab_t]);
+                        // 先端側（上下・左右に斜め差し込み用スムーズ導入テーパー付き）
+                        translate([0.5, 0, 0.2])
+                            cube([batt_tab_w - 1.0, 0.01, batt_tab_t - 0.4]);
+                        // 中間部
+                        translate([0, 0.8, 0])
+                            cube([batt_tab_w, 0.01, batt_tab_t]);
                     }
                 }
             }
