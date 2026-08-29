@@ -137,6 +137,10 @@ rotary_pivot_head_h= 1.6;         // M2支柱ネジ頭ザグリ深さ
 rotary_pos_x       = 0.0;         // X中心 (center_xに対称)
 rotary_pos_y       = batt_pos_y + batt_bay_d / 2 + rotary_dial_d / 2 - rotary_cam_overlap; // 奥側ローカルY座標 = 25.2mm
 rotary_stop_angle  = 90.0;        // 施錠〜解錠の回転角度 (90°)
+rotary_pedestal_w   = rotary_pocket_dia + 2.4; // 台座ブロック幅 (17.0mm: φ14.6mmポケット真上を完全被覆)
+rotary_pedestal_h   = 4.0;                     // ケース内底面からの台座高さ (4.0mm: Z=2.0〜6.0mm)
+batt_rear_guide_pitch = 24.0;                  // 奥側垂直ガイドリブ配置ピッチ (左右対称 ±12.0mm)
+batt_rear_guide_t   = 1.6;                     // 奥側垂直ガイドリブ厚み (1.6mm)
 
 spk_pos_y          = -28.5;       // スピーカー固定ボス中心Yオフセット（出音口を手前-Y方向に向ける）
 

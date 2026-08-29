@@ -206,16 +206,27 @@ module bottom_case() {
                 speaker_boss(spk_boss_dia, spk_boss_inner, spk_boss_h);
         }
 
-        // 2. 回転ロック支柱 内側M2ネジ頭受け座ボス (十分な肉厚を確保)
-        translate([rotary_pos_x, rotary_pos_y, 0]) {
-            difference() {
-                cylinder(h=4.0, d=6.8, $fn=32);
-                // 内側M2ネジ頭沈め (Z=3.8mmから上部へ沈め込み)
-                translate([0, 0, 1.8])
-                    cylinder(h=5.0, d=rotary_pivot_head_d, $fn=24);
-                translate([0, 0, -0.1])
-                    cylinder(h=5.0, d=rotary_pivot_dia, $fn=24);
+        // 2. 回転ロック支柱 補強台座ブロック ＆ 内側M2ネジ頭受け座ボス
+        rear_inner_wall_y = (case_outer_h - wall_thickness) - center_y; // +32.4mm (背面内壁ローカルY)
+        pedestal_front_y = batt_pos_y + (batt_lid_d + batt_lid_margin * 2) / 2; // +22.0mm (フタリセス奥端)
+        pedestal_len = rear_inner_wall_y - pedestal_front_y + 0.5; // 背面壁までの接続長
+
+        difference() {
+            union() {
+                // (a) 背面壁・底面一体の強固な補強台座ブロック (φ14.6mmポケット真上を完全被覆し、中空化を防止)
+                translate([-rotary_pedestal_w / 2, pedestal_front_y, 0])
+                    cube([rotary_pedestal_w, pedestal_len, rotary_pedestal_h]);
+                
+                // (b) ボス円筒 (外径φ6.8mm)
+                translate([rotary_pos_x, rotary_pos_y, 0])
+                    cylinder(h=rotary_pedestal_h, d=6.8, $fn=32);
             }
+            // 内側M2ネジ頭沈め (Z=1.8mm〜上部へ沈め込み)
+            translate([rotary_pos_x, rotary_pos_y, 1.8])
+                cylinder(h=5.0, d=rotary_pivot_head_d, $fn=24);
+            // M2ネジ貫通穴
+            translate([rotary_pos_x, rotary_pos_y, -0.5])
+                cylinder(h=6.0, d=rotary_pivot_dia, $fn=24);
         }
 
         // 3. 電池ボックス底面挿入ガイド & 上部天井ストッパー (Z = batt_stop_z = 19.2mm)
@@ -224,28 +235,33 @@ module bottom_case() {
             eff_d = batt_bay_d;
             stop_z_rel = batt_stop_z - wall_thickness; // 相対高さ 17.2mm
 
-            // (a) 上部天井ストッパーリブ (基板保護: Z=19.2mmで電池を受け止め、基板裏面との間に3.0mmクリアランスを保持)
-            // 左右ストッパーリブ
-            for (sx = [-eff_w / 2, eff_w / 2 - 2.5]) {
-                translate([sx, -10.0, stop_z_rel])
-                    cube([2.5, 20.0, 1.5]);
-            }
-            // 奥側ストッパーリブ (配線逃げノッチを避けて2分割)
-            translate([-eff_w / 3, eff_d / 2 - 2.5, stop_z_rel])
-                cube([eff_w / 3, 2.5, 1.5]);
-            translate([eff_w / 6, eff_d / 2 - 2.5, stop_z_rel])
-                cube([eff_w / 4, 2.5, 1.5]);
-
-            // (b) 側壁垂直ガイドレール (ケース側壁に0.5mm埋め込んで確実に融合)
+            // (a) 左右垂直ガイドレール (ケース側壁に0.5mm埋め込んで確実に融合)
             guide_h = stop_z_rel;
-            // 左右垂直ガイドレール
             translate([-case_inner_w / 2 - 0.5, -6.0, 0])
                 cube([case_inner_w / 2 - eff_w / 2 + 0.7, 12.0, guide_h]);
             translate([eff_w / 2 - 0.2, -6.0, 0])
                 cube([case_inner_w / 2 - eff_w / 2 + 0.7, 12.0, guide_h]);
-            // 奥側垂直ガイド壁
-            translate([-eff_w / 4, eff_d / 2 - 0.1, 0])
-                cube([eff_w / 2, 1.4, guide_h]);
+
+            // (b) 左右上部天井ストッパーリブ (基板保護: Z=19.2mmで電池を受け止め、基板裏面クリアランス3.0mmを保持)
+            for (sx = [-eff_w / 2, eff_w / 2 - 2.5]) {
+                translate([sx, -10.0, stop_z_rel])
+                    cube([2.5, 20.0, 1.5]);
+            }
+        }
+
+        // (c) 背面壁・底面一体型 奥側電池ガイドリブ ＆ 背面直結天井ストッパー
+        // 浮遊構造を完全排除し、背面内壁(Y=32.4mm)および底面から前方開口端(Y=20.5mm)へ伸びる高剛性垂直リブ
+        rear_guide_front_y = batt_pos_y + batt_bay_d / 2; // +20.5mm (開口ベイ奥端面と同一面)
+        rear_guide_len = rear_inner_wall_y - rear_guide_front_y + 0.5; // 約 12.4mm
+        stop_z_rel = batt_stop_z - wall_thickness; // 相対高さ 17.2mm
+
+        for (gx = [-batt_rear_guide_pitch / 2, batt_rear_guide_pitch / 2 - batt_rear_guide_t]) {
+            // 垂直ガイドリブ（背面内壁および健全な底面に完全接地し、電池奥端を適正クリアランス0.5mmで垂直ガイド）
+            translate([gx, rear_guide_front_y, 0])
+                cube([batt_rear_guide_t, rear_guide_len, stop_z_rel]);
+            // 背面直結型 上部天井ストッパー梁（カンチレバー梁として背面壁から前方へ張り出し、電池上面を確実に受け止め）
+            translate([gx, rear_guide_front_y - 2.5, stop_z_rel])
+                cube([batt_rear_guide_t + 1.0, 2.5 + 4.0, 1.5]);
         }
 
         // 3. M2 六角スペーサー受け座パッド (四隅 52x52mm ピッチ、回り止め六角ポケット付き)
