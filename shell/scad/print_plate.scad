@@ -15,6 +15,7 @@ stack_gap_z    = 3.0; // ボトムとトップの間の隙間 (3.0mm)
 pillar_d       = 2.8; // サポートピラー中間部直径
 neck_d         = 1.4; // 切り離し薄首くびれ部直径 (手で簡単に折れる寸法)
 neck_h         = 0.4; // 薄首くびれ高さ
+include_button = false; // 前面ボタンの一括プレート含有フラグ (デフォルトfalse: 前面ボタンを取り除いたデータを出力)
 
 // 四隅の外周壁リム中心座標の計算
 corner_rim_r   = corner_radius - wall_thickness / 2; // コーナー壁芯半径 (3.0mm)
@@ -66,9 +67,11 @@ module print_plate() {
         rotate([0, 180, 0])
             top_cover();
 
-    // 4. 前面ボタン (ボトムケース手前のベッド上に配置: ボス最下面接地 Z=0)
-    translate([0, -center_y - 14.0, btn_m2_boss_h])
-        front_button();
+    // 4. 前面ボタン (オプション: デフォルト除外、別色印刷や単体印刷対応)
+    if (include_button) {
+        translate([0, -center_y - 14.0, btn_m2_boss_h])
+            front_button();
+    }
 
     // 5. 電池フタ (ボトムケース奥側のベッド上に配置: 外面接地 Z=0)
     translate([0, center_y + batt_lid_d / 2 + 6.0, 0])

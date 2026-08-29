@@ -81,7 +81,7 @@ if [ -f "$SCAD_DIR/rotary_lock.scad" ]; then
     echo "✓ rotary_lock (STL & PNG) generated."
 fi
 
-# 7. 一括3Dプリントプレートの出力 (All-in-One: Top, Bottom, Button, Lid, Lock)
+# 7. 一括3Dプリントプレートの出力 (Top, Bottom, Lid, Lock: 前面ボタン除外)
 if [ -f "$SCAD_DIR/print_plate.scad" ]; then
     echo "Rendering print_plate_all.stl and preview..."
     "$OPENSCAD_BIN" -o "$OUTPUT_STL_DIR/print_plate_all.stl" "$SCAD_DIR/print_plate.scad"
