@@ -69,7 +69,7 @@ module print_plate() {
     // 垂直スタック高さ設定
     mid_stack_z  = bottom_case_h + gap_bottom_to_mid; // Z = 28.0 + 2.5 = 30.5mm
     lid_y        = -8.0;                              // 電池フタ中心Y
-    lock_y       = 27.0;                              // 回転ロックダイヤル中心Y (奥壁天端 Y=33.4mm 直上に奥端を配置)
+    lock_y       = 28.0;                              // 回転ロックダイヤル中心Y (奥端 Y=34.5mm が奥壁天端 Y=33.4mm と2.0mm重なる)
     top_stack_z  = mid_stack_z + 2.4 + gap_mid_to_top; // Z = 30.5 + 2.4 + 5.5 = 38.4mm
     top_total_h  = top_stack_z + top_cover_h;        // 全高 Z = 46.4mm
 
@@ -97,25 +97,30 @@ module print_plate() {
 
     // ==========================================
     // 3. 回転ロックダイヤル (中間層奥側: メイン円盤下面 Z=31.3mm, リブ最下面 Z=30.5mm)
-    // 奥端 Y=+33.5mm がボトム奥壁天端 Y=33.4mm の真上に位置
     // ==========================================
     lock_dial_z = mid_stack_z + rotary_rib_h; // Z = 30.5 + 0.8 = 31.3mm (メイン円盤下面)
     translate([0, lock_y, lock_dial_z])
         rotary_lock(0);
 
-    // 3b. 回転ロック支持ピラー (ボトム奥壁天端 Y=33.0mm, Z=28.0mm からダイヤル円盤下面 Z=31.3mm へ確実に接地結合: 2本)
-    lock_pillar_h = lock_dial_z - bottom_case_h; // 31.3 - 28.0 = 3.3mm
-    for (px = [-3.0, 3.0]) {
-        translate([px, 33.0, bottom_case_h])
+    // 3b. 回転ロック支持ピラー (ボトム奥壁天端 Y=32.8mm, Z=28.0mm からダイヤル下面 Z=31.3mm へ確実に命中結合: 2本)
+    // 中心からの距離: sqrt(2.4^2 + 4.8^2) = 5.37mm < 半径6.5mm (円盤下面の内側へ1.1mm安全マージン)
+    lock_pillar_h = lock_dial_z - bottom_case_h + 0.1; // 3.4mm (0.1mmめり込み密着接合)
+    for (px = [-2.4, 2.4]) {
+        translate([px, 32.8, bottom_case_h])
             breakaway_pillar(h=lock_pillar_h, d=1.8);
     }
 
-    // 3c. パーツ間水平ランナー (電池フタ奥端面から回転ロックダイヤル手前端面へ確実に直結)
-    // フタ奥端(Y = lid_y + batt_lid_d/2 = -8 + 19.95 = 11.95mm)からダイヤル手前端(Y = lock_y - 6.5 = 20.5mm)へ
-    runner_start_y = lid_y + batt_lid_d / 2;
-    runner_len = (lock_y - rotary_dial_d / 2) - runner_start_y; // 20.5 - 11.95 = 8.55mm
-    translate([0, runner_start_y, mid_stack_z + 0.4])
-        horizontal_runner(length=runner_len, width=2.0, thick=1.0);
+    // 3c. パーツ間水平ランナー (フタ奥側の凹みを避けた左右2本並列梁: X = ±5.0mm)
+    // フタ奥端面からダイヤル円盤手前外周へ確実に直結
+    runner_start_y = lid_y + batt_lid_d / 2; // 11.95mm
+    rx_offset = 5.0; // 凹み(半径4.7mm)の外側
+    dial_edge_y = lock_y - sqrt(pow(rotary_dial_d / 2, 2) - pow(rx_offset, 2)); // X=±5.0mmでのダイヤル手前円弧Y座標 ≈ 23.85mm
+    runner_len = dial_edge_y - runner_start_y + 0.3; // 約 12.2mm (ダイヤルへ0.3mmめり込み完全結合)
+
+    for (rx = [-rx_offset, rx_offset]) {
+        translate([rx, runner_start_y, mid_stack_z + 0.4])
+            horizontal_runner(length=runner_len, width=1.8, thick=1.0);
+    }
 
     // ==========================================
     // 4. 四隅 主サポートピラー (ボトム天端 Z=28.0mm からトップカバー底面 Z=38.4mm へ直結: 4本)
