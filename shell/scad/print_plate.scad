@@ -15,7 +15,6 @@ use <rotary_lock.scad>;
 gap_bottom_to_mid = 2.5;  // ボトムケース天端から中間パーツ下面までの隙間 (2.5mm)
 gap_mid_to_top    = 5.5;  // 中間パーツからトップカバー開口端までの隙間 (5.5mm: ボス突き出し3.0mmを余裕で逃げる)
 pillar_d          = 2.8;  // 主サポートピラー中間部直径
-sub_pillar_d      = 2.0;  // サブサポートピラー直径
 neck_d            = 1.3;  // ニッパー切り離し薄首くびれ部直径 (1.3mm: ニッパーで簡単に切断可能)
 neck_h            = 0.4;  // 薄首くびれ高さ (0.4mm: 刃先が入りやすく切断面が綺麗)
 include_button    = false; // 前面ボタンの一括プレート含有フラグ (デフォルトfalse)
@@ -123,13 +122,6 @@ module print_plate() {
             translate([dx, dy, bottom_case_h])
                 breakaway_pillar(h=main_pillar_h, d=pillar_d);
         }
-    }
-
-    // 4b. 中間層からトップカバーへの補助支持ピラー (電池フタ上面 Z=32.1mm からトップ天板内面へ: 2本)
-    lid_to_top_h = top_stack_z + top_cover_h - wall_thickness - (mid_stack_z + batt_lid_t); // 38.4 + 8 - 2 - 32.1 = 12.3mm
-    for (px = [-16.0, 16.0]) {
-        translate([px, lid_y, mid_stack_z + batt_lid_t])
-            breakaway_pillar(h=lid_to_top_h, d=sub_pillar_d);
     }
 
     // ==========================================
