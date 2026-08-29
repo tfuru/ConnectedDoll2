@@ -234,34 +234,57 @@ module bottom_case() {
             eff_w = batt_bay_w;
             eff_d = batt_bay_d;
             stop_z_rel = batt_stop_z - wall_thickness; // 相対高さ 17.2mm
+            rail_len = 20.0; // ガイドレール長さをストッパー全長20mmに拡張
+            rail_thick = case_inner_w / 2 - eff_w / 2 + 0.7; // 1.1mm (ケース側壁に0.5mm埋め込み)
+            stop_t = 2.2; // リブ厚み 2.2mm (天面 Z = 21.4mm: ボリュームスリット下端23.5mmより2.1mm下、基板裏面より0.8mm下)
+            overhang = 1.6; // 内側への張り出し量 (電池幅63.0mmに対し片側1.1mmのかかり代)
 
-            // (a) 左右垂直ガイドレール (ケース側壁に0.5mm埋め込んで確実に融合)
-            guide_h = stop_z_rel;
-            translate([-case_inner_w / 2 - 0.5, -6.0, 0])
-                cube([case_inner_w / 2 - eff_w / 2 + 0.7, 12.0, guide_h]);
-            translate([eff_w / 2 - 0.2, -6.0, 0])
-                cube([case_inner_w / 2 - eff_w / 2 + 0.7, 12.0, guide_h]);
+            for (dir = [-1, 1]) {
+                // (a) 左右垂直ガイド壁 (底面から直立、全長20mmで真下からストッパーを100%全面支持)
+                x_base = (dir > 0) ? (eff_w / 2 - 0.2) : (-case_inner_w / 2 - 0.5);
+                translate([x_base, -rail_len/2, 0])
+                    cube([rail_thick, rail_len, stop_z_rel]);
 
-            // (b) 左右上部天井ストッパーリブ (基板保護: Z=19.2mmで電池を受け止め、基板裏面クリアランス3.0mmを保持)
-            for (sx = [-eff_w / 2, eff_w / 2 - 2.5]) {
-                translate([sx, -10.0, stop_z_rel])
-                    cube([2.5, 20.0, 1.5]);
+                // (b) 左右上部天井ストッパー梁 & 下面45度テーパーブレース (ボリュームスリット非干渉・折損防止)
+                sx = (dir > 0) ? (eff_w / 2 - overhang) : (-eff_w / 2 - rail_thick);
+                translate([sx, -rail_len/2, stop_z_rel]) {
+                    // ストッパー水平梁 (厚み 2.2mm: スリット下端23.5mmより遥か下のZ=21.4mmで完結)
+                    cube([overhang + rail_thick, rail_len, stop_t]);
+                    // 下面 45度テーパーブレース (上向き突き上げ荷重を受け止め、角部応力集中を完全解消)
+                    if (dir > 0) {
+                        hull() {
+                            translate([0, 0, 0]) cube([overhang, rail_len, 0.01]);
+                            translate([overhang, 0, -overhang * 1.2]) cube([0.01, rail_len, 0.01]);
+                        }
+                    } else {
+                        hull() {
+                            translate([overhang, 0, 0]) cube([overhang, rail_len, 0.01]);
+                            translate([0, 0, -overhang * 1.2]) cube([0.01, rail_len, 0.01]);
+                        }
+                    }
+                }
             }
         }
 
-        // (c) 背面壁・底面一体型 奥側電池ガイドリブ ＆ 背面直結天井ストッパー
-        // 浮遊構造を完全排除し、背面内壁(Y=32.4mm)および底面から前方開口端(Y=20.5mm)へ伸びる高剛性垂直リブ
+        // (c) 背面壁・底面一体型 奥側電池ガイドリブ ＆ 背面直結天井ストッパー (下面ブレース付き)
         rear_guide_front_y = batt_pos_y + batt_bay_d / 2; // +20.5mm (開口ベイ奥端面と同一面)
         rear_guide_len = rear_inner_wall_y - rear_guide_front_y + 0.5; // 約 12.4mm
         stop_z_rel = batt_stop_z - wall_thickness; // 相対高さ 17.2mm
+        stop_t = 2.2;
 
         for (gx = [-batt_rear_guide_pitch / 2, batt_rear_guide_pitch / 2 - batt_rear_guide_t]) {
             // 垂直ガイドリブ（背面内壁および健全な底面に完全接地し、電池奥端を適正クリアランス0.5mmで垂直ガイド）
             translate([gx, rear_guide_front_y, 0])
                 cube([batt_rear_guide_t, rear_guide_len, stop_z_rel]);
-            // 背面直結型 上部天井ストッパー梁（カンチレバー梁として背面壁から前方へ張り出し、電池上面を確実に受け止め）
-            translate([gx, rear_guide_front_y - 2.5, stop_z_rel])
-                cube([batt_rear_guide_t + 1.0, 2.5 + 4.0, 1.5]);
+            // 背面直結型 上部天井ストッパー梁 ＆ 下面45度三角ブレース
+            translate([gx, rear_guide_front_y - 2.5, stop_z_rel]) {
+                cube([batt_rear_guide_t + 1.0, 2.5 + 4.0, stop_t]);
+                // 下面 45度ブレース
+                hull() {
+                    translate([0, 0, 0]) cube([batt_rear_guide_t + 1.0, 2.5, 0.01]);
+                    translate([0, 2.5, -2.5]) cube([batt_rear_guide_t + 1.0, 0.01, 0.01]);
+                }
+            }
         }
 
         // 3. M2 六角スペーサー受け座パッド (四隅 52x52mm ピッチ、回り止め六角ポケット付き)
