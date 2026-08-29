@@ -31,9 +31,9 @@ module battery_lid() {
             translate([-batt_lid_w/2, -batt_lid_d/2, 0])
                 rounded_cube([batt_lid_w, batt_lid_d, batt_lid_t], 2.5);
 
-            // 2. 内側位置決めステップ (深さ0.8mm: 開口部 64x38mm 内側に嵌合して横ズレを完全拘束)
-            step_w = batt_bay_w - clearance * 2;
-            step_d = batt_bay_d - clearance * 2;
+            // 2. 内側位置決めステップ (深さ0.8mm: 開口部 64x38mm 内側に全周0.65mm隙間で嵌合、干渉防止)
+            step_w = batt_bay_w - batt_lid_step_margin * 2;
+            step_d = batt_bay_d - batt_lid_step_margin * 2;
             translate([-step_w/2, -step_d/2, batt_lid_t - 0.01])
                 rounded_cube([step_w, step_d, 0.8], 2.0);
 
@@ -56,12 +56,12 @@ module battery_lid() {
 
         // 5. 奥側 回転ロック受け円弧ポケット & カム通過貫通穴
         translate([rotary_pos_x, dial_rel_y, 0]) {
-            // (a) ダイヤルツバ受座シェルフ (深さ rotary_cam_shelf_z = 1.0mm: シェルフ厚み 0.6mm を保持)
+            // (a) ダイヤルツバ受座シェルフ (深さ rotary_cam_shelf_z = 1.0mm: シェルフ厚み 0.6mm を保持、外周クリアランス+0.6mmへ拡大)
             translate([0, 0, -0.2])
-                cylinder(h=rotary_cam_shelf_z + 0.2, r=rotary_dial_d / 2 + 0.4, $fn=60);
-            // (b) カム解錠時通過貫通穴 (半径 cam_shelf_r = 4.7mm: 全層貫通)
+                cylinder(h=rotary_cam_shelf_z + 0.2, r=rotary_dial_d / 2 + 0.6, $fn=60);
+            // (b) カム解錠時通過貫通穴 (半径 cam_shelf_r = 5.0mm: 全層貫通、通過クリアランス拡大)
             translate([0, 0, -0.2])
-                cylinder(h=batt_lid_t + 2.0, r=cam_shelf_r, $fn=60);
+                cylinder(h=batt_lid_t + 2.0, r=cam_shelf_r + 0.3, $fn=60);
         }
 
         // 6. 指掛けネイルノッチ (奥側フタ端面: 爪でフタを持ち上げやすくする凹み)

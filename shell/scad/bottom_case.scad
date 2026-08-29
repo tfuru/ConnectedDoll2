@@ -158,10 +158,10 @@ module bottom_case() {
             rounded_cube([batt_bay_w, batt_bay_d, wall_thickness + 0.2], 2.0);
 
         // --- 底面 電池フタ用段差リセス座面 (深さ batt_lid_recess_d = 1.6mm: ツライチ) ---
-        recess_w = batt_lid_w + batt_lid_margin * 2;
-        recess_d = batt_lid_d + batt_lid_margin * 2;
+        recess_w = batt_lid_recess_w;
+        recess_d = batt_lid_recess_d;
         translate([center_x - recess_w/2, center_y + batt_pos_y - recess_d/2, -0.1])
-            rounded_cube([recess_w, recess_d, batt_lid_recess_d + 0.1], 2.5);
+            rounded_cube([recess_w, recess_d, batt_lid_recess_depth + 0.1], 2.5);
 
         // --- 手前側 電池フタ差し込みツメ受けスリット (2箇所) ---
         for (dx = [-batt_tab_pitch / 2, batt_tab_pitch / 2]) {
@@ -208,7 +208,7 @@ module bottom_case() {
 
         // 2. 回転ロック支柱 補強台座ブロック ＆ 内側M2ネジ頭受け座ボス
         rear_inner_wall_y = (case_outer_h - wall_thickness) - center_y; // +32.4mm (背面内壁ローカルY)
-        pedestal_front_y = batt_pos_y + (batt_lid_d + batt_lid_margin * 2) / 2; // +22.0mm (フタリセス奥端)
+        pedestal_front_y = batt_pos_y + batt_lid_recess_d / 2; // +22.0mm (フタリセス奥端)
         pedestal_len = rear_inner_wall_y - pedestal_front_y + 0.5; // 背面壁までの接続長
 
         difference() {

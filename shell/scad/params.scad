@@ -103,17 +103,22 @@ batt_bay_clearance = 0.5;         // 開口部クリアランス (全周0.5mm)
 batt_bay_w         = batt_length + batt_bay_clearance * 2; // 64.0mm
 batt_bay_d         = batt_width + batt_bay_clearance * 2;  // 38.0mm
 
-// --- 電池フタ (Battery Lid) ---
-batt_lid_t         = 1.6;         // フタ本体肉厚
-batt_lid_margin    = 0.3;         // フタ外周クリアランス
-batt_lid_flange    = 1.5;         // 段差受座幅
-batt_lid_w         = batt_bay_w + batt_lid_flange * 2 - batt_lid_margin * 2; // 66.4mm
-batt_lid_d         = batt_bay_d + batt_lid_flange * 2 - batt_lid_margin * 2; // 40.4mm
-batt_lid_recess_d  = batt_lid_t;  // 段差リセス深さ (1.6mm: ツライチ)
-batt_tab_w         = 8.0;         // 手前側差し込みツメ幅
-batt_tab_d         = 2.0;         // 差し込みツメ突出量
-batt_tab_t         = 1.3;         // 差し込みツメ厚み
-batt_tab_pitch     = 30.0;        // 左右2箇所ツメ配置ピッチ
+// --- 電池フタ (Battery Lid) & 底面段差リセス座面 ---
+batt_lid_t            = 1.6;         // フタ本体肉厚
+batt_lid_flange       = 1.5;         // 段差受座幅 (1.5mm)
+batt_lid_recess_w     = batt_bay_w + batt_lid_flange * 2; // ボトム側段差リセス外寸 幅 (67.0mm: 基準寸法固定)
+batt_lid_recess_d     = batt_bay_d + batt_lid_flange * 2; // ボトム側段差リセス外寸 奥行き (41.0mm: 基準寸法固定)
+batt_lid_recess_depth = batt_lid_t;  // 段差リセス深さ (1.6mm: ツライチ)
+
+batt_lid_margin       = 0.55;        // フタ外周クリアランス (全周0.55mmの隙間を確保、3Dプリント干渉防止)
+batt_lid_w            = batt_lid_recess_w - batt_lid_margin * 2; // 65.9mm (-0.5mm縮小)
+batt_lid_d            = batt_lid_recess_d - batt_lid_margin * 2; // 39.9mm (-0.5mm縮小)
+batt_lid_step_margin  = 0.65;        // 内側位置決めステップクリアランス (全周0.65mm隙間、開口部擦れ防止)
+
+batt_tab_w            = 7.5;         // 手前側差し込みツメ幅 (-0.5mm縮小、スリット幅9.0mmに対し余裕確保)
+batt_tab_d            = 2.0;         // 差し込みツメ突出量
+batt_tab_t            = 1.2;         // 差し込みツメ厚み (-0.1mm薄肉化、スリット厚み1.7mmへの挿入軽快化)
+batt_tab_pitch        = 30.0;        // 左右2箇所ツメ配置ピッチ
 
 // --- 電池ボックス スイッチアクセス開口窓 ---
 batt_sw_w          = 23.0;        // スイッチ開口窓 幅 (X方向: +9.0mm拡大、右端+5.5mm/左端+3.5mm拡張)
