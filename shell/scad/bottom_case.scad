@@ -56,8 +56,8 @@ module speaker_boss(outer_d, inner_d, height) {
             cylinder(h=height, d=outer_d);
             // 根元テーパー
             cylinder(h=2.5, d1=outer_d + 2.0, d2=outer_d);
-            // 前面壁への三角リブ
-            dy_front = -(case_inner_h / 2 + spk_pos_y);
+            // 前面壁への三角リブ (前面内壁 wall_thickness - center_y に正確に接続)
+            dy_front = (wall_thickness - center_y) - spk_pos_y;
             hull() {
                 translate([-rib_thickness/2, 0, 0]) cube([rib_thickness, 0.01, height]);
                 translate([-rib_thickness/2, dy_front, 0]) cube([rib_thickness, 0.01, 2.0]);
