@@ -87,8 +87,8 @@ vol_dial_h         = 2.5;        // ダイヤル本体高さ (2.5mm)
 vol_slit_width     = 16.0;       // ダイヤル操作スリット幅
 vol_slit_radius    = 1.5;        // スリット下部角丸
 vol_offset_y       = -5.0;       // Y軸方向オフセット（前方向へ5mm移動）
-vol_slit_bottom_z  = 23.5;       // スリット下端高さ (基板表面23.8mmより0.3mm下: 内部露出を防ぎつつダイヤル全高を露出)
-vol_slit_height    = 4.5;        // スリット高さ (天面28.0mmまで開放するUノッチ形状: 28.0 - 23.5 = 4.5mm)
+vol_slit_bottom_z  = 24.7;       // スリット下端高さ (基板表面25.0mmより0.3mm下: 内部露出を防ぎつつダイヤル全高を露出)
+vol_slit_height    = 3.3;        // スリット高さ (天面28.0mmまで開放するUノッチ形状: 28.0 - 24.7 = 3.3mm)
 
 // --- 電池ボックス (単4×3本 スイッチ付き) & 底面取り出しベイ ---
 batt_length        = 63.0;        // 横幅
@@ -173,20 +173,20 @@ spacer_body_h      = 20.0;           // スペーサー本体（六角部）長�
 spacer_male_h      = 6.0;            // 先端おねじ部長さ = 6.0mm
 spacer_hex_w       = 4.4;            // ボトム側回り止め六角ポケット二面幅 (対辺 4.0mm + 余裕0.4mm)
 spacer_pocket_d    = 1.0;            // 回り止め六角ポケット深さ
-spacer_pad_h       = 1.2;            // ボトム底面のスペーサー受け座パッド高さ
+spacer_pad_h       = 2.4;            // ボトム底面のスペーサー受け座パッド高さ (2.4mm: 六角ポケット底面Z=3.4mm、座面肉厚2.0mm確保)
 pcb_standoff_h     = spacer_body_h;  // 基板受け面高さ = 20.0mm
-pcb_seat_z         = wall_thickness + (spacer_pad_h - spacer_pocket_d) + pcb_standoff_h; // 基板底面高さ = 22.2mm
-pcb_top_z          = pcb_seat_z + pcb_thickness; // 基板表面高さ = 23.8mm
+pcb_seat_z         = wall_thickness + (spacer_pad_h - spacer_pocket_d) + pcb_standoff_h; // 基板底面高さ = 23.4mm
+pcb_top_z          = pcb_seat_z + pcb_thickness; // 基板表面高さ = 25.0mm
 
 // ダイヤル中心座標 (RK10J)
 vol_dial_center_x  = pcb_width / 2 - 4.5; // ダイヤル中心X座標 (外周φ14mmが基板端から2.5mm突出)
-vol_dial_center_z  = pcb_top_z + vol_dial_h / 2; // ダイヤル中心高さ = 25.05mm
+vol_dial_center_z  = pcb_top_z + vol_dial_h / 2; // ダイヤル中心高さ = 26.25mm
 
-// ボタンおよびアクリルパネルの統一中心高さ (Z = 23.0mm: 天面および底面とのクリアランス調和)
-btn_center_z       = wall_thickness + pcb_standoff_h + 1.0;
+// ボタンおよびアクリルパネルの統一中心高さ (Z = 24.2mm: 天面および底面とのクリアランス調和)
+btn_center_z       = pcb_seat_z + 0.8;
 
 // タクトスイッチ (EVQPUC02K: 全高1.65mm) 中心高さおよびボタン中心からのプランジャーオフセット
-tact_switch_center_z = pcb_top_z + 1.65 / 2; // Z = 24.625mm (基板20mmスペーサー上の実高さ)
+tact_switch_center_z = pcb_top_z + 1.65 / 2; // Z = 25.825mm (基板20mmスペーサー上の実高さ)
 btn_plunger_offset_y = tact_switch_center_z - btn_center_z; // +1.625mm (スイッチ中心に完全一致)
 
 // --- 統合締結ボス・ネジ穴寸法 ---
@@ -195,8 +195,9 @@ joint_boss_outer   = 6.0;            // 締結ボス外径 (φ6.0mm)
 joint_screw_pass   = 2.2;            // M2 ネジ通過穴径 (φ2.2mm)
 joint_screw_tap    = 1.8;            // M2 おねじ受けタッピング穴径 (φ1.8mm)
 joint_screw_head_d = 4.4;            // M2 ネジ頭沈め径 (φ4.4mm: なべ頭φ3.5mmに対して余裕確保)
-joint_screw_head_h = 1.8;            // ネジ頭沈め深さ (1.8mm: なべ頭厚み1.3mmを完全にフラットに沈める)
-top_joint_boss_h   = top_cover_h - wall_thickness + (bottom_case_h - pcb_top_z); // トップ側ボス高さ = 10.2mm (基板表面Z=23.8mmまで延長して基板を挟持)
+joint_screw_head_h = 1.4;            // ネジ頭沈め深さ (1.4mm: なべ頭厚み1.3mmに対し0.1mmツライチ沈め)
+joint_screw_seat_t = (wall_thickness + spacer_pad_h - spacer_pocket_d) - joint_screw_head_h; // 締結座面純肉厚 = 2.0mm (旧0.4mmの5倍、破断・突き抜けを完全防止)
+top_joint_boss_h   = top_cover_h - wall_thickness + (bottom_case_h - pcb_top_z); // トップ側ボス高さ = 9.0mm (基板表面Z=25.0mmまで延長して基板を挟持)
 top_screw_len      = 14.0;           // トップ側推奨M2締結小ネジ長さ (L=14〜16mm)
 bottom_screw_len   = 5.0;            // ボトム側推奨M2締結小ネジ長さ (L=5〜6mm)
 rib_thickness      = 1.2;            // 補強リブ厚み
