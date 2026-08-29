@@ -229,6 +229,23 @@ module bottom_case() {
                 cylinder(h=6.0, d=rotary_pivot_dia, $fn=24);
         }
 
+        // 2b. 電池フタ受け座 補強フレーム (上面 Z = batt_lid_seat_z = 3.6mm, 実肉厚2.0mm: 薄肉折損を完全防止)
+        // リセス座面（幅1.5mm、旧厚み0.4mm）をケース内側へ+1.6mm盛り上げ、ツメ受けスリット天井も含めて一体強化
+        translate([0, batt_pos_y, 0]) {
+            difference() {
+                // 外枠 (上面 67.0x41.0mm、根元裾野フィレット付き)
+                hull() {
+                    translate([-(batt_lid_recess_w + 1.6)/2, -(batt_lid_recess_d + 1.6)/2, 0])
+                        rounded_cube([batt_lid_recess_w + 1.6, batt_lid_recess_d + 1.6, 0.01], 3.0);
+                    translate([-batt_lid_recess_w/2, -batt_lid_recess_d/2, batt_lid_seat_z - wall_thickness])
+                        rounded_cube([batt_lid_recess_w, batt_lid_recess_d, 0.01], 2.5);
+                }
+                // 内側くり抜き (開口ベイ 64.0x38.0mm と完全一致し、電池ボックス通過を阻害しない)
+                translate([-batt_bay_w/2, -batt_bay_d/2, -0.1])
+                    rounded_cube([batt_bay_w, batt_bay_d, batt_lid_seat_z - wall_thickness + 0.2], 2.0);
+            }
+        }
+
         // 3. 電池ボックス底面挿入ガイド & 上部天井ストッパー (Z = batt_stop_z = 19.2mm)
         translate([0, batt_pos_y, 0]) {
             eff_w = batt_bay_w;

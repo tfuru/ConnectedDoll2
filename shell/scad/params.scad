@@ -109,6 +109,8 @@ batt_lid_flange       = 1.5;         // 段差受座幅 (1.5mm)
 batt_lid_recess_w     = batt_bay_w + batt_lid_flange * 2; // ボトム側段差リセス外寸 幅 (67.0mm: 基準寸法固定)
 batt_lid_recess_d     = batt_bay_d + batt_lid_flange * 2; // ボトム側段差リセス外寸 奥行き (41.0mm: 基準寸法固定)
 batt_lid_recess_depth = batt_lid_t;  // 段差リセス深さ (1.6mm: ツライチ)
+batt_lid_seat_z       = 3.6;         // 受け座補強フレーム上面高さ (底面Z=0基準: 3.6mm)
+batt_lid_seat_t       = batt_lid_seat_z - batt_lid_recess_depth; // 受け座実肉厚 = 2.0mm (旧0.4mmの5倍、折損防止)
 
 batt_lid_margin       = 0.55;        // フタ外周クリアランス (全周0.55mmの隙間を確保、3Dプリント干渉防止)
 batt_lid_w            = batt_lid_recess_w - batt_lid_margin * 2; // 65.9mm (-0.5mm縮小)
