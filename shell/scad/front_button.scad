@@ -20,10 +20,15 @@ module button_face(w, h, d, r) {
     }
 }
 
-// 表面の ネオジム磁石埋め込みポケット (深さ 3.0mm, 直径 6.1mm)
+// 表面の ネオジム磁石埋め込みポケット (深さ 3.0mm, 直径 6.4mm, 導入テーパー付き)
 module magnet_pocket() {
-    translate([0, 0, btn_flange_t + btn_cap_depth - btn_magnet_pocket_depth])
+    pocket_z = btn_flange_t + btn_cap_depth - btn_magnet_pocket_depth;
+    // メインポケット円筒
+    translate([0, 0, pocket_z])
         cylinder(h=btn_magnet_pocket_depth + 0.1, d=btn_magnet_pocket_d, $fn=32);
+    // 開口部 導入テーパー（バリ・引っかかり解消）
+    translate([0, 0, btn_flange_t + btn_cap_depth - btn_magnet_pocket_chamfer])
+        cylinder(h=btn_magnet_pocket_chamfer + 0.1, d1=btn_magnet_pocket_d, d2=btn_magnet_pocket_d + btn_magnet_pocket_chamfer * 2, $fn=32);
 }
 
 // 左右のマイクロコイルスプリング収容ポケット (φ3.4mm, 深さ 2.0mm)

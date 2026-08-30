@@ -48,7 +48,8 @@ btn_flange_h          = btn_side_height + 1.0;  // 21.0mm (上下抜け止めツ
 btn_magnet_d          = 6.0;        // ネオジム磁石直径 (φ6.0mm)
 btn_magnet_t          = 3.0;        // ネオジム磁石厚み (3.0mm)
 btn_magnet_pitch_w    = 34.0;       // 左右磁石・ナット位置ピッチ (2個配置)
-btn_magnet_pocket_d   = 6.1;        // ボタン側磁石埋め込みポケット径 (φ6.1mm)
+btn_magnet_pocket_d   = 6.4;        // ボタン側磁石埋め込みポケット径 (φ6.4mm: 3Dプリント収縮を吸収するクリアランス+0.4mm)
+btn_magnet_pocket_chamfer = 0.3;    // ポケット開口部 導入テーパー面取り量 (引っかかり防止)
 btn_magnet_pocket_depth = 3.0;      // ボタン側磁石埋め込みポケット深さ (3.0mm)
 
 // --- 前面化粧パネル（アクリル等）および M2 六角ナット仕様 ---
