@@ -143,16 +143,38 @@ module button_spring_boss(dir_x=1) {
     }
 }
 
-module volume_dial_cutout(h_cut=vol_slit_height + 1.0) {
+module volume_dial_cutout() {
+    // 1. 壁貫通スリット (幅 vol_slit_width = 18.0mm, 高さ vol_slit_bottom_z から天端まで)
     hull() {
-        // 底面左右2隅の角丸 (R = vol_slit_radius)
-        translate([0, -vol_slit_width/2 + vol_slit_radius, vol_slit_radius])
+        // 下端左右2隅の角丸 (R = vol_slit_radius)
+        translate([0, -vol_slit_width/2 + vol_slit_radius, vol_slit_bottom_z + vol_slit_radius])
             rotate([0, 90, 0]) cylinder(h=wall_thickness * 4, r=vol_slit_radius, center=true);
-        translate([0, vol_slit_width/2 - vol_slit_radius, vol_slit_radius])
+        translate([0, vol_slit_width/2 - vol_slit_radius, vol_slit_bottom_z + vol_slit_radius])
             rotate([0, 90, 0]) cylinder(h=wall_thickness * 4, r=vol_slit_radius, center=true);
-        // 上端（ボトムケース天端を抜けて開放する直線エッジ）
-        translate([-wall_thickness * 2, -vol_slit_width/2, h_cut])
-            cube([wall_thickness * 4, vol_slit_width, 0.01]);
+        // ボトムケース天端 (Z = bottom_case_h) を抜けて開放する直線エッジ (合わせ目での段差防止)
+        translate([0, 0, bottom_case_h + 0.5])
+            cube([wall_thickness * 4, vol_slit_width, 1.0], center=true);
+    }
+
+    // 2. 外壁側 45度すり鉢状 指掛かりスカラップ (幅 vol_scallop_w = 24.0mm, 深さ vol_scallop_chamfer = 1.4mm)
+    hull() {
+        // 外壁面境界 (X = +0.1, 幅24.0mm, スリット下端から vol_scallop_ext = 1.8mm 下まで展開)
+        translate([0.1, -vol_scallop_w/2 + vol_scallop_r, vol_slit_bottom_z - vol_scallop_ext + vol_scallop_r])
+            rotate([0, 90, 0]) cylinder(h=0.01, r=vol_scallop_r, center=true);
+        translate([0.1, vol_scallop_w/2 - vol_scallop_r, vol_slit_bottom_z - vol_scallop_ext + vol_scallop_r])
+            rotate([0, 90, 0]) cylinder(h=0.01, r=vol_scallop_r, center=true);
+        // 天端合わせ目エッジ (外幅24.0mm)
+        translate([0.1, 0, bottom_case_h + 0.5])
+            cube([0.01, vol_scallop_w, 1.0], center=true);
+
+        // 内側ザグリ底境界 (X = -vol_scallop_chamfer = -1.4mm, 幅18.0mm)
+        translate([-vol_scallop_chamfer, -vol_slit_width/2 + vol_slit_radius, vol_slit_bottom_z + vol_slit_radius])
+            rotate([0, 90, 0]) cylinder(h=0.01, r=vol_slit_radius, center=true);
+        translate([-vol_scallop_chamfer, vol_slit_width/2 - vol_slit_radius, vol_slit_bottom_z + vol_slit_radius])
+            rotate([0, 90, 0]) cylinder(h=0.01, r=vol_slit_radius, center=true);
+        // 天端合わせ目エッジ (内幅18.0mm)
+        translate([-vol_scallop_chamfer, 0, bottom_case_h + 0.5])
+            cube([0.01, vol_slit_width, 1.0], center=true);
     }
 }
 
@@ -209,9 +231,9 @@ module bottom_case() {
         // --- 手前側面（フロント壁: Y=0側）のスピーカー出音スリット (7連バーチカルスリット) ---
         speaker_sound_slits();
 
-        // --- 右側面（X=最大側）のボリューム調整スリット (Uノッチ開放形状) ---
-        // スリット下端 vol_slit_bottom_z (Z=23.5mm) から天端まで開口
-        translate([case_outer_w - wall_thickness / 2, center_y + vol_offset_y, vol_slit_bottom_z])
+        // --- 右側面（X=最大側）のボリューム調整スリット (Uノッチ開放形状 & 45度すり鉢状指掛かりスカラップ) ---
+        // スリット下端 vol_slit_bottom_z (Z=24.7mm) から天端まで開口、外壁にスカラップ凹みを形成
+        translate([case_outer_w, center_y + vol_offset_y, 0])
             volume_dial_cutout();
 
         // --- ボトム底面からのM2ネジ貫通穴 & ネジ頭沈め（ザグリ穴） ---

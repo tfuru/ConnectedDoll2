@@ -89,13 +89,18 @@ front_recess_h        = btn_side_height + front_recess_margin * 2;  // 21.2mm
 front_recess_r        = btn_side_radius + front_recess_margin;      // 3.6mm
 
 // --- ボリューム調整スリット（右側面に配置）および RK10J ダイヤル仕様 ---
-vol_dial_d         = 14.0;       // ダイヤル外径 (φ14.0mm)
-vol_dial_h         = 2.5;        // ダイヤル本体高さ (2.5mm)
-vol_slit_width     = 16.0;       // ダイヤル操作スリット幅
-vol_slit_radius    = 1.5;        // スリット下部角丸
-vol_offset_y       = -5.0;       // Y軸方向オフセット（前方向へ5mm移動）
-vol_slit_bottom_z  = 24.7;       // スリット下端高さ (基板表面25.0mmより0.3mm下: 内部露出を防ぎつつダイヤル全高を露出)
-vol_slit_height    = 3.3;        // スリット高さ (天面28.0mmまで開放するUノッチ形状: 28.0 - 24.7 = 3.3mm)
+vol_dial_d          = 14.0;       // ダイヤル外径 (φ14.0mm)
+vol_dial_h          = 2.5;        // ダイヤル本体高さ (2.5mm)
+vol_slit_width      = 18.0;       // ダイヤル操作スリット基本幅 (18.0mm: φ14mmに対し前後各2mmクリアランス)
+vol_slit_radius     = 1.5;        // スリット隅角丸 (R=1.5mm)
+vol_offset_y        = -5.0;       // Y軸方向オフセット（前方向へ5mm移動）
+vol_slit_bottom_z   = 24.7;       // スリット下端高さ (基板表面25.0mmより0.3mm下: 内部露出を防ぎつつダイヤル全高を露出)
+vol_slit_height     = 3.3;        // ボトム側スリット高さ (天面28.0mmまで開放するUノッチ形状: 28.0 - 24.7 = 3.3mm)
+vol_slit_top_h      = 3.0;        // トップカバー側スリット切り欠き高さ (合わせ目Z=28.0mmから上方向へ3.0mm: 全高6.3mm開口)
+vol_scallop_w       = 24.0;       // 指掛かりスカラップ（指逃げ凹み）幅 (24.0mm)
+vol_scallop_r       = 2.5;        // スカラップ外周角丸 (R=2.5mm)
+vol_scallop_chamfer = 1.4;        // スカラップすり鉢状面取り量 (45度テーパー: 外壁肉厚2.0mmから1.4mmザグリ、残存肉厚0.6mm)
+vol_scallop_ext     = 1.8;        // スカラップ上下展開量 (スリット端から1.8mm上下へ滑らかにテーパー展開)
 
 // --- 電池ボックス (単4×3本 スイッチ付き) & 底面取り出しベイ ---
 batt_length        = 63.0;        // 横幅

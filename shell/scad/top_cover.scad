@@ -62,6 +62,41 @@ module screw_pass_boss(outer_d, pass_d, height, dir_x=0, dir_y=0) {
     }
 }
 
+module top_volume_cutout() {
+    // 1. 壁貫通スリット (幅 vol_slit_width = 18.0mm, 高さ top_cover_h - vol_slit_top_h から合わせ目天端まで)
+    hull() {
+        // 上端左右2隅の角丸 (R = vol_slit_radius)
+        translate([0, -vol_slit_width/2 + vol_slit_radius, top_cover_h - vol_slit_top_h + vol_slit_radius])
+            rotate([0, 90, 0]) cylinder(h=wall_thickness * 4, r=vol_slit_radius, center=true);
+        translate([0, vol_slit_width/2 - vol_slit_radius, top_cover_h - vol_slit_top_h + vol_slit_radius])
+            rotate([0, 90, 0]) cylinder(h=wall_thickness * 4, r=vol_slit_radius, center=true);
+        // トップカバー合わせ目開口端 (Z = top_cover_h) を抜けて開放する直線エッジ (合わせ目での段差防止)
+        translate([0, 0, top_cover_h + 0.5])
+            cube([wall_thickness * 4, vol_slit_width, 1.0], center=true);
+    }
+
+    // 2. 外壁側 45度すり鉢状 指掛かりスカラップ (幅 vol_scallop_w = 24.0mm, 深さ vol_scallop_chamfer = 1.4mm)
+    hull() {
+        // 外壁面境界 (local X = -0.1, 幅24.0mm, スリット上端から vol_scallop_ext = 1.8mm 上まで展開)
+        translate([-0.1, -vol_scallop_w/2 + vol_scallop_r, top_cover_h - (vol_slit_top_h + vol_scallop_ext) + vol_scallop_r])
+            rotate([0, 90, 0]) cylinder(h=0.01, r=vol_scallop_r, center=true);
+        translate([-0.1, vol_scallop_w/2 - vol_scallop_r, top_cover_h - (vol_slit_top_h + vol_scallop_ext) + vol_scallop_r])
+            rotate([0, 90, 0]) cylinder(h=0.01, r=vol_scallop_r, center=true);
+        // 合わせ目エッジ (外幅24.0mm)
+        translate([-0.1, 0, top_cover_h + 0.5])
+            cube([0.01, vol_scallop_w, 1.0], center=true);
+
+        // 内側ザグリ底境界 (local X = +vol_scallop_chamfer = +1.4mm, 幅18.0mm)
+        translate([vol_scallop_chamfer, -vol_slit_width/2 + vol_slit_radius, top_cover_h - vol_slit_top_h + vol_slit_radius])
+            rotate([0, 90, 0]) cylinder(h=0.01, r=vol_slit_radius, center=true);
+        translate([vol_scallop_chamfer, vol_slit_width/2 - vol_slit_radius, top_cover_h - vol_slit_top_h + vol_slit_radius])
+            rotate([0, 90, 0]) cylinder(h=0.01, r=vol_slit_radius, center=true);
+        // 合わせ目エッジ (内幅18.0mm)
+        translate([vol_scallop_chamfer, 0, top_cover_h + 0.5])
+            cube([0.01, vol_slit_width, 1.0], center=true);
+    }
+}
+
 module top_cover() {
     // center_x, center_y は params.scad で定義済み (center_x=34.4, center_y=37.4)
     // top_coverローカル座標におけるボタン中心Z
@@ -110,6 +145,10 @@ module top_cover() {
         // --- 手前側面のアクリル化粧パネル用リセス上部切り欠き ---
         translate([center_x, front_recess_depth / 2 - 0.01, top_btn_z])
             front_recess_cutout();
+
+        // --- 右側面（X=0側: アセンブリ回転時X=case_outer_w）のボリューム調整スリット上部切り欠き＆45度指掛かりスカラップ ---
+        translate([0, center_y + vol_offset_y, 0])
+            top_volume_cutout();
     }
 }
 
