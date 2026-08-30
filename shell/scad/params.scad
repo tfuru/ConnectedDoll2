@@ -202,8 +202,10 @@ vol_dial_center_z  = pcb_top_z + vol_dial_h / 2; // ダイヤル中心高さ = 2
 btn_center_z       = pcb_seat_z + 0.8;
 
 // タクトスイッチ (EVQPUC02K: 全高1.65mm) 中心高さおよびボタン中心からのプランジャーオフセット
+// ネジ頭（φ3.5mm）が基板端面（Z=23.4〜25.0mm）と接触するのを完全に回避するため、上方向へ+2.0mmオフセット
+btn_plunger_lift     = 2.0;        // 基板接触回避のための上方向シフト量 (+2.0mm)
 tact_switch_center_z = pcb_top_z + 1.65 / 2; // Z = 25.825mm (基板20mmスペーサー上の実高さ)
-btn_plunger_offset_y = tact_switch_center_z - btn_center_z; // +1.625mm (スイッチ中心に完全一致)
+btn_plunger_offset_y = (tact_switch_center_z - btn_center_z) + btn_plunger_lift; // +3.625mm (ネジ頭下端Z=26.075mm > 基板表面Z=25.0mm)
 
 // --- 統合締結ボス・ネジ穴寸法 ---
 joint_pitch        = pcb_hole_pitch; // 52.0mm
