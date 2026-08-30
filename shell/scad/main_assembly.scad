@@ -164,6 +164,16 @@ module main_assembly(explode_z=explode_z, explode_btn=explode_btn, explode_screw
         // メイン基板 (スペーサー座面高さ pcb_seat_z の上)
         translate([center_x, center_y, pcb_seat_z])
             pcb_mockup();
+
+        // 基板上 M2 六角スペーサー (5mm, 四隅 52x52mm ピッチ、基板を独立固定)
+        translate([center_x, center_y, pcb_top_z]) {
+            for (dx = [-joint_pitch / 2, joint_pitch / 2]) {
+                for (dy = [-joint_pitch / 2, joint_pitch / 2]) {
+                    translate([dx, dy, 0])
+                        hex_spacer_mockup(top_spacer_h, 4.0);
+                }
+            }
+        }
     }
 
     // 1b. 底面電池フタ (Battery Lid: -Z方向へ引き抜き分解表示)

@@ -215,8 +215,10 @@ joint_screw_tap    = 1.8;            // M2 おねじ受けタッピング穴径 
 joint_screw_head_d = 4.4;            // M2 ネジ頭沈め径 (φ4.4mm: なべ頭φ3.5mmに対して余裕確保)
 joint_screw_head_h = 1.4;            // ネジ頭沈め深さ (1.4mm: なべ頭厚み1.3mmに対し0.1mmツライチ沈め)
 joint_screw_seat_t = (wall_thickness + spacer_pad_h - spacer_pocket_d) - joint_screw_head_h; // 締結座面純肉厚 = 2.0mm (旧0.4mmの5倍、破断・突き抜けを完全防止)
-top_joint_boss_h   = top_cover_h - wall_thickness + (bottom_case_h - pcb_top_z); // トップ側ボス高さ = 9.0mm (基板表面Z=25.0mmまで延長して基板を挟持)
-top_screw_len      = 14.0;           // トップ側推奨M2締結小ネジ長さ (L=14〜16mm)
+top_spacer_h       = 5.0;            // 基板上 M2六角スペーサー高さ = 5.0mm (四隅で基板を独立固定)
+top_spacer_top_z   = pcb_top_z + top_spacer_h; // 5mmスペーサー天面高さ = 30.0mm (ボトム天端Z=28.0mmより2.0mm突出)
+top_joint_boss_h   = (bottom_case_h + top_cover_h - wall_thickness) - top_spacer_top_z; // トップ側ボス高さ = 4.0mm (5mmスペーサー天面にぴったり着座)
+top_screw_len      = 8.0;            // トップ側推奨M2締結小ネジ長さ (L=8mm: 樹脂肉厚4.6mm + スペーサーねじ込み深さ3.4mm)
 bottom_screw_len   = 5.0;            // ボトム側推奨M2締結小ネジ長さ (L=5〜6mm)
 rib_thickness      = 1.2;            // 補強リブ厚み
 
