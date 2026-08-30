@@ -68,6 +68,81 @@ module speaker_boss(outer_d, inner_d, height) {
     }
 }
 
+module button_spring_boss(dir_x=1) {
+    front_inner_wall_y = wall_thickness - center_y; // Y ≈ -35.4mm (前面内壁)
+    btn_back_y = front_inner_wall_y + btn_flange_t; // Y ≈ -34.2mm (ボタンフランジ裏面)
+    boss_rel_y = btn_back_y + 3.5 + btn_case_boss_outer_d / 2; // Y ≈ -28.0mm (ボタン側ポケットに対向)
+    boss_z_ctr = (btn_center_z + btn_spring_offset_y) - wall_thickness; // Z ≈ 16.7mm
+    boss_h_top = btn_case_boss_top_h; // Z = 20.0mm (基板下面Z=21.4mmに対し1.4mmマージン、穴上部肉厚1.6mm確保)
+    front_wall_y = front_inner_wall_y; // -35.4mm
+
+    d_front = btn_case_boss_outer_d;        // 5.4mm (前方円筒径)
+    d_rear  = btn_case_boss_rear_d;         // 6.2mm (後方スパイン径: 断面係数3倍)
+    rear_offset_y = btn_case_boss_rear_offset; // 2.4mm (柱奥行き8.2mmへ拡張)
+    front_block_h = btn_case_boss_front_h;     // 10.5mm (ボタンツバ下端11.7mmに対し1.2mmマージン)
+
+    difference() {
+        union() {
+            // (1) メインピラー本体 (D型・高剛性スタジアム長円柱: 奥行き8.2mm, 曲げ剛性3倍増)
+            hull() {
+                cylinder(h=boss_h_top, d=d_front, $fn=32);
+                translate([0, rear_offset_y, 0])
+                    cylinder(h=boss_h_top, d=d_rear, $fn=32);
+            }
+
+            // (2) 根元裾野テーパーベース (Z = 0 〜 3.5mm: 応力集中を完全排除)
+            hull() {
+                cylinder(h=3.5, d1=d_front + 1.6, d2=d_front, $fn=32);
+                translate([0, rear_offset_y, 0])
+                    cylinder(h=3.5, d1=d_rear + 1.6, d2=d_rear, $fn=32);
+            }
+
+            // (3) 前面壁直結サポートブロック (Z = 0 〜 10.5mm: 前面壁へ強固に一体化)
+            // ボタンフランジ下端 (Z=11.7mm) より下側の空間を活用し、片持ち梁長さを実質半減
+            hull() {
+                translate([-d_front/2, -d_front/2, 0])
+                    cube([d_front, 0.01, front_block_h]);
+                translate([-d_front/2, front_wall_y - boss_rel_y, 0])
+                    cube([d_front, 0.01, front_block_h]);
+            }
+            // 前面壁直結ブロック上面の45度テーパー移行部
+            hull() {
+                translate([-d_front/2, -d_front/2, front_block_h])
+                    cube([d_front, 0.01, 0.01]);
+                translate([-d_front/2, front_wall_y - boss_rel_y, front_block_h])
+                    cube([d_front, 0.01, 0.01]);
+                translate([-d_front/2, -d_front/2, front_block_h + 1.5])
+                    cube([d_front, 0.01, 0.01]);
+            }
+
+            // (4) 後方受圧三角ブレース (+Y方向: ボタン押下・バネ圧縮荷重を100%底面へ伝達)
+            rear_brace_len = btn_case_boss_rear_brace_l; // 4.5mm
+            rear_brace_t = 2.0;
+            hull() {
+                translate([-rear_brace_t/2, rear_offset_y, 0])
+                    cube([rear_brace_t, 0.01, 14.0]);
+                translate([-rear_brace_t/2, rear_offset_y + rear_brace_len, 0])
+                    cube([rear_brace_t, 0.01, 0.01]);
+            }
+
+            // (5) 外側横方向三角ブレース (±X外側方向: コーナー側へ展開し、X軸たわみ・印刷時振動を完全抑制)
+            side_brace_len = btn_case_boss_side_brace_l; // 5.5mm
+            side_brace_t = 2.0;
+            hull() {
+                translate([0, -side_brace_t/2, 0])
+                    cube([0.01, side_brace_t, 11.0]);
+                translate([dir_x * side_brace_len, -side_brace_t/2, 0])
+                    cube([0.01, side_brace_t, 0.01]);
+            }
+        }
+
+        // 手前方向（-Y）に開口するスプリング収容ポケット穴 (φ3.4mm, 深さ2.5mm)
+        translate([0, -d_front / 2 - 0.05, boss_z_ctr])
+            rotate([-90, 0, 0])
+                cylinder(h=btn_case_boss_pocket_d + 0.1, d=btn_spring_pocket_d, $fn=24);
+    }
+}
+
 module volume_dial_cutout(h_cut=vol_slit_height + 1.0) {
     hull() {
         // 底面左右2隅の角丸 (R = vol_slit_radius)
@@ -344,36 +419,14 @@ module bottom_case() {
             }
         }
 
-        // 4. 前面ボタン用 マイクロコイルスプリング受け座ボス (左右2箇所)
+        // 4. 前面ボタン用 高剛性マイクロコイルスプリング受け座ボス (左右2箇所)
         front_inner_wall_y = wall_thickness - center_y; // Y ≈ -35.4mm (ケース前面内壁のローカルY座標)
         btn_back_y = front_inner_wall_y + btn_flange_t; // Y ≈ -34.2mm (ボタンフランジ裏面のローカルY座標)
         boss_rel_y = btn_back_y + 3.5 + btn_case_boss_outer_d / 2; // Y ≈ -28.0mm (ボタン側ポケットに対向)
-        boss_z_ctr = (btn_center_z + btn_spring_offset_y) - wall_thickness; // Z ≈ 15.5mm
-        boss_h_top = boss_z_ctr + btn_case_boss_outer_d / 2; // Z ≈ 18.2mm
-        front_wall_y = front_inner_wall_y; // リブを接続する前面内壁座標
 
         for (dx = [-btn_spring_pitch_w / 2, btn_spring_pitch_w / 2]) {
-            translate([dx, boss_rel_y, 0]) {
-                difference() {
-                    union() {
-                        // 支持円柱ボス
-                        cylinder(h=boss_h_top, d=btn_case_boss_outer_d);
-                        // 根元補強テーパー
-                        cylinder(h=2.5, d1=btn_case_boss_outer_d + 2.0, d2=btn_case_boss_outer_d);
-                        // 前面内壁への一体補強リブ
-                        hull() {
-                            translate([-rib_thickness / 2, 0, 0])
-                                cube([rib_thickness, 0.01, boss_h_top]);
-                            translate([-rib_thickness / 2, front_wall_y - boss_rel_y, 0])
-                                cube([rib_thickness, 0.01, 2.0]);
-                        }
-                    }
-                    // 手前方向（-Y）に開口するスプリング収容ポケット穴 (φ3.4mm, 深さ2.5mm)
-                    translate([0, -btn_case_boss_outer_d / 2 - 0.05, boss_z_ctr])
-                        rotate([-90, 0, 0])
-                            cylinder(h=btn_case_boss_pocket_d + 0.1, d=btn_spring_pocket_d, $fn=24);
-                }
-            }
+            translate([dx, boss_rel_y, 0])
+                button_spring_boss(sign(dx));
         }
     }
 }
