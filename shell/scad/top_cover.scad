@@ -97,6 +97,24 @@ module top_volume_cutout() {
     }
 }
 
+module volume_reinforce_dam_top() {
+    yc = center_y + vol_offset_y;
+    z_ceiling = wall_thickness - 0.1;
+    z_rim = top_cover_h;
+    
+    // スリット周辺内壁への補強土手（裏打ちフレーム: トップカバー側）
+    // ローカル座標で内側(+X方向)へ vol_dam_thick (1.3mm) 突出、総肉厚 3.3mm、スカラップ後純残存肉厚 1.9〜2.0mm 確保
+    hull() {
+        // 土手最内面 (local X = wall_thickness + vol_dam_thick = 3.3mm)
+        translate([wall_thickness + vol_dam_thick - 0.01, yc - vol_scallop_w/2, z_ceiling])
+            cube([0.01, vol_scallop_w, z_rim - z_ceiling]);
+            
+        // 内壁接続面 (local X = wall_thickness - 0.1 = 1.9mm: 45度テーパー裾野)
+        translate([wall_thickness - 0.1, yc - (vol_scallop_w/2 + vol_dam_taper_w), z_ceiling])
+            cube([0.01, vol_scallop_w + vol_dam_taper_w * 2, z_rim - z_ceiling]);
+    }
+}
+
 module top_cover() {
     // center_x, center_y は params.scad で定義済み (center_x=34.4, center_y=37.4)
     // top_coverローカル座標におけるボタン中心Z
@@ -112,6 +130,9 @@ module top_cover() {
                 translate([wall_thickness, wall_thickness, wall_thickness])
                     rounded_cube([case_inner_w, case_inner_h, top_cover_h], max(1, corner_radius - wall_thickness));
             }
+
+            // --- ボリューム調整スリット内側補強土手（裏打ちフレーム） ---
+            volume_reinforce_dam_top();
 
             // --- 内部ボス構造 (Union: 基板上面まで届く支柱ボス) ---
             translate([center_x, center_y, wall_thickness]) {

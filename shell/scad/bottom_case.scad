@@ -208,16 +208,42 @@ module speaker_sound_slits() {
     }
 }
 
+module volume_reinforce_dam_bottom() {
+    yc = center_y + vol_offset_y;
+    z_bottom = 21.0;
+    z_taper_bottom = 19.5;
+    z_top = bottom_case_h;
+    
+    // スリット周辺内壁への補強土手（裏打ちフレーム）
+    // 内側へ vol_dam_thick (1.3mm) 突出、総肉厚 3.3mm、スカラップ後純残存肉厚 1.9〜2.0mm 確保
+    hull() {
+        // 土手最内面 (X = case_outer_w - wall_thickness - vol_dam_thick = 65.5mm)
+        translate([case_outer_w - wall_thickness - vol_dam_thick, yc - vol_scallop_w/2, z_bottom])
+            cube([0.01, vol_scallop_w, z_top - z_bottom]);
+            
+        // 内壁接続面 (X = case_outer_w - wall_thickness + 0.1 = 66.9mm: 45度テーパー裾野)
+        translate([case_outer_w - wall_thickness + 0.1, yc - (vol_scallop_w/2 + vol_dam_taper_w), z_taper_bottom])
+            cube([0.01, vol_scallop_w + vol_dam_taper_w * 2, z_top - z_taper_bottom]);
+    }
+}
+
 module bottom_case() {
     // center_x, center_y は params.scad で定義済み (center_x=34.4, center_y=37.4)
 
     difference() {
-        // --- 外殻シェル ---
-        rounded_cube([case_outer_w, case_outer_h, bottom_case_h], corner_radius);
+        union() {
+            difference() {
+                // --- 外殻シェル ---
+                rounded_cube([case_outer_w, case_outer_h, bottom_case_h], corner_radius);
 
-        // --- 内部くり抜き ---
-        translate([wall_thickness, wall_thickness, wall_thickness])
-            rounded_cube([case_inner_w, case_inner_h, bottom_case_h], max(1, corner_radius - wall_thickness));
+                // --- 内部くり抜き ---
+                translate([wall_thickness, wall_thickness, wall_thickness])
+                    rounded_cube([case_inner_w, case_inner_h, bottom_case_h], max(1, corner_radius - wall_thickness));
+            }
+
+            // --- ボリューム調整スリット内側補強土手（裏打ちフレーム） ---
+            volume_reinforce_dam_bottom();
+        }
 
         // --- 手前側面（フロント壁: Y=0側）の大型ボタン開口部 ---
         // リセス（深さ front_recess_depth = 3.0mm）の奥壁から開口
