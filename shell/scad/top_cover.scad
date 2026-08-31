@@ -17,18 +17,7 @@ module side_button_cutout() {
     }
 }
 
-module front_recess_cutout() {
-    hull() {
-        translate([-front_recess_w/2 + front_recess_r, 0, -front_recess_h/2 + front_recess_r])
-            rotate([90, 0, 0]) cylinder(h=front_recess_depth * 2, r=front_recess_r, center=true);
-        translate([front_recess_w/2 - front_recess_r, 0, -front_recess_h/2 + front_recess_r])
-            rotate([90, 0, 0]) cylinder(h=front_recess_depth * 2, r=front_recess_r, center=true);
-        translate([front_recess_w/2 - front_recess_r, 0, front_recess_h/2 - front_recess_r])
-            rotate([90, 0, 0]) cylinder(h=front_recess_depth * 2, r=front_recess_r, center=true);
-        translate([-front_recess_w/2 + front_recess_r, 0, front_recess_h/2 - front_recess_r])
-            rotate([90, 0, 0]) cylinder(h=front_recess_depth * 2, r=front_recess_r, center=true);
-    }
-}
+
 
 module screw_pass_boss(outer_d, pass_d, height, dir_x=0, dir_y=0) {
     rib_h = min(height, top_cover_h - wall_thickness);
@@ -160,12 +149,8 @@ module top_cover() {
         }
 
         // --- 手前側面（フロント壁: Y=0側）のボタン上部切り欠き ---
-        translate([center_x, front_recess_depth + wall_thickness / 2, top_btn_z])
+        translate([center_x, wall_thickness / 2, top_btn_z])
             side_button_cutout();
-
-        // --- 手前側面のアクリル化粧パネル用リセス上部切り欠き ---
-        translate([center_x, front_recess_depth / 2 - 0.01, top_btn_z])
-            front_recess_cutout();
 
         // --- 右側面（X=0側: アセンブリ回転時X=case_outer_w）のボリューム調整スリット上部切り欠き＆45度指掛かりスカラップ ---
         translate([0, center_y + vol_offset_y, 0])

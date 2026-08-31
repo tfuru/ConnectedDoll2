@@ -6,10 +6,10 @@ include <params.scad>;
 
 // ボタン詳細パラメータ
 btn_cap_w      = btn_side_width - clearance * 2;   // 43.2mm
-btn_cap_h      = btn_side_height - clearance * 2;  // 19.2mm
+btn_cap_h      = btn_side_height - clearance * 2;  // 17.2mm
 btn_cap_r      = btn_side_radius - clearance / 2;  // 角丸 R=2.8mm
 
-// 抜け止めツバ（フランジ）は params.scad で定義 (btn_flange_w=47.0mm, btn_flange_h=21.0mm)
+// 抜け止めツバ（フランジ）は params.scad で定義 (btn_flange_w=47.0mm, btn_flange_h=19.2mm)
 
 module button_face(w, h, d, r) {
     hull() {

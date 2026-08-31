@@ -9,7 +9,7 @@ mode = "3d";
 
 // アクリルパネル寸法
 panel_w      = btn_side_width - clearance * 2;   // 43.2mm
-panel_h      = btn_side_height - clearance * 2;  // 13.2mm
+panel_h      = btn_side_height - clearance * 2;  // 17.2mm
 panel_r      = btn_side_radius - clearance / 2;  // 角丸 R=2.8mm
 panel_t      = btn_magnet_t;                     // 3.0mm (アクリル厚み)
 

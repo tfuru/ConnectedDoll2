@@ -178,18 +178,7 @@ module volume_dial_cutout() {
     }
 }
 
-module front_recess_cutout() {
-    hull() {
-        translate([-front_recess_w/2 + front_recess_r, 0, -front_recess_h/2 + front_recess_r])
-            rotate([90, 0, 0]) cylinder(h=front_recess_depth * 2, r=front_recess_r, center=true);
-        translate([front_recess_w/2 - front_recess_r, 0, -front_recess_h/2 + front_recess_r])
-            rotate([90, 0, 0]) cylinder(h=front_recess_depth * 2, r=front_recess_r, center=true);
-        translate([front_recess_w/2 - front_recess_r, 0, front_recess_h/2 - front_recess_r])
-            rotate([90, 0, 0]) cylinder(h=front_recess_depth * 2, r=front_recess_r, center=true);
-        translate([-front_recess_w/2 + front_recess_r, 0, front_recess_h/2 - front_recess_r])
-            rotate([90, 0, 0]) cylinder(h=front_recess_depth * 2, r=front_recess_r, center=true);
-    }
-}
+
 
 module speaker_sound_slits() {
     slit_half_h = spk_slit_h / 2 - spk_slit_r;
@@ -246,13 +235,8 @@ module bottom_case() {
         }
 
         // --- 手前側面（フロント壁: Y=0側）の大型ボタン開口部 ---
-        // リセス（深さ front_recess_depth = 3.0mm）の奥壁から開口
-        translate([center_x, front_recess_depth + wall_thickness / 2, btn_center_z])
+        translate([center_x, wall_thickness / 2, btn_center_z])
             side_button_cutout();
-
-        // --- 手前側面のアクリル化粧パネル用リセス（段差ポケット: 深さ3.0mm） ---
-        translate([center_x, front_recess_depth / 2 - 0.01, btn_center_z])
-            front_recess_cutout();
 
         // --- 手前側面（フロント壁: Y=0側）のスピーカー出音スリット (7連バーチカルスリット) ---
         speaker_sound_slits();

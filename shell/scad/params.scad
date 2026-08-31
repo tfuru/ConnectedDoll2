@@ -38,13 +38,13 @@ spk_slit_center_z = 8.2;        // スリット中心高さ (Z=8.2mm: スピー�
 
 // --- 前面ボタン（ボトムケース手前側面に配置） ---
 btn_side_width        = 44.0;       // 側面ボタン開口幅
-btn_side_height       = 20.0;       // 側面ボタン開口高さ
+btn_side_height       = 18.0;       // 側面ボタン開口高さ (18.0mm: 天井内面Z=34mmに対し手前壁0.8mm、天面から2.8mm確保)
 btn_side_radius       = 3.0;        // 側面ボタン角丸
 
 btn_cap_depth         = 2.5;        // ボタンキャップ厚み（ズレ・傾き防止ガイド長）
 btn_flange_t          = 1.2;        // 脱落防止フランジ厚み
 btn_flange_w          = btn_side_width + 3.0;   // 47.0mm (左右抜け止めツバ幅: 片側+1.5mm)
-btn_flange_h          = btn_side_height + 1.0;  // 21.0mm (上下抜け止めツバ高: 片側+0.5mm, 天板天井クリアランス+0.5mm)
+btn_flange_h          = btn_side_height + 1.2;  // 19.2mm (上下抜け止めツバ高: 上下各0.6mm, 天板天井クリアランス+0.2mm)
 btn_magnet_d          = 6.0;        // ネオジム磁石直径 (φ6.0mm)
 btn_magnet_t          = 3.0;        // ネオジム磁石厚み (3.0mm)
 btn_magnet_pitch_w    = 34.0;       // 左右磁石・ナット位置ピッチ (2個配置)
@@ -67,7 +67,7 @@ btn_case_boss_pocket_d  = 2.5;        // ボトムケース側受けボス深さ
 btn_case_boss_outer_d   = 5.4;        // ボトムケース側受けボス前方外径 (φ5.4mm)
 btn_case_boss_rear_d    = 6.2;        // ボトムケース側受けボス後方スパイン径 (φ6.2mm: D型長円化・断面係数3倍)
 btn_case_boss_rear_offset = 2.4;      // 後方スパインYオフセット (2.4mm: 柱奥行き8.2mmへ大幅拡張)
-btn_case_boss_front_h   = 10.5;       // 前面壁直結ベース高さ (Z=10.5mm: ボタンツバ下端11.7mmに対し1.2mmマージン)
+btn_case_boss_front_h   = 10.5;       // 前面壁直結ベース高さ (Z=10.5mm: ボタンツバ下端14.6mmに対し4.1mmマージン)
 btn_case_boss_top_h     = 20.0;       // ボス頂部高さ (Z=20.0mm: 基板下面Z=21.4mmに対し1.4mmマージン、穴上部肉厚1.6mm確保)
 btn_case_boss_rear_brace_l = 4.5;     // 後方受圧三角ブレース長 (4.5mm: ボタン押下・バネ圧縮荷重を底面へ直結分散)
 btn_case_boss_side_brace_l = 5.5;     // 外側横方向三角ブレース長 (5.5mm: X軸たわみ・印刷時振動を完全抑制)
@@ -80,13 +80,6 @@ btn_inset_pocket_d      = 5.0;        // M2ネジ頭インセット収容ポケ�
 btn_inset_pocket_depth  = 1.5;        // M2ネジ頭インセット収容ポケット深さ (1.5mm)
 btn_m2_tap_depth        = 2.0;        // ポケット底面からのタッピング下穴深さ (2.0mm)
 btn_plunger_screw_l     = 4.0;        // 推奨M2なべ小ねじ長さ (L=4〜6mm)
-
-// --- 前面アクリル化粧パネル埋め込み用リセス（段差ポケット） ---
-front_recess_depth    = btn_magnet_t; // 3.0mm (アクリル厚みに完全一致)
-front_recess_margin   = 0.6;          // リセスクリアランス (周囲0.6mm)
-front_recess_w        = btn_side_width + front_recess_margin * 2;   // 45.2mm
-front_recess_h        = btn_side_height + front_recess_margin * 2;  // 21.2mm
-front_recess_r        = btn_side_radius + front_recess_margin;      // 3.6mm
 
 // --- ボリューム調整スリット（右側面に配置）および RK10J ダイヤル仕様 ---
 vol_dial_d          = 14.0;       // ダイヤル外径 (φ14.0mm)
