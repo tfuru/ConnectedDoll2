@@ -41,8 +41,8 @@ btn_side_width        = 44.0;       // 側面ボタン開口幅
 btn_side_height       = 18.0;       // 側面ボタン開口高さ (18.0mm: 天井内面Z=34mmに対し手前壁0.8mm、天面から2.8mm確保)
 btn_side_radius       = 3.0;        // 側面ボタン角丸
 
-btn_cap_depth         = 2.5;        // ボタンキャップ厚み（ズレ・傾き防止ガイド長）
-btn_flange_t          = 1.2;        // 脱落防止フランジ厚み
+btn_cap_depth         = 4.2;        // ボタンキャップ厚み（外壁から2.2mm突出、十分な押し心地とガイド長を確保）
+btn_flange_t          = 1.8;        // 脱落防止フランジ厚み（剛性強化 1.8mm、全厚6.0mm）
 btn_flange_w          = btn_side_width + 3.0;   // 47.0mm (左右抜け止めツバ幅: 片側+1.5mm)
 btn_flange_h          = btn_side_height + 1.2;  // 19.2mm (上下抜け止めツバ高: 上下各0.6mm, 天板天井クリアランス+0.2mm)
 btn_magnet_d          = 6.0;        // ネオジム磁石直径 (φ6.0mm)
@@ -50,7 +50,7 @@ btn_magnet_t          = 3.0;        // ネオジム磁石厚み (3.0mm)
 btn_magnet_pitch_w    = 34.0;       // 左右磁石・ナット位置ピッチ (2個配置)
 btn_magnet_pocket_d   = 6.4;        // ボタン側磁石埋め込みポケット径 (φ6.4mm: 3Dプリント収縮を吸収するクリアランス+0.4mm)
 btn_magnet_pocket_chamfer = 0.3;    // ポケット開口部 導入テーパー面取り量 (引っかかり防止)
-btn_magnet_pocket_depth = 3.0;      // ボタン側磁石埋め込みポケット深さ (3.0mm)
+btn_magnet_pocket_depth = 3.0;      // ボタン側磁石埋め込みポケット深さ (3.0mm: 底面肉厚3.0mm確保)
 
 // --- 前面化粧パネル（アクリル等）および M2 六角ナット仕様 ---
 panel_nut_width       = 4.4;        // パネル側 M2 六角ナット二面幅 (対辺 4.0mm + 余裕0.4mm)
@@ -78,7 +78,7 @@ btn_m2_boss_inner_d     = 1.7;        // M2ネジ下穴径 (PLAタッピング�
 btn_m2_boss_h           = 0.0;        // インセット構造により裏面突出ボスは0mm (完全フラット)
 btn_inset_pocket_d      = 5.0;        // M2ネジ頭インセット収容ポケット径 (φ5.0mm)
 btn_inset_pocket_depth  = 1.5;        // M2ネジ頭インセット収容ポケット深さ (1.5mm)
-btn_m2_tap_depth        = 2.0;        // ポケット底面からのタッピング下穴深さ (2.0mm)
+btn_m2_tap_depth        = 2.5;        // ポケット底面からのタッピング下穴深さ (2.5mm: 全厚6.0mmに対し表面残存肉厚2.0mmを確保)
 btn_plunger_screw_l     = 4.0;        // 推奨M2なべ小ねじ長さ (L=4〜6mm)
 
 // --- ボリューム調整スリット（右側面に配置）および RK10J ダイヤル仕様 ---

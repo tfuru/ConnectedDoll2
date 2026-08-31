@@ -45,7 +45,7 @@ module m2_inset_pocket() {
         cylinder(h=btn_inset_pocket_depth + 0.1, d=btn_inset_pocket_d, $fn=32);
 }
 
-// M2タッピング用下穴（φ1.7mm, ポケット底面から前方へ深さ 2.0mm）
+// M2タッピング用下穴（φ1.7mm, ポケット底面から前方へ深さ 2.5mm）
 module m2_plunger_hole() {
     py = btn_plunger_offset_y;
     d_in = btn_m2_boss_inner_d;
@@ -56,11 +56,11 @@ module m2_plunger_hole() {
 module front_button() {
     difference() {
         union() {
-            // 1. 脱落防止フランジ（最底面: 厚み 1.2mm）
+            // 1. 脱落防止フランジ（最底面: 厚み 1.8mm）
             translate([0, 0, 0])
                 button_face(btn_flange_w, btn_flange_h, btn_flange_t, btn_side_radius + 0.5);
 
-            // 2. ボタンキャップ（ズレ・傾き防止ガイド部: 厚み 2.5mm）
+            // 2. ボタンキャップ（ズレ・傾き防止ガイド部: 厚み 4.2mm）
             translate([0, 0, btn_flange_t])
                 button_face(btn_cap_w, btn_cap_h, btn_cap_depth, btn_cap_r);
         }
