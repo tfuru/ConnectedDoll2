@@ -387,25 +387,44 @@ module bottom_case() {
 
         // 3. 電池ボックス底面挿入ガイド & 上部天井ストッパー (Z = batt_stop_z = 19.2mm)
         translate([0, batt_pos_y, 0]) {
-            eff_w = batt_bay_w;
-            eff_d = batt_bay_d;
+            eff_w = batt_bay_w; // 64.0mm
+            eff_d = batt_bay_d; // 38.0mm
             stop_z_rel = batt_stop_z - wall_thickness; // 相対高さ 17.2mm
             rail_len = 20.0; // ガイドレール長さをストッパー全長20mmに拡張
-            rail_thick = case_inner_w / 2 - eff_w / 2 + 0.7; // 1.1mm (ケース側壁に0.5mm埋め込み)
             stop_t = 2.2; // リブ厚み 2.2mm (天面 Z = 21.4mm: ボリュームスリット下端23.5mmより2.1mm下、基板裏面より0.8mm下)
             overhang = 1.6; // 内側への張り出し量 (電池幅63.0mmに対し片側1.1mmのかかり代)
 
             for (dir = [-1, 1]) {
-                // (a) 左右垂直ガイド壁 (底面から直立、全長20mmで真下からストッパーを100%全面支持)
-                x_base = (dir > 0) ? (eff_w / 2 - 0.2) : (-case_inner_w / 2 - 0.5);
-                translate([x_base, -rail_len/2, 0])
-                    cube([rail_thick, rail_len, stop_z_rel]);
+                // (a) 左右垂直ガイド壁 (開口ベイ端面 ±32.0mm から側壁内へ完全密着、肉厚1.2mm以上確保)
+                x_inner = dir * eff_w / 2; // ±32.0mm (開口ベイ端面と完全一致)
+                x_outer = dir * (case_inner_w / 2 + 0.8); // ±33.2mm (側壁へ0.8mm埋め込み)
+                x_min = min(x_inner, x_outer);
+                x_w = abs(x_outer - x_inner); // 1.2mm
+
+                // 垂直ガイド壁本体
+                translate([x_min, -rail_len/2, 0])
+                    cube([x_w, rail_len, stop_z_rel]);
+
+                // 根元補強 45度三角ブレース (前後 ±Y 方向: 根元の薄肉0.25mmを完全解消、最小肉厚1.2mm以上確保)
+                brace_l = 3.0; // ブレース前後長 (3.0mm)
+                brace_h = 4.0; // ブレース高さ (4.0mm: 補強フレーム上面Z=1.6mmを完全に超えて強固に一体化)
+                // 手前側ブレース (-Y)
+                hull() {
+                    translate([x_min, -rail_len/2, 0]) cube([x_w, 0.01, brace_h]);
+                    translate([x_min, -rail_len/2 - brace_l, 0]) cube([x_w, 0.01, 0.01]);
+                }
+                // 奥側ブレース (+Y)
+                hull() {
+                    translate([x_min, rail_len/2 - 0.01, 0]) cube([x_w, 0.01, brace_h]);
+                    translate([x_min, rail_len/2 + brace_l, 0]) cube([x_w, 0.01, 0.01]);
+                }
 
                 // (b) 左右上部天井ストッパー梁 & 下面45度テーパーブレース (ボリュームスリット非干渉・折損防止)
-                sx = (dir > 0) ? (eff_w / 2 - overhang) : (-eff_w / 2 - rail_thick);
+                sx = (dir > 0) ? (eff_w / 2 - overhang) : (x_min);
+                sw = overhang + x_w;
                 translate([sx, -rail_len/2, stop_z_rel]) {
-                    // ストッパー水平梁 (厚み 2.2mm: スリット下端23.5mmより遥か下のZ=21.4mmで完結)
-                    cube([overhang + rail_thick, rail_len, stop_t]);
+                    // ストッパー水平梁 (厚み 2.2mm)
+                    cube([sw, rail_len, stop_t]);
                     // 下面 45度テーパーブレース (上向き突き上げ荷重を受け止め、角部応力集中を完全解消)
                     if (dir > 0) {
                         hull() {
@@ -414,8 +433,8 @@ module bottom_case() {
                         }
                     } else {
                         hull() {
-                            translate([overhang, 0, 0]) cube([overhang, rail_len, 0.01]);
-                            translate([0, 0, -overhang * 1.2]) cube([0.01, rail_len, 0.01]);
+                            translate([x_w, 0, 0]) cube([overhang, rail_len, 0.01]);
+                            translate([x_w, 0, -overhang * 1.2]) cube([0.01, rail_len, 0.01]);
                         }
                     }
                 }

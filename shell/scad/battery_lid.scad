@@ -6,16 +6,25 @@
 include <params.scad>;
 
 module battery_switch_cutout() {
-    // スイッチ操作開口窓 (すり鉢状テーパー面取り付き、全層完全貫通)
+    // スイッチ操作開口窓 (深さ0.8mmまでの面取り + 垂直壁0.8mm以上を保持し薄刃化・ナイフエッジを完全防止)
+    chamfer_depth = 0.8;
+    // 1. 表面すり鉢状面取り部 (Z = -0.2 〜 chamfer_depth)
     hull() {
         for (dx = [-batt_sw_w/2 + batt_sw_r, batt_sw_w/2 - batt_sw_r]) {
             for (dy = [-batt_sw_d/2 + batt_sw_r, batt_sw_d/2 - batt_sw_r]) {
-                // 底面外側 (広大なすり鉢状面取り)
                 translate([dx, dy, -0.2])
                     cylinder(h=0.01, r=batt_sw_r + batt_sw_chamfer, $fn=32);
-                // 内部側貫通 (内側ステップも含めて確実に全層抜く)
-                translate([dx, dy, batt_lid_t + 1.2])
+                translate([dx, dy, chamfer_depth])
                     cylinder(h=0.01, r=batt_sw_r, $fn=32);
+            }
+        }
+    }
+    // 2. 内部ストレート貫通部 (Z = chamfer_depth 〜 全層貫通: 垂直壁厚み0.8mm以上を確保)
+    hull() {
+        for (dx = [-batt_sw_w/2 + batt_sw_r, batt_sw_w/2 - batt_sw_r]) {
+            for (dy = [-batt_sw_d/2 + batt_sw_r, batt_sw_d/2 - batt_sw_r]) {
+                translate([dx, dy, chamfer_depth - 0.01])
+                    cylinder(h=batt_lid_t + 1.5, r=batt_sw_r, $fn=32);
             }
         }
     }
@@ -65,7 +74,7 @@ module battery_lid() {
 
         // 5. 奥側 回転ロック受け円弧ポケット & カム通過貫通穴
         translate([rotary_pos_x, dial_rel_y, 0]) {
-            // (a) ダイヤルツバ受座シェルフ (深さ rotary_cam_shelf_z = 1.0mm: シェルフ厚み 0.6mm を保持、外周クリアランス+0.6mmへ拡大)
+            // (a) ダイヤルツバ受座シェルフ (深さ rotary_cam_shelf_z = 0.75mm: シェルフ残存肉厚 0.85mm を保持、外周クリアランス+0.6mmへ拡大)
             translate([0, 0, -0.2])
                 cylinder(h=rotary_cam_shelf_z + 0.2, r=rotary_dial_d / 2 + 0.6, $fn=60);
             // (b) カム解錠時通過貫通穴 (半径 cam_shelf_r = 5.0mm: 全層貫通、通過クリアランス拡大)

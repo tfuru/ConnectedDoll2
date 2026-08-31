@@ -16,18 +16,19 @@ module rotary_lock(angle=0) {
 
                 // (b) 指先操作用 つまみリブ (コイン溝兼用: Z = -0.8mm〜0mm)
                 // 完全にポケット内に沈み込み、外装面Z=0より0.2mm奥に収まる
+                // 幅 rotary_rib_w_top = 3.0mm (スロット両側肉厚 0.85mm 以上を確保)
                 translate([0, 0, -rotary_rib_h]) {
                     hull() {
-                        translate([-4.5, -1.0, 0]) cube([9.0, 2.0, 0.01]);
-                        translate([-4.0, -0.8, rotary_rib_h]) cube([8.0, 1.6, 0.01]);
+                        translate([-4.5, -rotary_rib_w_base/2, 0]) cube([9.0, rotary_rib_w_base, 0.01]);
+                        translate([-4.0, -rotary_rib_w_top/2, rotary_rib_h]) cube([8.0, rotary_rib_w_top, 0.01]);
                     }
                 }
 
-                // (c) ダイヤル外周滑り止めセレーション (微細ローレット)
+                // (c) ダイヤル外周滑り止めセレーション (微細ローレット: 幅1.0mm, 突出0.4mmで薄肉化を防止)
                 for (a = [0 : 30 : 330]) {
                     rotate([0, 0, a])
-                        translate([rotary_dial_d / 2 - 0.3, -0.4, 0])
-                            cube([0.3, 0.8, rotary_rim_t]);
+                        translate([rotary_dial_d / 2 - 0.4, -0.5, 0])
+                            cube([0.4, 1.0, rotary_rim_t]);
                 }
 
                 // (d) 裏面 90度回転リミッターピン (ケース円弧溝と嵌合し0°〜90°で制動: 高さ0.9mm)
@@ -57,9 +58,9 @@ module rotary_lock(angle=0) {
             translate([0, -rotary_dial_d / 2 + 1.2, -rotary_rib_h])
                 cylinder(h=0.5, d=1.0, $fn=16);
 
-            // 5. 指先つまみ操作用 コインスロット (左右リブ上面)
-            translate([-5.0, -0.6, -rotary_rib_h - 0.1])
-                cube([10.0, 1.2, 0.5]);
+            // 5. 指先つまみ操作用 コインスロット (左右リブ上面: 幅1.3mm, 深さ0.5mm, 側壁肉厚0.85mm確保)
+            translate([-5.0, -rotary_slot_w/2, -rotary_rib_h - 0.1])
+                cube([10.0, rotary_slot_w, rotary_slot_d + 0.1]);
         }
     }
 }

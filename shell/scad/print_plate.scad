@@ -70,8 +70,8 @@ module print_plate() {
     mid_stack_z  = bottom_case_h + gap_bottom_to_mid; // Z = 28.0 + 2.5 = 30.5mm
     lid_y        = -8.0;                              // 電池フタ中心Y
     lock_y       = 29.5;                              // 回転ロックダイヤル中心Y (奥端 Y=36.0mm が奥壁天端 Y=33.9〜35.9mm に完全着地)
-    top_stack_z  = mid_stack_z + 2.4 + gap_mid_to_top; // Z = 30.5 + 2.4 + 5.5 = 38.4mm
-    top_total_h  = top_stack_z + top_cover_h;        // 全高 Z = 46.4mm
+    top_stack_z  = mid_stack_z + rotary_dial_t + gap_mid_to_top; // Z = 30.5 + 2.45 + 5.5 = 38.45mm
+    top_total_h  = top_stack_z + top_cover_h;        // 全高 Z = 46.45mm
 
     // ==========================================
     // 1. ボトムケース (最下層: Z=0〜28.0mm, 中心原点配置, 底面接地)
