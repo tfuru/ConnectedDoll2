@@ -90,7 +90,12 @@ void loop() {
   }
 
   // --- 状態に合わせたLEDイルミネーション制御 ---
+  static bool wasAudioPlaying = false;
+  static unsigned long lastPlayFlash = 0;
+  static bool playLedState = true;
+
   if (BLEManager::isTransferringFile()) {
+    wasAudioPlaying = false;
     // BLEファイル転送中: 赤の高速点滅 (100ms)
     static unsigned long lastLedFlash = 0;
     static bool ledState = false;
@@ -103,14 +108,29 @@ void loop() {
       lastLedFlash = millis();
     }
   } else if (AudioPlayer::isPlaying()) {
-    // 音声再生中: 推しカラーで点灯
-    uint8_t tr, tg, tb;
-    HAL_IO::getThemeColor(tr, tg, tb);
-    HAL_IO::setLEDColor(tr, tg, tb);
+    // 音声再生中: 設定カラー基準で中速点滅 (250ms点灯 / 250ms消灯)
+    if (!wasAudioPlaying) {
+      wasAudioPlaying = true;
+      playLedState = true;
+      lastPlayFlash = millis();
+    }
+    if (millis() - lastPlayFlash > 250) {
+      playLedState = !playLedState;
+      lastPlayFlash = millis();
+    }
+    if (playLedState) {
+      uint8_t tr, tg, tb;
+      HAL_IO::getThemeColor(tr, tg, tb);
+      HAL_IO::setLEDColor(tr, tg, tb);
+    } else {
+      HAL_IO::setLEDColor(0, 0, 0);
+    }
   } else if (BLEManager::isConnected()) {
+    wasAudioPlaying = false;
     // BLE接続中: 青色点灯
     HAL_IO::setLEDColor(0, 0, 50);
   } else {
+    wasAudioPlaying = false;
     // 待機状態: 推しカラーでゆっくりブレス明滅
     static unsigned long lastLedBreath = 0;
     static int breathVal = 5;
@@ -147,11 +167,16 @@ void loop() {
     }
   }
 
-  // --- タクトスイッチによる特定ファイル再生 (WAV優先、次点でMP3) ---
+  // --- タクトスイッチによる特定ファイル再生 (WAV優先、次点でMP3) / 再生中停止 ---
   if (HAL_IO::isKeyPressed()) {
-    Serial.println("Button Pressed! Triggering playback...");
     HAL_Power::resetIdleTimer();
-    triggerButtonPlayback();
+    if (AudioPlayer::isPlaying()) {
+      Serial.println("Button Pressed while playing! Stopping playback...");
+      AudioPlayer::stop();
+    } else {
+      Serial.println("Button Pressed! Triggering playback...");
+      triggerButtonPlayback();
+    }
   }
 
   // --- RTCによる複数日時スケジュール再生 (WAV優先、次点でMP3) ---

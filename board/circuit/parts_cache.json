@@ -10,6 +10,8 @@
     "C23058":    { "uuid": "128070c50ff4463a83ebbe1740d84202", "name": "0603WAF4532T5E", "role": "抵抗 45.3kΩ" },
     "C25804":    { "uuid": "b0602c6e20fc41faa226d9f001a9bead", "name": "0603WAF1002T5E", "role": "抵抗 10kΩ" },
     "C2803346":  { "uuid": "7033b352ff5b4137be0407c30282a382", "name": "BSMD1206-110-16V", "role": "リセッタブルヒューズ (代替)" },
+    "C20917":    { "uuid": "1c95a10b7c4a4095b426799cbca7b1b2", "name": "AO3400A", "role": "Nch MOSFET (自動電源スイッチ)" },
+    "C2128":     { "uuid": "24f1572ddddb42c2abec3b14b1aeb99f", "name": "1N4148WS", "role": "高速スイッチングダイオード (ピーク検波)" },
     "C12495":    { "uuid": "78837835569f40709059861b6ef22a29", "name": "74AHCT1G125GW", "role": "レベルシフタ" },
     "C23138":    { "uuid": "0a9f3a313c9145cf8517fd23769490cb", "name": "0603WAF3300T5E", "role": "抵抗 330Ω" },
     "C15127":    { "uuid": "f58385f66b144586baef3753ba84f65d", "name": "AO3401A", "role": "逆流防止 MOSFET" },

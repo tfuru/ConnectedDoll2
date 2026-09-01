@@ -34,6 +34,12 @@ class _AlarmScreenState extends State<AlarmScreen> {
   List<VoicePreset> _presets = [];
   VoicePreset? _selectedPreset;
 
+  // 一括転送状態管理
+  bool _isBatchUploading = false;
+  int _batchTotalCount = 0;
+  int _batchCurrentIndex = 0;
+  String _batchCurrentSlotName = '';
+
 
   // デバイス未接続時に下部トースト（ボトムシート）を表示して接続を促す共通処理
   Future<bool> _ensureConnected() async {
@@ -390,9 +396,12 @@ class _AlarmScreenState extends State<AlarmScreen> {
     }
   }
 
+  bool get _isAnyUploading => _isUploading.values.any((u) => u) || _isBatchUploading;
+
   // 選択中プリセットの特定スロット音声を転送
   Future<void> _uploadPresetAudioForSlot(int slotIndex) async {
     if (_selectedPreset == null) return;
+    if (_isAnyUploading) return;
     final filePath = _selectedPreset!.audioFiles[slotIndex];
     if (filePath == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -404,8 +413,118 @@ class _AlarmScreenState extends State<AlarmScreen> {
     await _uploadAudioFromPath(slotIndex, filePath);
   }
 
+  // 選択中プリセットの全登録音声を一括転送
+  Future<void> _uploadAllPresetAudios() async {
+    if (_selectedPreset == null) return;
+    if (_isAnyUploading) return;
+
+    if (!await _ensureConnected()) return;
+
+    final audioEntries = _selectedPreset!.audioFiles.entries.toList();
+    if (audioEntries.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('選択中のプリセットには登録された音声がありません。')),
+        );
+      }
+      return;
+    }
+
+    // スロット順にソート (-1: タクトスイッチ, 0〜4: 各アラーム)
+    audioEntries.sort((a, b) => a.key.compareTo(b.key));
+
+    setState(() {
+      _isBatchUploading = true;
+      _batchTotalCount = audioEntries.length;
+      _batchCurrentIndex = 0;
+      _batchCurrentSlotName = '';
+    });
+
+    // 推しカラーをデバイスLEDに同期設定
+    try {
+      final presetColor = Color(_selectedPreset!.color);
+      await _bleService.writeLedColor(presetColor);
+      if (mounted) {
+        setState(() {
+          _ledColor = presetColor;
+        });
+      }
+    } catch (_) {}
+
+    bool allSuccess = true;
+
+    try {
+      for (int i = 0; i < audioEntries.length; i++) {
+        if (!mounted || _bleService.connectedDevice == null) {
+          allSuccess = false;
+          break;
+        }
+
+        final entry = audioEntries[i];
+        final slotIndex = entry.key;
+        final filePath = entry.value;
+        final slotName = slotIndex == -1 ? 'タクトスイッチ音' : 'アラーム ${slotIndex + 1}';
+
+        setState(() {
+          _batchCurrentIndex = i + 1;
+          _batchCurrentSlotName = slotName;
+        });
+
+        final success = await _uploadAudioFromPath(slotIndex, filePath);
+        if (!success) {
+          allSuccess = false;
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('$slotName の転送に失敗したため、一括転送を中断しました。')),
+            );
+          }
+          break;
+        }
+
+        // 次のスロットの転送前に、SD書き込み・BLE安定化のための待機
+        if (i < audioEntries.length - 1) {
+          await Future.delayed(const Duration(milliseconds: 600));
+        }
+      }
+    } catch (e) {
+      allSuccess = false;
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('一括転送中にエラーが発生しました: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isBatchUploading = false;
+          _batchCurrentIndex = 0;
+          _batchTotalCount = 0;
+          _batchCurrentSlotName = '';
+        });
+
+        if (allSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              backgroundColor: const Color(0xFF10B981),
+              content: Row(
+                children: [
+                  const Icon(Icons.check_circle, color: Colors.white),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text('${_selectedPreset!.name} の登録音声（${audioEntries.length}件）を一括転送しました！'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+      }
+    }
+  }
+
   // 特定スロット（または -1 = trigger）への音声の選択、自動変換とアップロード
   Future<void> _uploadAudioForSlot(int index) async {
+    if (_isAnyUploading) return;
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['wav', 'mp3', 'm4a', 'aac', 'ogg'],
@@ -670,7 +789,7 @@ class _AlarmScreenState extends State<AlarmScreen> {
                                             ),
                                           );
                                         }).toList(),
-                                        onChanged: _isUploading.values.any((u) => u)
+                                        onChanged: _isAnyUploading
                                             ? null
                                             : (val) {
                                                 setState(() {
@@ -682,17 +801,78 @@ class _AlarmScreenState extends State<AlarmScreen> {
                                   ),
                               ],
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 10),
                             if (_presets.isEmpty)
                               const Text(
                                 '登録されたプリセットがありません。「音声プリセット一覧」画面から作成してください。',
                                 style: TextStyle(color: Colors.white54, fontSize: 12),
                               )
-                            else
+                            else ...[
                               Text(
-                                '選択中: ${_selectedPreset?.name ?? ""} (${_selectedPreset?.audioFiles.length ?? 0}件の音声が登録済み)\n各スロットの「プリセットから転送」ボタンで個別に転送できます。',
-                                style: const TextStyle(color: Colors.white70, fontSize: 12, height: 1.4),
+                                '選択中: ${_selectedPreset?.name ?? ""} (${_selectedPreset?.audioFiles.length ?? 0}件の音声が登録済み)',
+                                style: const TextStyle(color: Colors.white70, fontSize: 12),
                               ),
+                              if (_isBatchUploading) ...[
+                                const SizedBox(height: 12),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(6),
+                                  child: LinearProgressIndicator(
+                                    value: _batchTotalCount > 0 ? _batchCurrentIndex / _batchTotalCount : null,
+                                    backgroundColor: Colors.white10,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      _selectedPreset != null ? Color(_selectedPreset!.color) : const Color(0xFF4F46E5),
+                                    ),
+                                    minHeight: 6,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      '一括転送中 ($_batchCurrentIndex/$_batchTotalCount): $_batchCurrentSlotName',
+                                      style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                                    ),
+                                    Flexible(
+                                      child: Text(
+                                        _uploadStatusMessage,
+                                        style: const TextStyle(color: Colors.white60, fontSize: 11),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                              const SizedBox(height: 12),
+                              ElevatedButton.icon(
+                                onPressed: (_isAnyUploading || (_selectedPreset?.audioFiles.isEmpty ?? true))
+                                    ? null
+                                    : _uploadAllPresetAudios,
+                                icon: _isBatchUploading
+                                    ? const SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                      )
+                                    : const Icon(Icons.cloud_upload_rounded, size: 18, color: Colors.white),
+                                label: Text(
+                                  _isBatchUploading
+                                      ? '一括転送中 ($_batchCurrentIndex/$_batchTotalCount)...'
+                                      : 'プリセット音声を一括転送 (${_selectedPreset?.audioFiles.length ?? 0}件)',
+                                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: _selectedPreset != null
+                                      ? Color(_selectedPreset!.color)
+                                      : const Color(0xFF4F46E5),
+                                  disabledBackgroundColor: Colors.white12,
+                                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       ),
@@ -977,7 +1157,7 @@ class _AlarmScreenState extends State<AlarmScreen> {
                                           },
                                         ),
                                         ElevatedButton.icon(
-                                          onPressed: _isUploading.values.any((u) => u)
+                                          onPressed: _isAnyUploading
                                               ? null
                                               : () => _uploadPresetAudioForSlot(-1),
                                           icon: const Icon(Icons.send_rounded, size: 14, color: Colors.white),
@@ -990,7 +1170,7 @@ class _AlarmScreenState extends State<AlarmScreen> {
                                         ),
                                       ],
                                       ElevatedButton.icon(
-                                        onPressed: _isUploading.values.any((u) => u) ? null : () => _uploadAudioForSlot(-1),
+                                        onPressed: _isAnyUploading ? null : () => _uploadAudioForSlot(-1),
                                         icon: const Icon(Icons.folder_open, size: 14, color: Colors.white70),
                                         label: const Text('ファイル選択', style: TextStyle(fontSize: 11)),
                                         style: ElevatedButton.styleFrom(
@@ -1165,7 +1345,7 @@ class _AlarmScreenState extends State<AlarmScreen> {
                                           },
                                         ),
                                         ElevatedButton.icon(
-                                          onPressed: _isUploading.values.any((u) => u)
+                                          onPressed: _isAnyUploading
                                               ? null
                                               : () => _uploadPresetAudioForSlot(index),
                                           icon: const Icon(Icons.send_rounded, size: 14, color: Colors.white),
@@ -1178,7 +1358,7 @@ class _AlarmScreenState extends State<AlarmScreen> {
                                         ),
                                       ],
                                       ElevatedButton.icon(
-                                        onPressed: _isUploading.values.any((u) => u) ? null : () => _uploadAudioForSlot(index),
+                                        onPressed: _isAnyUploading ? null : () => _uploadAudioForSlot(index),
                                         icon: const Icon(Icons.folder_open, size: 14, color: Colors.white70),
                                         label: const Text('ファイル選択', style: TextStyle(fontSize: 11)),
                                         style: ElevatedButton.styleFrom(
