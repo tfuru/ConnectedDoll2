@@ -147,11 +147,16 @@ void loop() {
     }
   }
 
-  // --- タクトスイッチによる特定ファイル再生 (WAV優先、次点でMP3) ---
+  // --- タクトスイッチによる特定ファイル再生 (WAV優先、次点でMP3) / 再生中停止 ---
   if (HAL_IO::isKeyPressed()) {
-    Serial.println("Button Pressed! Triggering playback...");
     HAL_Power::resetIdleTimer();
-    triggerButtonPlayback();
+    if (AudioPlayer::isPlaying()) {
+      Serial.println("Button Pressed while playing! Stopping playback...");
+      AudioPlayer::stop();
+    } else {
+      Serial.println("Button Pressed! Triggering playback...");
+      triggerButtonPlayback();
+    }
   }
 
   // --- RTCによる複数日時スケジュール再生 (WAV優先、次点でMP3) ---
