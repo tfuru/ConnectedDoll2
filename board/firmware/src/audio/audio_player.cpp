@@ -49,19 +49,8 @@ void AudioPlayer::stop() {
 
 void AudioPlayer::update() {
     // デコーダーのデコード処理を継続するために loop を毎フレーム呼ぶ必要があります
+    // 再生終了（EOF）時はコールバック（audio_eof_mp3 / audio_eof_wav）内で安全にミュート・停止されます
     audio.loop();
-    
-    // 再生終了の直前（残りデータが 8000 バイト以下）を検知して先んじてミュート
-    if (audio.isRunning()) {
-        uint32_t total = audio.getFileSize();
-        uint32_t pos = audio.getFilePos();
-        if (total > 0 && pos > 0 && (total > pos)) {
-            uint32_t remaining = total - pos;
-            if (remaining < 8000) {
-                audio.setVolume(0); // I2S送信切断前の時点でボリュームを0にする
-            }
-        }
-    }
 }
 
 void AudioPlayer::setVolume(uint8_t vol) {
