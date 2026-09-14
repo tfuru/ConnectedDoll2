@@ -412,18 +412,9 @@ class _FirmwareUpdateScreenState extends State<FirmwareUpdateScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              '利用可能なファームウェア',
-              style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              _repository,
-              style: const TextStyle(color: Colors.white54, fontSize: 11),
-            ),
-          ],
+        const Text(
+          '利用可能なファームウェア',
+          style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 12),
         ListView.separated(
