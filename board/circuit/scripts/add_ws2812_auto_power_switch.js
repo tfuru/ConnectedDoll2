@@ -137,8 +137,9 @@ return (async function() {
       const pins = await eda.sch_PrimitiveComponent.getAllPinsByPrimitiveId(id);
 
       if (des === "D2") {
-        const pA = pins.find(p => p.pinNumber === "1" || p.name === "A") || pins[0];
-        const pK = pins.find(p => p.pinNumber === "2" || p.name === "K") || pins[1];
+        // 1N4148WS (SOD-323 / C2128): Pin 1 = K (Cathode), Pin 2 = A (Anode)
+        const pA = pins.find(p => (p.getState_PinName ? p.getState_PinName() : p.name) === "A" || (p.getState_PinNumber ? p.getState_PinNumber() : p.pinNumber) === "2") || pins[1];
+        const pK = pins.find(p => (p.getState_PinName ? p.getState_PinName() : p.name) === "K" || (p.getState_PinNumber ? p.getState_PinNumber() : p.pinNumber) === "1") || pins[0];
         if (pA) await eda.sch_PrimitiveWire.create([pA.x, pA.y, pA.x - 20, pA.y], "WS_DATA_3V3");
         if (pK) await eda.sch_PrimitiveWire.create([pK.x, pK.y, pK.x + 20, pK.y], "LED_GATE_DRV");
       } else if (des === "Q3") {
