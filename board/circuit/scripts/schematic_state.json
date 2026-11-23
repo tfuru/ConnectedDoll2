@@ -18,6 +18,7 @@
     "levelshifter_led": ["U2 74AHCT1G125", "R4 330", "LED1 WS2812B", "C3 0.1u", "C4 0.1u", "C10 10uF MLCC", "R12 10k pulldown", "D2 1N4148WS", "Q3 AO3400A", "Q2 AO3401A", "C11 0.1u", "R13 100k bleed", "R14 100k pullup"],
     "audio": ["U3 MAX98357", "C5 10u", "C6 0.1u", "R5 10k", "CN1 B2B-PH-K-S", "CN2 BM02B-SRSS-TB(LF)(SN)"],
     "rtc": ["U4 DS3231MZ", "C7 0.1u", "R6 1.5k pullup", "R7 1.5k pullup", "B1 CR1220"],
+    "nfc_i2c": ["CN4 HC-PZ200-8.7L-1x4PZ (2.0mm 1x4P DIP / C27985153)", "C12 0.1uF (C14663)"],
     "tfcard": ["CARD1 DM3D-SF", "C8 0.1u", "R8 10k pullup", "R9 10k pullup", "R10 10k pullup"],
     "main_ui": ["U5 XIAO ESP32C3", "R11 POT RK09L1140", "SW1 EVQPUC02K (C79174)"]
   },
@@ -25,11 +26,11 @@
     "VIN_5V": "J1, CN3(PH 2pin) -> Q1.S -> D1.C",
     "GATE": "Q1.G -> D1.A -> R1(100k)",
     "Q_DRAIN": "Q1.D -> F1",
-    "V_BATT": "F1 out -> C9(47uF), DCDC IN/EN, Q2.S, R14(1), Audio VDD, XIAO 5V",
+    "V_BATT": "F1 out -> C9(47uF), DCDC IN/EN, Q2.S, R14(1), Audio VDD, XIAO 5V, CN4 pin2(NFC 5V), C12(1)",
     "LX": "SY8089 LX -> L1",
     "FB": "SY8089 FB -> Rfb1/Rfb2 divider",
     "V3V3": "DCDC out -> RTC/TF VDD, pull-ups, POT top",
-    "I2C_SDA/SCL": "XIAO D4/D5 <-> RTC, pull-ups to V3V3",
+    "I2C_SDA/SCL": "XIAO D4/D5 <-> RTC(U4), NFC(CN4 pin3=SDA/pin4=SCL), pull-ups to V3V3(R6/R7 1.5k)",
     "I2S_BCLK/LRCLK/DIN": "XIAO D6/D7/D10 -> MAX98357",
     "SD_MOSI/MISO/SCK": "XIAO D2/D9/D8 -> DM3D-SF, pull-ups to V3V3",
     "WS_DATA_3V3": "XIAO D3 -> 74AHCT1G125 A, R12(10k to GND), D2.A",
@@ -43,6 +44,6 @@
     "POT_WIPER": "POT wiper -> XIAO D1",
     "SW_D0": "tact switch -> XIAO D0"
   },
-  "drc": "自動電源遮断回路（Q2, Q3, D2, C11, R13, R14）追加・V_LED配線完了",
+  "drc": "NFC I2C コネクタ (CN4: HC-PZ200-8.7L-1x4PZ / C27985153) およびデカップリングコンデンサ (C12: 0.1uF / C14663) 追加・配線・SCH DRC確認完了 (Error 0)",
   "saved": true
 }
