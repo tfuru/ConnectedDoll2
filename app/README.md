@@ -16,13 +16,13 @@ BLE接続を通じて、「オーディオストリーミングスタンド開�
 4. **日時アラーム設定とファイル指定**
    - アラームスケジュール（最大5件、インデックス0〜4）の登録・削除・状態一覧表示。
    - アラームごとに異なる音源（`alarm0` 〜 `alarm4`）が自動で紐付けられます。
-5. **NFCタグ書き込み（Android 対応）**
-   - ホーム画面の「NFC書き込み」から登録済みの音声プリセット名を選択すると、そのプリセットに対応した UUID v4 を発行（SQLite に永続保存・再発行も可能）し、NDEF MIME レコードとして NFC タグへ書き込みます。
-   - 書き込んだ NFC タグをアプリ内で読み戻し、記録された UUID とローカル登録プリセットとの一致を確認できます。
+5. **NFCタグ書き込み ＆ UUID 紐づけトリガー音声転送（Android 対応）**
+   - ホーム画面の「NFC書き込み」からプルダウンで登録済みの音声プリセットを選択すると、そのプリセットに対応した UUID v4 を発行（SQLite に永続保存・再発行も可能）し、NDEF MIME レコードとして NFC タグへ書き込みます。
+   - 各プリセットのトリガー音声を UUID に紐づけて `/nfc/<UUID>.wav` としてデバイスへ一括（または単体）転送でき、デバイス側で NFC タグをかざすと対応するプリセットのトリガー音声が再生されます。
 
 ---
 
-## NFC タグ書き込み仕様（Android）
+## NFC タグ書き込み・トリガー音声紐づけ仕様（Android）
 
 - **NDEF レコード種別**: MIME Media Record (`TNF = 0x02`)
 - **MIME Type**: `application/vnd.connecteddoll.preset`
@@ -31,6 +31,7 @@ BLE接続を通じて、「オーディオストリーミングスタンド開�
   {"uuid":"550e8400-e29b-41d4-a716-446655440000","name":"プリセット名"}
   ```
 - **UUID 管理**: 音声プリセットごとに UUID v4 を自動発行し、SQLite の `voice_presets.nfc_uuid` カラムに保存して再利用します（画面上から再発行可能）。
+- **デバイス SD 保存パス**: 各プリセットのトリガー音声は推奨 WAV（16 kHz / 16-bit / モノラル）へ自動変換され、BLE 経由で `/nfc/<uuid>.wav` としてデバイスへ保存されます。
 - **推奨タグ**: NDEF フォーマット済みの書き込み可能な NFC タグ（NTAG213 / NTAG215 / NTAG216 等）。長い日本語名を含む場合は容量に余裕のある NTAG215 / NTAG216 を推奨します。
 - **Android 権限**: `AndroidManifest.xml` に `android.permission.NFC` および `<uses-feature android:name="android.hardware.nfc" android:required="false" />` を定義しています。
 
