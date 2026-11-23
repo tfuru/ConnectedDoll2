@@ -27,6 +27,7 @@ class NfcPresetPayload {
 
 class NfcUuidService {
   static const String presetMimeType = 'application/vnd.connecteddoll.preset';
+  static const String nfcAudioDirectory = 'nfc';
   static const int ntag213RecommendedMaxBytes = 137;
 
   static final RegExp _uuidPattern = RegExp(
@@ -42,6 +43,15 @@ class NfcUuidService {
 
   /// UUID 文字列の形式を検証する
   bool isValidUuid(String value) => _uuidPattern.hasMatch(value.trim());
+
+  /// デバイス SD カード上の UUID 紐づけトリガー音声パス（例: `nfc/<uuid>.wav`）を生成する
+  String buildDeviceTriggerAudioPath(String uuid) {
+    final normalized = uuid.trim().toLowerCase();
+    if (!isValidUuid(normalized)) {
+      throw ArgumentError.value(uuid, 'uuid', 'UUID形式が不正です');
+    }
+    return '$nfcAudioDirectory/$normalized.wav';
+  }
 
   /// NDEF MIME レコードのペイロード JSON 文字列を構築する
   String encodePayloadJson({

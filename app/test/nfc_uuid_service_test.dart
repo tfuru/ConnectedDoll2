@@ -45,6 +45,19 @@ void main() {
       );
     });
 
+    test('buildDeviceTriggerAudioPath normalizes UUID and rejects invalid values', () {
+      expect(
+        service.buildDeviceTriggerAudioPath(
+          '  550E8400-E29B-41D4-A716-446655440000  ',
+        ),
+        equals('nfc/550e8400-e29b-41d4-a716-446655440000.wav'),
+      );
+      expect(
+        () => service.buildDeviceTriggerAudioPath('invalid-uuid'),
+        throwsArgumentError,
+      );
+    });
+
     test('buildPresetMimeRecord and parsePresetPayloadFromRecords round-trip Japanese names', () {
       const uuid = '550e8400-e29b-41d4-a716-446655440000';
       const name = '推しキャラA';
