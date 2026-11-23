@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'preset_list_screen.dart';
 import 'alarm_screen.dart';
+import 'nfc_write_screen.dart';
 import 'firmware_update_screen.dart';
 
 
@@ -128,6 +129,27 @@ class HomeScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const AlarmScreen()),
+                  );
+                },
+              ),
+              const SizedBox(height: 20),
+
+              // NFC書き込み ボタン
+              _buildMenuCard(
+                context: context,
+                title: 'NFC書き込み',
+                subtitle: 'プリセットに対応するUUIDをNFCタグへ書き込み',
+                icon: Icons.nfc_rounded,
+                accentColor: const Color(0xFF10B981),
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF065F46), Color(0xFF1E293B)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const NfcWriteScreen()),
                   );
                 },
               ),
