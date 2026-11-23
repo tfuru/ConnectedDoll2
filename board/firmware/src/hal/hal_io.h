@@ -16,6 +16,8 @@ class HAL_IO {
 public:
   static void init();
   static bool isKeyPressed();
+  static bool isLongPressed();
+  static bool isButtonHeld();
   static float readVolume(); // 0.0 ~ 1.0
   static void setLEDColor(uint8_t r, uint8_t g, uint8_t b);
   static void setLEDBrightness(uint8_t brightness);
@@ -31,10 +33,16 @@ private:
   static uint8_t themeR;
   static uint8_t themeG;
   static uint8_t themeB;
-  static void IRAM_ATTR handleButtonInterrupt();
-  static volatile bool keyPressedFlag;
-  static volatile unsigned long lastDebounceTime;
-  static const unsigned long debounceDelay = 150; // デバウンス閾値 (ms)
+  static bool lastRawPressed;
+  static bool stablePressed;
+  static bool ignoreUntilRelease;
+  static bool longPressHandled;
+  static bool shortPressEvent;
+  static bool longPressEvent;
+  static unsigned long lastRawChangeMs;
+  static unsigned long pressStartMs;
+  static const unsigned long debounceDelay = 40;     // デバウンス閾値 (ms)
+  static const unsigned long longPressDelay = 3000;  // 長押し判定時間 (ms)
 };
 
 #endif // HAL_IO_H

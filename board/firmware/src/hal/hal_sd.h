@@ -18,6 +18,7 @@ public:
     static bool appendFile(const char* path, const uint8_t* data, size_t len);
     static bool deleteFile(const char* path);
     static bool fileExists(const char* path);
+    static bool ensureParentDirectories(const char* filePath);
     
 private:
     static bool mounted;

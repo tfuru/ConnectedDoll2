@@ -10,6 +10,7 @@ class VoicePreset {
   // Map of slot index to original audio file name (e.g. "01_Voice.mp3")
   final Map<int, String> audioFileNames;
   final int sortOrder;
+  final String? nfcUuid;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -21,6 +22,7 @@ class VoicePreset {
     required this.audioFiles,
     Map<int, String>? audioFileNames,
     this.sortOrder = 0,
+    this.nfcUuid,
     DateTime? createdAt,
     DateTime? updatedAt,
   })  : audioFileNames = audioFileNames ?? {},
@@ -51,6 +53,7 @@ class VoicePreset {
     Map<int, String>? audioFiles,
     Map<int, String>? audioFileNames,
     int? sortOrder,
+    String? nfcUuid,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -62,6 +65,7 @@ class VoicePreset {
       audioFiles: audioFiles ?? Map.from(this.audioFiles),
       audioFileNames: audioFileNames ?? Map.from(this.audioFileNames),
       sortOrder: sortOrder ?? this.sortOrder,
+      nfcUuid: nfcUuid ?? this.nfcUuid,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -80,6 +84,7 @@ class VoicePreset {
         audioFileNames.map((k, v) => MapEntry(k.toString(), v)),
       ),
       'sort_order': sortOrder,
+      'nfc_uuid': nfcUuid,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -119,6 +124,7 @@ class VoicePreset {
       audioFiles: audios,
       audioFileNames: fileNames,
       sortOrder: map['sort_order'] as int? ?? 0,
+      nfcUuid: map['nfc_uuid'] as String?,
       createdAt: map['created_at'] != null ? DateTime.parse(map['created_at'] as String) : DateTime.now(),
       updatedAt: map['updated_at'] != null ? DateTime.parse(map['updated_at'] as String) : DateTime.now(),
     );

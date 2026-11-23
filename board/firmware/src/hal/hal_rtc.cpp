@@ -4,11 +4,12 @@ RTC_DS3231 HAL_RTC::rtc;
 bool HAL_RTC::initialized = false;
 
 bool HAL_RTC::init() {
-    // 指定したピンで I2C バスを初期化
-    if (!Wire.begin(PIN_RTC_SDA, PIN_RTC_SCL)) {
+    // 共有 I2C バス (RTC DS3231MZ + NFC ST25R3916) を 400kHz で初期化
+    if (!Wire.begin(PIN_RTC_SDA, PIN_RTC_SCL, 400000)) {
         Serial.println("Wire initialization failed");
         return false;
     }
+    Wire.setClock(400000);
     
     // Wire インスタンスを渡して RTC を初期化
     if (!rtc.begin(&Wire)) {

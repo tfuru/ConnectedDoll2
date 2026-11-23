@@ -3,6 +3,7 @@
 #include "../hal/hal_io.h"
 #include "../hal/hal_power.h"
 #include "../hal/hal_ota.h"
+#include "../hal/hal_sd.h"
 #include "../audio/alarm_manager.h"
 #include <freertos/FreeRTOS.h>
 #include <freertos/ringbuf.h>
@@ -192,6 +193,14 @@ void BLEManager::FileCtrlCallbacks::onWrite(BLECharacteristic* pCharacteristic) 
         if (commaIdx != -1) {
             rawName = rawName.substring(0, commaIdx);
         }
+        rawName.trim();
+        while (rawName.startsWith("/")) {
+            rawName = rawName.substring(1);
+        }
+        if (rawName.length() == 0 || rawName.indexOf("..") != -1) {
+            Serial.printf("[BLE] Rejected invalid transfer filename: %s\n", rawName.c_str());
+            return;
+        }
         pendingFileName = "/" + rawName;
         pendingStartRequested = true;
         fileTransferActive = true;
@@ -246,6 +255,11 @@ void BLEManager::processTransferBuffer() {
         if (activeFile) {
             activeFile.close();
         }
+        if (!HAL_SD::ensureParentDirectories(targetFileName.c_str())) {
+            Serial.printf("[SD] Failed to prepare parent directories for: %s\n", targetFileName.c_str());
+            fileTransferActive = false;
+            return;
+        }
         if (SD.exists(targetFileName)) {
             SD.remove(targetFileName);
         }
@@ -277,12 +291,11 @@ void BLEManager::processTransferBuffer() {
 
     // 3. ENDが要求され、かつリングバッファが完全に空になったらファイルをクローズ
     if (transferEndRequested) {
-        size_t remainingSize = 0;
-        uint8_t* checkItem = (uint8_t*)xRingbufferReceiveUpTo(s_transferRingBuf, &remainingSize, 0, 1);
-        if (checkItem != NULL) {
-            // まだデータが残っているので戻して次回以降に処理
-            vRingbufferReturnItem(s_transferRingBuf, (void*)checkItem);
-        } else {
+        UBaseType_t itemsWaiting = 0;
+        if (s_transferRingBuf != NULL) {
+            vRingbufferGetInfo(s_transferRingBuf, NULL, NULL, NULL, NULL, &itemsWaiting);
+        }
+        if (itemsWaiting == 0) {
             // 全データ書き込み完了
             activeFile.flush();
             activeFile.close();

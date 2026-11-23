@@ -265,10 +265,10 @@ class BleService {
   }
 
   // ファイル転送 (WAVバイナリ分割送信)
-  Future<void> transferFile(String filename, Uint8List fileData) async {
+  Future<bool> transferFile(String filename, Uint8List fileData) async {
     if (connectedDevice == null) {
       transferStatusController.add("Error: Not Connected");
-      return;
+      return false;
     }
 
     final deviceId = connectedDevice!.deviceId;
@@ -356,9 +356,11 @@ class BleService {
       );
 
       transferStatusController.add("Transfer completed successfully.");
+      return true;
     } catch (e) {
       print('Error during file transfer: $e');
       transferStatusController.add("Transfer failed: $e");
+      return false;
     }
   }
 

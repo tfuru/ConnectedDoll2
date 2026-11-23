@@ -22,7 +22,7 @@ class PresetDbService {
 
     return await openDatabase(
       dbPath,
-      version: 3,
+      version: 4,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE voice_presets (
@@ -33,6 +33,7 @@ class PresetDbService {
             audio_files_json TEXT,
             audio_file_names_json TEXT,
             sort_order INTEGER NOT NULL DEFAULT 0,
+            nfc_uuid TEXT,
             created_at TEXT NOT NULL,
             updated_at TEXT NOT NULL
           )
@@ -47,6 +48,11 @@ class PresetDbService {
         if (oldVersion < 3) {
           try {
             await db.execute('ALTER TABLE voice_presets ADD COLUMN audio_file_names_json TEXT;');
+          } catch (_) {}
+        }
+        if (oldVersion < 4) {
+          try {
+            await db.execute('ALTER TABLE voice_presets ADD COLUMN nfc_uuid TEXT;');
           } catch (_) {}
         }
       },
@@ -128,6 +134,33 @@ class PresetDbService {
       where: 'id = ?',
       whereArgs: [preset.id],
     );
+  }
+
+  // プリセットに紐づくNFC用UUIDを更新
+  Future<int> updateNfcUuid(int presetId, String nfcUuid) async {
+    final db = await database;
+    return await db.update(
+      'voice_presets',
+      {
+        'nfc_uuid': nfcUuid,
+        'updated_at': DateTime.now().toIso8601String(),
+      },
+      where: 'id = ?',
+      whereArgs: [presetId],
+    );
+  }
+
+  // NFC用UUIDからプリセットを逆引き
+  Future<VoicePreset?> getPresetByNfcUuid(String nfcUuid) async {
+    final db = await database;
+    final maps = await db.query(
+      'voice_presets',
+      where: 'nfc_uuid = ?',
+      whereArgs: [nfcUuid],
+      limit: 1,
+    );
+    if (maps.isEmpty) return null;
+    return VoicePreset.fromMap(maps.first);
   }
 
   // プリセットの削除（DBおよび関連ファイル）

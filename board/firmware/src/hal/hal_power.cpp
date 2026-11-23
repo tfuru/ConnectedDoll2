@@ -1,10 +1,16 @@
 #include "hal_power.h"
 #include "hal_io.h"
+#include "hal_nfc.h"
 #include <driver/gpio.h>
+#if defined(ARDUINO_USB_MODE) && ARDUINO_USB_MODE && defined(ARDUINO_USB_CDC_ON_BOOT) && ARDUINO_USB_CDC_ON_BOOT
+#include <HWCDC.h>
+#endif
 
 unsigned long HAL_Power::lastActivityTime = 0;
+bool HAL_Power::deepSleepDisabled = false;
 
 void HAL_Power::init() {
+    deepSleepDisabled = false;
     resetIdleTimer();
 }
 
@@ -16,11 +22,43 @@ bool HAL_Power::isIdleTimeout(unsigned long timeoutMs) {
     return (millis() - lastActivityTime >= timeoutMs);
 }
 
+bool HAL_Power::isUsbHostConnected() {
+#if defined(ARDUINO_USB_MODE) && ARDUINO_USB_MODE && defined(ARDUINO_USB_CDC_ON_BOOT) && ARDUINO_USB_CDC_ON_BOOT
+    return HWCDC::isPlugged();
+#else
+    return false;
+#endif
+}
+
+bool HAL_Power::isDeepSleepDisabled() {
+    return deepSleepDisabled;
+}
+
+void HAL_Power::setDeepSleepDisabled(bool disabled) {
+    deepSleepDisabled = disabled;
+    if (disabled) {
+        resetIdleTimer();
+    }
+}
+
+bool HAL_Power::toggleDeepSleepDisabled() {
+    deepSleepDisabled = !deepSleepDisabled;
+    resetIdleTimer();
+    return deepSleepDisabled;
+}
+
+bool HAL_Power::isSleepInhibited() {
+    return deepSleepDisabled || isUsbHostConnected();
+}
+
 esp_sleep_wakeup_cause_t HAL_Power::getWakeupCause() {
     return esp_sleep_get_wakeup_cause();
 }
 
 void HAL_Power::prepareSleep() {
+    // NFC RF出力停止・省電力モードへ移行
+    HAL_NFC::sleep();
+
     // LEDを完全に消灯
     HAL_IO::turnOffLED();
     
