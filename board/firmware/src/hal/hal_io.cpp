@@ -3,8 +3,14 @@
 
 Adafruit_NeoPixel HAL_IO::pixels =
     Adafruit_NeoPixel(NUM_LEDS, PIN_WS2812B, NEO_GRB + NEO_KHZ800);
-volatile bool HAL_IO::keyPressedFlag = false;
-volatile unsigned long HAL_IO::lastDebounceTime = 0;
+bool HAL_IO::lastRawPressed = false;
+bool HAL_IO::stablePressed = false;
+bool HAL_IO::ignoreUntilRelease = false;
+bool HAL_IO::longPressHandled = false;
+bool HAL_IO::shortPressEvent = false;
+bool HAL_IO::longPressEvent = false;
+unsigned long HAL_IO::lastRawChangeMs = 0;
+unsigned long HAL_IO::pressStartMs = 0;
 uint8_t HAL_IO::currentBrightness = 128;
 uint8_t HAL_IO::themeR = 79;   // デフォルト: インディゴ (Indigo: #4F46E5)
 uint8_t HAL_IO::themeG = 70;
@@ -16,12 +22,16 @@ void HAL_IO::init() {
 
   // プルアップが電気的に安定するのを少し待つ
   delay(10);
-  keyPressedFlag = false;
-  lastDebounceTime = 0;
-
-  // スイッチ押下（HIGH -> LOW / FALLING エッジ）で割り込み登録
-  attachInterrupt(digitalPinToInterrupt(PIN_TACT_SW), handleButtonInterrupt,
-                  FALLING);
+  const bool initiallyPressed = (digitalRead(PIN_TACT_SW) == LOW);
+  lastRawPressed = initiallyPressed;
+  stablePressed = initiallyPressed;
+  // スリープ復帰時の押しっぱなしで誤再生しないよう、離されるまで初回押下を無視する
+  ignoreUntilRelease = initiallyPressed;
+  longPressHandled = false;
+  shortPressEvent = false;
+  longPressEvent = false;
+  lastRawChangeMs = millis();
+  pressStartMs = lastRawChangeMs;
 
   pixels.begin();
   
@@ -41,25 +51,59 @@ void HAL_IO::init() {
   pixels.show(); // すべて消灯
 }
 
-void IRAM_ATTR HAL_IO::handleButtonInterrupt() {
-  unsigned long currentTime = millis();
-  // ソフトウェア・デバウンス (前回割り込みから一定時間経過している場合のみ検知)
-  if (currentTime - lastDebounceTime > debounceDelay) {
-    keyPressedFlag = true;
-    lastDebounceTime = currentTime;
-  }
-}
-
 void HAL_IO::update() {
-  // 割り込み化されたため、スイッチのポーリング処理は不要
+  const unsigned long now = millis();
+  const bool rawPressed = (digitalRead(PIN_TACT_SW) == LOW);
+
+  if (rawPressed != lastRawPressed) {
+    lastRawPressed = rawPressed;
+    lastRawChangeMs = now;
+  }
+
+  if ((now - lastRawChangeMs) >= debounceDelay && rawPressed != stablePressed) {
+    stablePressed = rawPressed;
+    if (stablePressed) {
+      // 押下開始
+      pressStartMs = now;
+      longPressHandled = false;
+    } else {
+      // 離した瞬間
+      if (ignoreUntilRelease) {
+        ignoreUntilRelease = false;
+      } else if (!longPressHandled) {
+        shortPressEvent = true;
+      }
+      longPressHandled = false;
+    }
+  }
+
+  // 3秒長押し判定（押したまま3秒経過した瞬間に発火し、離した時の短押しを抑制）
+  if (stablePressed && !ignoreUntilRelease && !longPressHandled) {
+    if ((now - pressStartMs) >= longPressDelay) {
+      longPressHandled = true;
+      longPressEvent = true;
+    }
+  }
 }
 
 bool HAL_IO::isKeyPressed() {
-  if (keyPressedFlag) {
-    keyPressedFlag = false; // フラグクリア
+  if (shortPressEvent) {
+    shortPressEvent = false;
     return true;
   }
   return false;
+}
+
+bool HAL_IO::isLongPressed() {
+  if (longPressEvent) {
+    longPressEvent = false;
+    return true;
+  }
+  return false;
+}
+
+bool HAL_IO::isButtonHeld() {
+  return stablePressed && !ignoreUntilRelease;
 }
 
 float HAL_IO::readVolume() {
