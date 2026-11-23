@@ -60,3 +60,35 @@ bool HAL_SD::fileExists(const char* path) {
     if (!mounted) return false;
     return SD.exists(path);
 }
+
+bool HAL_SD::ensureParentDirectories(const char* filePath) {
+    if (!mounted || filePath == nullptr) return false;
+    String fullPath(filePath);
+    if (!fullPath.startsWith("/")) {
+        fullPath = "/" + fullPath;
+    }
+
+    int lastSlash = fullPath.lastIndexOf('/');
+    if (lastSlash <= 0) {
+        // ルート直下のファイルなのでサブディレクトリ作成不要
+        return true;
+    }
+
+    int searchFrom = 1;
+    while (searchFrom <= lastSlash) {
+        int nextSlash = fullPath.indexOf('/', searchFrom);
+        if (nextSlash == -1 || nextSlash > lastSlash) {
+            break;
+        }
+        String dirPath = fullPath.substring(0, nextSlash);
+        if (dirPath.length() > 0 && !SD.exists(dirPath)) {
+            if (!SD.mkdir(dirPath)) {
+                Serial.printf("[SD] Failed to create directory: %s\n", dirPath.c_str());
+                return false;
+            }
+            Serial.printf("[SD] Created directory: %s\n", dirPath.c_str());
+        }
+        searchFrom = nextSlash + 1;
+    }
+    return true;
+}
